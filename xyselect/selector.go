@@ -13,8 +13,8 @@ type selector interface {
 	send(c any, v any) int
 }
 
-// safeSelector is the struct supporting thread-safe, type-safe selector.
-type safeSelector struct {
+// Selector is the struct supporting thread-safe, type-safe selector.
+type Selector struct {
 	selector
 }
 
@@ -38,12 +38,12 @@ type safeSelector struct {
 //
 // The center channel is only closed if all channel-cases are closed. This is
 // the reason why you must call Select until there is no any alive channel.
-func E() *safeSelector {
+func E() *Selector {
 	// Create a closed channel
 	var center = make(chan chanResult)
 	close(center)
 
-	return &safeSelector{
+	return &Selector{
 		selector: &eselector{
 			counter:     0,
 			liveCounter: 0,
@@ -55,8 +55,8 @@ func E() *safeSelector {
 
 // RSelector is the reflect-version selector. It uses reflect module to handle
 // customized select statment.
-func R() *safeSelector {
-	return &safeSelector{
+func R() *Selector {
+	return &Selector{
 		selector: &rselector{
 			cases: nil,
 			mu:    sync.Mutex{},
@@ -88,13 +88,13 @@ func C[T any](c <-chan T) <-chan any {
 //     c2 := make(chan int)
 //     selector.Recv(c1)
 //     selector.Recv(xyselector.C(c2))
-func (s *safeSelector) Recv(c <-chan any) int {
+func (s *Selector) Recv(c <-chan any) int {
 	return s.selector.recv(c)
 }
 
 // Send adds a sending case to selector. The first parameter c must be a
 // writable channel. This method returns the index of the added case.
-func (s *safeSelector) Send(c any, v any) int {
+func (s *Selector) Send(c any, v any) int {
 	cType := reflect.TypeOf(c)
 	xycond.Condition(cType.Kind() == reflect.Chan).
 		Assert("The first parameter must be a channel.")
@@ -122,6 +122,6 @@ func (s *safeSelector) Send(c any, v any) int {
 // selector. Nil for the case of receiving is not closed. DefaultCaseError for
 // the case of default. ExhaustedError if there is no more available channel in
 // exhausted-selector.
-func (s *safeSelector) Select(isDefault bool) (index int, v any, err error) {
+func (s *Selector) Select(isDefault bool) (index int, v any, err error) {
 	return s.selector.xselect(isDefault)
 }

@@ -2,7 +2,6 @@ package xyerror
 
 import (
 	"errors"
-	"fmt"
 )
 
 // xyerror is the error of xybor projects. It supports checking if an error
@@ -20,7 +19,7 @@ type xyerror struct {
 }
 
 func (xerr xyerror) Error() string {
-	return fmt.Sprintf("%s %s", xerr.c.Error(), xerr.msg)
+	return xerr.msg
 }
 
 func (xerr xyerror) Is(target error) bool {

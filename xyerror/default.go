@@ -12,4 +12,6 @@ var (
 	KeyError            = NewClass(xyplatform.Default, "KeyError")
 	NotImplementedError = NewClass(xyplatform.Default, "NotImplementedError")
 	ValueError          = NewClass(xyplatform.Default, "ValueError")
+	ParameterError      = NewClass(xyplatform.Default, "ParameterError")
+	TypeError           = NewClass(xyplatform.Default, "TypeError")
 )

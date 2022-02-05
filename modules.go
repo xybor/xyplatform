@@ -26,4 +26,5 @@ func NewModule(id int, name string) Module {
 var (
 	Default    = NewModule(10000, "Default")
 	XySelector = NewModule(20000, "XySelector")
+	XyCron     = NewModule(30000, "XyCron")
 )
