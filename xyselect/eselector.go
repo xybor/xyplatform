@@ -59,7 +59,7 @@ func (es *eselector) recv(c <-chan any) int {
 }
 
 func (es *eselector) send(any, any) int {
-	xycond.Exit(1, "Exhausted-selector doesn't support Send")
+	xycond.Panic("Exhausted-selector doesn't support Send")
 	return 0 // Never reach, avoid syntax error
 }
 

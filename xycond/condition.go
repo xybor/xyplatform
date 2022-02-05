@@ -2,66 +2,38 @@ package xycond
 
 import (
 	"fmt"
-	"os"
-	"runtime"
 )
 
-type condition struct {
-	cond  bool
-	depth int
-	code  int
-}
+type condition bool
 
 // This function returns a condition which later you must call JustAssert,
 // Assert, or Assertf to check it. If the condition is false, the program will
 // exit with exit code 1.
 func Condition(cond bool) condition {
-	return condition{cond: cond, depth: 1, code: 1}
+	return condition(cond)
 }
 
 func Not(c condition) condition {
-	c.cond = !c.cond
-	return c
-}
-
-func (c condition) Code(code int) condition {
-	c.code = code
-	return c
+	return !c
 }
 
 // JustAssert terminates the program without a message if condition fails.
 func (c condition) JustAssert() {
-	if !c.cond {
-		_, fn, ln, ok := runtime.Caller(c.depth)
-		if !ok {
-			fn = "???"
-			ln = 0
-		}
-
-		os.Stderr.Write([]byte(fmt.Sprintf("The program exits at %s:%d\n", fn, ln)))
-		os.Exit(c.code)
+	if !c {
+		panic(c)
 	}
 }
 
 // Assert prints a message and terminates the program if the condition fails.
 func (c condition) Assert(msg string) {
-	if !c.cond {
-		_, fn, ln, ok := runtime.Caller(c.depth)
-		if !ok {
-			fn = "???"
-			ln = 0
-		}
-
-		os.Stderr.Write([]byte(fmt.Sprintf("The program exits at %s:%d\n", fn, ln)))
-		os.Stderr.Write([]byte(msg + "\n"))
-		os.Exit(c.code)
+	if !c {
+		panic(msg)
 	}
 }
 
 // Assertf prints a formatted message and terminates the program if the
 // condition fails.
 func (c condition) Assertf(format string, args ...any) {
-	c.depth += 1
 	c.Assert(fmt.Sprintf(format, args...) + "\n")
 }
 
@@ -147,20 +119,17 @@ func False(b bool) condition {
 	return Not(True(b))
 }
 
-func JustExit(code int) {
-	c := True(false).Code(code)
-	c.depth += 1
+func JustPanic() {
+	c := Condition(false)
 	c.JustAssert()
 }
 
-func Exit(code int, msg string) {
-	c := True(false).Code(code)
-	c.depth += 1
+func Panic(msg string) {
+	c := Condition(false)
 	c.Assert(msg)
 }
 
-func Exitf(code int, msg string, a ...any) {
-	c := True(false).Code(code)
-	c.depth += 1
+func Panicf(msg string, a ...any) {
+	c := Condition(false)
 	c.Assertf(msg, a...)
 }
