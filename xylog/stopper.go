@@ -6,6 +6,32 @@ import (
 	"time"
 )
 
+func parseTime(fn string, format string) (time.Time, bool) {
+	var timeStr string
+
+	n, err := fmt.Sscanf(fn, format, timeStr)
+	if err != nil {
+		fmt.Printf("WARNING: Something was wrong when get time string in "+
+			"file %s: %s\n", fn, err)
+		return time.Time{}, false
+	}
+
+	if n != 1 {
+		fmt.Printf("WARNING: Something was wrong when get time string in file "+
+			"%s: the number of parsed items is expected 1, but got %d\n", fn, n)
+		return time.Time{}, false
+	}
+
+	t, err := time.Parse(TimeFormat, timeStr)
+	if err != nil {
+		fmt.Printf("WARNING: Something was wrong when parse time in file %s: "+
+			"%s\n", fn, err)
+		return time.Time{}, false
+	}
+
+	return t, true
+}
+
 type stopper interface {
 	isStop(fn string, format string) bool
 }
@@ -21,16 +47,12 @@ func TimeAfter(duration time.Duration) timeAfter {
 }
 
 func (a timeAfter) isStop(fn string, format string) bool {
-	var timeStr string
-	fmt.Sscanf(fn, format, timeStr)
-	start, err := time.Parse(TimeFormat, timeStr)
-	if err != nil {
-		fmt.Printf("WARNING: Something was wrong when parse time in "+
-			"file %s: %s\n", fn, err)
+	last, ok := parseTime(fn, format)
+	if !ok {
 		return false
 	}
 
-	return start.Add(a.d).After(time.Now())
+	return last.Add(a.d).After(time.Now())
 }
 
 type timePeriod struct {
@@ -48,11 +70,8 @@ func TimePeriod(p time.Duration) timePeriod {
 }
 
 func (p timePeriod) isStop(fn string, format string) bool {
-	var timeStr string
-	fmt.Sscanf(fn, format, timeStr)
-	last, err := time.Parse(TimeFormat, timeStr)
-	if err != nil {
-		fmt.Printf("WARNING: Something wrong when parse time in file %s: %s\n", fn, err)
+	last, ok := parseTime(fn, format)
+	if !ok {
 		return false
 	}
 
