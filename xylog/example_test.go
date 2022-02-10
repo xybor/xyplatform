@@ -34,8 +34,8 @@ func ExampleConfig() {
 	// You can customize configurations of a logger by xylog.Config.
 
 	// Allow is the configuration indicating which log level can be printed.
-	// Use "ALL" if you want to print all log levels.
-	xylog.Config(ExampleModule, xylog.Allow("INFO", "Error"))
+	// Use AllowAll for printing all logs and NoAllow for printing no log.
+	xylog.Config(ExampleModule, xylog.Allow(xylog.INFO))
 
 	// Format configures the log string format.
 	// Xylog provides some macros to format the log string:
@@ -52,6 +52,8 @@ func ExampleConfig() {
 	//     SFile  - similar to File, but it will write to another file if a
 	//              stop condition is reached. See ExampleSFile.
 	xylog.Config(ExampleModule, xylog.Writer(xylog.Stdout))
+	// or
+	// xylog.Config(ExampleModule, xylog.StdWriter())
 
 	// Note: Config() function allows you to pass a list of configurations
 	// instead of one by one.
@@ -66,18 +68,35 @@ func ExampleLog() {
 	// After you register a module (and configure if needed), you can begin
 	// to log anything you want.
 
-	// You can use any custom log level with xylog.Log.
-	xylog.Log(ExampleModule, "CUSTOM", "Any level can be logged")
+	// A log level contains two fields, the level number and level message.
+	// When you allow a level to be printed, all higher levels is allowed too.
+	// There are six built-in log levels in xylog.
+	// - 10 TRACE
+	// - 20 DEBUG
+	// - 50 INFO
+	// - 70 WARN
+	// - 80 ERROR
+	// - 90 CRITCAL
+
+	// If you want create your own log level, let you use RegisterLevel.
+	CUSTOM := xylog.RegisterLevel(33, "CUSTOM")
+
+	// Allow your log level and higher ones to be printed, including CUSTOM,
+	// INFO, WARN, ERROR, and CRITICAL.
+	xylog.Config(ExampleModule, xylog.Allow(CUSTOM))
+
+	// Using the generic Log to print your custom level.
+	xylog.Log(ExampleModule, CUSTOM, "Any level can be logged")
 
 	// Or use built-in log levels.
 	xylog.Info(ExampleModule, "Info")
 	xylog.Error(ExampleModule, "Something %s", "wrong")
 
-	// The below log level isn't printed because of Allow configuration in the
-	// ExampleConfig() function.
+	// DEBUG log level is not printed.
 	xylog.Debug(ExampleModule, "Debug something")
 
 	// Output:
+	// [CUSTOM][ExampleModule] - Any level can be logged
 	// [INFO][ExampleModule] - Info
 	// [ERROR][ExampleModule] - Something wrong
 }
@@ -87,10 +106,10 @@ func ExampleLogger() {
 	// the logger of that module by calling xylog.Logger.
 	ExampleLogger := xylog.Logger(ExampleModule)
 
-	// Functions of logger don't need module as a parameter to call.
+	// Functions of logger don't need the module as a parameter to call.
 	ExampleLogger.Config(
 		xylog.Format("$MESSAGE$ of ExampleLogger"),
-		xylog.Allow("Critical"),
+		xylog.Allow(xylog.CRITICAL),
 	)
 
 	ExampleLogger.Critical("Something is critical")
@@ -105,7 +124,7 @@ func ExampleFile() {
 
 	// Now, call log functions normally and all log messages will be put in
 	// file instead.
-	xylog.Config(ExampleModule, xylog.Allow("INFO"))
+	xylog.Config(ExampleModule, xylog.Allow(xylog.INFO))
 	xylog.Info(ExampleModule, "Info in file")
 
 	// This example doesn't print any output, see the log file for more details.
@@ -118,20 +137,17 @@ func ExampleSFile() {
 	// use SFile of Writer configuration to stop printing to a file when a
 	// condition is reached, the logger then creates another file to print.
 	fnFormat := "example_log_%s.log"
-	xylog.Config(ExampleModule, xylog.Writer(xylog.SFile(fnFormat, xylog.LimitSize(50*xylog.Byte))))
+	xylog.Config(ExampleModule, xylog.Writer(xylog.SFile(fnFormat, xylog.LimitSize(100*xylog.Byte))))
 	// Or you can split file by day
 	// xylog.Config(ExampleModule, xylog.Writer(xylog.SFile(fnFormat, xylog.TimePeriod(xylog.Day))))
 	// Or after one hour
 	// xylog.Config(ExampleModule, xylog.Writer(xylog.SFile(fnFormat, xylog.TimeAfter(time.Hour))))
 
 	// Now you can log normally and the log message will be printed to many files.
-	xylog.Config(ExampleModule, xylog.Allow("Info", "Error"))
+	xylog.Config(ExampleModule, xylog.Allow(xylog.INFO))
 	time.Sleep(time.Second)
 
 	xylog.Info(ExampleModule, "Something is logged but too long")
-	time.Sleep(time.Second)
-
-	xylog.Error(ExampleModule, "Something is wrong but too long")
 	time.Sleep(time.Second)
 
 	xylog.Error(ExampleModule, "Something is wrong but too long")

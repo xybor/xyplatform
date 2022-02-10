@@ -19,9 +19,9 @@ type stdout struct {
 // Stdout is a writer which prints log to standard output.
 var Stdout = &stdout{mutex: sync.Mutex{}}
 
-func (o *stdout) write(msg string, a ...interface{}) {
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
+func (w *stdout) write(msg string, a ...interface{}) {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
 
 	content := fmt.Sprintf(msg, a...)
 	fmt.Println(content)

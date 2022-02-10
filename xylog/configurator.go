@@ -1,6 +1,6 @@
 package xylog
 
-import "strings"
+import "fmt"
 
 type configurator interface {
 	apply(*logger)
@@ -23,28 +23,31 @@ func Format(f string) formatCfg {
 	return formatCfg(f)
 }
 
-type allowCfg []string
+type allowCfg uint
 
 func (cfg allowCfg) apply(lg *logger) {
-	for k := range lg.allow {
-		delete(lg.allow, k)
-	}
-
-	for _, a := range cfg {
-		lg.allow[a] = true
-	}
+	lg.level = uint(cfg)
 }
 
 // Allow is configurator which indicates log levels to be allowed to print.
-// Use "ALL" if you want to print all log levels.
-func Allow(levels ...string) allowCfg {
-	cfg := make(allowCfg, 0)
-
-	for _, l := range levels {
-		cfg = append(cfg, strings.ToUpper(l))
+func Allow(level uint) allowCfg {
+	if level >= maxLevel {
+		msg := fmt.Sprintf("The level value is expected less than %d, but "+
+			"got %d", maxLevel, level)
+		panic(msg)
 	}
 
-	return cfg
+	return allowCfg(level)
+}
+
+// AllowAll help you print all log levels.
+func AllowAll() allowCfg {
+	return allowCfg(0)
+}
+
+// NoAllow help you print no log.
+func NoAllow() allowCfg {
+	return allowCfg(maxLevel)
 }
 
 type writerCfg struct {
@@ -59,4 +62,9 @@ func (cfg writerCfg) apply(lg *logger) {
 // the log.
 func Writer(w writer) writerCfg {
 	return writerCfg{w}
+}
+
+// StdWriter is a shortcut of Writer(Stdout)
+func StdWriter() writerCfg {
+	return Writer(Stdout)
 }
