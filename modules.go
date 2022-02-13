@@ -24,3 +24,4 @@ func NewModule(id int, name string) Module {
 }
 
 var Default = NewModule(10000, "Default")
+var Xytoken = NewModule(60000, "Xytoken")
