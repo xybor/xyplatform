@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/xybor/xyplatform/xyerror"
 )
 
 type writer interface {
@@ -37,7 +35,7 @@ func File(fn string) *file {
 	sep := "------------------------------------------------------------------"
 	err := appendFile(fn, []byte(sep))
 
-	if !err.IsA(xyerror.Success) {
+	if err != nil {
 		msg := fmt.Sprintf("Test writing to %s failed: %s", fn, err)
 		panic(msg)
 	}
@@ -52,7 +50,7 @@ func (f *file) write(msg string, a ...interface{}) {
 	content := fmt.Sprintf(msg, a...)
 	err := appendFile(f.fn, []byte(content))
 
-	if !err.IsA(xyerror.Success) {
+	if err != nil {
 		fmt.Printf("WARNING: Cannot write this line to file %s: %s", f.fn, err)
 		fmt.Printf(msg, a...)
 	}

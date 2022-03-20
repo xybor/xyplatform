@@ -28,10 +28,10 @@ func replaceLog(
 	return content
 }
 
-func appendFile(fn string, data []byte) xyerror.XyError {
+func appendFile(fn string, data []byte) error {
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return xyerror.IOError.New("Cannot open file %s: %s", fn, err)
+		return xyerror.IOError.Newf("Cannot open file %s: %s", fn, err)
 	}
 
 	defer f.Close()
@@ -39,8 +39,8 @@ func appendFile(fn string, data []byte) xyerror.XyError {
 	data = append(data, '\n')
 	_, err = f.Write(data)
 	if err != nil {
-		return xyerror.IOError.New("Cannot write to file %s: %s", fn, err)
+		return xyerror.IOError.Newf("Cannot write to file %s: %s", fn, err)
 	}
 
-	return xyerror.Success
+	return nil
 }

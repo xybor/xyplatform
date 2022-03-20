@@ -11,7 +11,7 @@ var manager = make(map[xyplatform.Module]int)
 
 // extractModule returns a Module given an errno.
 func extractModule(errno int) xyplatform.Module {
-	var module = xyplatform.NewModule(0, "Temporary")
+	var module = xyplatform.NewModule(0, "")
 	var minD int
 	for m := range manager {
 		d := errno - m.ID()
@@ -26,7 +26,7 @@ func extractModule(errno int) xyplatform.Module {
 	}
 
 	if module.ID() == 0 {
-		panic("Cannot find a module of this error")
+		panic("Cannot find the module of this error")
 	}
 
 	return module

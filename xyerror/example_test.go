@@ -1,95 +1,84 @@
 package xyerror_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/xybor/xyplatform"
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-// Summary:
-//        Error type is an error without using for returning. It
-// contains a unique error number (errno). Using that errno, you
-// can determine which error is returned by using IsA() method.
-//
-//        You also create an error chain by inheriting an error type
-// from another. To check if an error is a child of another error,
-// you use BelongsTo() method.
-//
-//        End-error (or error, simply) is an error using for returning.
-// It is created from an error type by New() method.
-//
-//        See ExampleNewError for creating error types and error chain.
-// See ExampleXyError for creating an end-error and check if an error
-// is a or belongs to another error.
-
-// To create a root error type, you must have a module first.
+// Create example module and register it with xyerror.
 var ExampleModule = xyplatform.NewModule(40000, "ExampleModule")
-
-// Next, register the created module with xyerror.
 var _ = xyerror.Register(ExampleModule)
 
-func ExampleNewType() {
-	// To create a root error type, call xyerror.NewError with that module and
-	// the name of error type.
-	var RootError = xyerror.NewType(ExampleModule, "RootError")
+func ExampleClass() {
+	// To create a root error class, call xyerror.NewClass with that module.
+	var RootError = xyerror.NewClass(ExampleModule, "RootError")
 
-	// To create a child error type from the parent one, you call
-	// NewError with the parent as receiver and name as parameter.
-	var ChildError = RootError.NewType("ChildError")
+	// You can create an error class from another error class.
+	var ChildError = RootError.NewClass("ChildError")
 
 	fmt.Println(RootError)
 	fmt.Println(ChildError)
 
 	// Output:
 	// [40001] RootError
-	// [40002][RootError] ChildError
+	// [40002] ChildError
 }
 
+// You can compare a xyerror with an error class by using built-in method
+// errors.Is(...).
 func ExampleXyError() {
-	// Create an end-error by using New() method with an error type.
-	// You should write `return xyerror.ValueError.New("something")`.
-	// Declaring a variable for this error is only for demonstration.
-	var LessThan10Error = xyerror.ValueError.New("input value must be less than 10")
+	var NegativeIndexError = xyerror.IndexError.NewClass("NegativeIndexError")
 
-	// Create an error chain and another end-error for demonstration.
-	var NegativeIndexError = xyerror.IndexError.NewType("NegativeIndexError")
-	var UsePositiveError = NegativeIndexError.New("you must use an positive index")
-
-	fmt.Println(LessThan10Error)
-	fmt.Println(UsePositiveError)
-
-	if LessThan10Error.IsA(xyerror.ValueError) {
-		fmt.Println("LessThan10Error is a ValueError")
+	err1 := xyerror.ValueError.New("some value error")
+	if errors.Is(err1, xyerror.ValueError) {
+		fmt.Println("err1 is a ValueError")
 	}
 
-	if LessThan10Error.BelongsTo(xyerror.ValueError) {
-		fmt.Println("LessThan10Error belongs to ValueError")
+	if !errors.Is(err1, NegativeIndexError) {
+		fmt.Println("err1 is not a NegativeIndexError")
 	}
 
-	if !LessThan10Error.IsA(NegativeIndexError) {
-		fmt.Println("LessThan10Error is not a NegativeIndexError")
+	err2 := NegativeIndexError.New("some negative index error")
+	if errors.Is(err2, NegativeIndexError) {
+		fmt.Println("err2 is a NegativeIndexError")
 	}
 
-	if UsePositiveError.IsA(NegativeIndexError) {
-		fmt.Println("UsePositiveError is a NegativeIndexError")
+	if errors.Is(err2, xyerror.IndexError) {
+		fmt.Println("err2 is a IndexError")
 	}
 
-	if UsePositiveError.BelongsTo(xyerror.IndexError) {
-		fmt.Println("UsePositiveError belongs to IndexError")
-	}
-
-	if !UsePositiveError.IsA(xyerror.IndexError) {
-		fmt.Println("UsePositiveError is not an IndexError")
+	if !errors.Is(err2, xyerror.ValueError) {
+		fmt.Println("err2 is not a ValueError")
 	}
 
 	// Output:
-	// [10008][ValueError] input value must be less than 10
-	// [10009][NegativeIndexError] you must use an positive index
-	// LessThan10Error is a ValueError
-	// LessThan10Error belongs to ValueError
-	// LessThan10Error is not a NegativeIndexError
-	// UsePositiveError is a NegativeIndexError
-	// UsePositiveError belongs to IndexError
-	// UsePositiveError is not an IndexError
+	// err1 is a ValueError
+	// err1 is not a NegativeIndexError
+	// err2 is a NegativeIndexError
+	// err2 is a IndexError
+	// err2 is not a ValueError
+}
+
+// Group allows you to create an error class with multiparents.
+func ExampleGroup() {
+	CombinedErrorClass := xyerror.
+		Combine(xyerror.KeyError, xyerror.ValueError).
+		NewClass(xyplatform.Default, "CombinedErrorClass")
+
+	err := CombinedErrorClass.New("something is wrong")
+
+	if errors.Is(err, xyerror.KeyError) {
+		fmt.Println("err is a KeyError")
+	}
+
+	if errors.Is(err, xyerror.ValueError) {
+		fmt.Println("err is a ValueError")
+	}
+
+	// Output:
+	// err is a KeyError
+	// err is a ValueError
 }
