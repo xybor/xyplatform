@@ -1,6 +1,8 @@
 package xylog
 
-import "fmt"
+import (
+	"github.com/xybor/xyplatform/xycond"
+)
 
 type configurator interface {
 	apply(*logger)
@@ -31,11 +33,8 @@ func (cfg allowCfg) apply(lg *logger) {
 
 // Allow is configurator which indicates log levels to be allowed to print.
 func Allow(level uint) allowCfg {
-	if level >= maxLevel {
-		msg := fmt.Sprintf("The level value is expected less than %d, but "+
-			"got %d", maxLevel, level)
-		panic(msg)
-	}
+	xycond.Condition(level < maxLevel).
+		Assertf("Level value is expected less than %d, but got %d", maxLevel, level)
 
 	return allowCfg(level)
 }

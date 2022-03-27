@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/xybor/xyplatform/xycond"
 )
 
 func parseTime(fn string, format string) (time.Time, bool) {
@@ -62,9 +64,8 @@ type timePeriod struct {
 // TimePeriod is a stopper causing SFile to create another file when a new time
 // period comes.
 func TimePeriod(p time.Duration) timePeriod {
-	if p != Minute && p != Hour && p != Day && p != Week {
-		panic("Only support minute, hour, day, and week for time period")
-	}
+	xycond.Condition(p == Minute || p == Hour || p == Day || p == Week).
+		Assert("Only support minute, hour, day, and week for time period")
 
 	return timePeriod{p: p}
 }
