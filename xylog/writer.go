@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/xybor/xyplatform/xycond"
 )
 
 type writer interface {
@@ -35,10 +37,7 @@ func File(fn string) *file {
 	sep := "------------------------------------------------------------------"
 	err := appendFile(fn, []byte(sep))
 
-	if err != nil {
-		msg := fmt.Sprintf("Test writing to %s failed: %s", fn, err)
-		panic(msg)
-	}
+	xycond.Nil(err).Assertf("Test writing to %s failed: %s", fn, err)
 
 	return &file{fn: fn, mutex: sync.Mutex{}}
 }

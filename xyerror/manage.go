@@ -1,9 +1,8 @@
 package xyerror
 
 import (
-	"fmt"
-
 	"github.com/xybor/xyplatform"
+	"github.com/xybor/xyplatform/xycond"
 )
 
 // manager is a map of module as key and errno as value.
@@ -25,19 +24,14 @@ func extractModule(errno int) xyplatform.Module {
 		}
 	}
 
-	if module.ID() == 0 {
-		panic("Cannot find the module of this error")
-	}
+	xycond.NotZero(module.ID()).Assert("Cannot find the module of this error")
 
 	return module
 }
 
 // nextErrno returns the next errno given a Module.
 func nextErrno(m xyplatform.Module) int {
-	if _, ok := manager[m]; !ok {
-		msg := fmt.Sprintf("Module %s had not registered yet", m)
-		panic(msg)
-	}
+	xycond.Contains(manager, m).Assertf("Module %s had not registered yet", m)
 
 	manager[m] += 1
 	return m.ID() + manager[m]
@@ -47,16 +41,11 @@ func nextErrno(m xyplatform.Module) int {
 // value of this function is meaningless, it only helps run it in the global
 // scope.
 func Register(m xyplatform.Module) bool {
-	if m.ID()%xyplatform.Default.ID() != 0 {
-		msg := fmt.Sprintf("%s's ID %d is not divisible by %d",
-			m.Name(), m.ID(), xyplatform.Default.ID())
-		panic(msg)
-	}
+	defaultID := xyplatform.Default.ID()
+	xycond.Divisible(m.ID(), defaultID).
+		Assertf("%s's ID %d is not divisible by %d", m.Name(), m.ID(), defaultID)
 
-	if _, ok := manager[m]; ok {
-		msg := fmt.Sprintf("Module %s had already registered", m)
-		panic(msg)
-	}
+	xycond.NotContains(manager, m).Assertf("Module %s had already registered", m)
 
 	manager[m] = 0
 

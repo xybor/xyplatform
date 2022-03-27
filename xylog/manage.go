@@ -1,25 +1,23 @@
 package xylog
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/xybor/xyplatform"
+	"github.com/xybor/xyplatform/xycond"
 )
 
 var manager = make(map[xyplatform.Module]*logger)
 
-var maxLevel = uint(100)
+const maxLevel = uint(100)
+
 var levelManager = make([]string, maxLevel)
 
 // Register adds a module to log manager and creates its logger. The returned
 // value of this function is meaningless, it only helps run the function in the
 // global scope.
 func Register(m xyplatform.Module) bool {
-	if _, ok := manager[m]; ok {
-		msg := fmt.Sprintf("Module %s had already registered", m)
-		panic(msg)
-	}
+	xycond.NotContains(manager, m).Assertf("Module %s had already registered", m)
 
 	manager[m] = &logger{
 		module: m,
@@ -35,16 +33,11 @@ func Register(m xyplatform.Module) bool {
 // function is equal to the value parameter, and it also helps run the function
 // in the global scope.
 func RegisterLevel(value uint, name string) uint {
-	if value >= maxLevel {
-		msg := fmt.Sprintf("The level value is expected less than %d, but "+
-			"got %d", maxLevel, value)
-		panic(msg)
-	}
+	xycond.Condition(value < maxLevel).
+		Assertf("Level value must less than %d, but got %d", maxLevel, value)
 
-	if levelManager[value] != "" {
-		msg := fmt.Sprintf("Level value %d has already registered", value)
-		panic(msg)
-	}
+	xycond.StringEmpty(levelManager[value]).
+		Assertf("Level value %d has already registered", value)
 
 	levelManager[value] = strings.ToUpper(name)
 
@@ -53,18 +46,11 @@ func RegisterLevel(value uint, name string) uint {
 
 // Logger gets the logger of a registered module.
 func Logger(m xyplatform.Module) *logger {
-	lg, ok := manager[m]
-	if !ok {
-		msg := fmt.Sprintf("Module %s had not registered yet", m)
-		panic(msg)
-	}
-
-	return lg
+	xycond.Contains(manager, m).Assertf("Module %s had not registered yet", m)
+	return manager[m]
 }
 
 func checkLevel(level uint) {
-	if levelManager[level] == "" {
-		msg := fmt.Sprintf("Level %d has not registered yet", level)
-		panic(msg)
-	}
+	xycond.Condition(levelManager[level] != "").
+		Assertf("Level %d has not registered yet", level)
 }
