@@ -23,4 +23,7 @@ func NewModule(id int, name string) Module {
 	return Module{id: id, name: name}
 }
 
-var Default = NewModule(10000, "Default")
+var (
+	Default    = NewModule(10000, "Default")
+	XySelector = NewModule(20000, "XySelector")
+)
