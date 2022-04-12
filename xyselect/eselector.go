@@ -13,18 +13,31 @@ type chanResult struct {
 
 // See documentation of E().
 type eselector struct {
-	cases      []<-chan any
-	center     chan chanResult
-	counter    int
-	isSelected bool
-	mu         sync.Mutex
+	// The total number of channels.
+	counter int
+
+	// The number of live (not closed yet) channels.
+	liveCounter int
+
+	// The locker using for accessing to liveCounter between gorountines.
+	mu sync.Mutex
+
+	// The channel is using for aggregating other channels.
+	center chan chanResult
 }
 
 func (es *eselector) recv(c <-chan any) int {
-	xycond.False(es.isSelected).Assert("Don't add case after selecting")
+	es.counter += 1
 
-	n := len(es.cases)
-	es.cases = append(es.cases, c)
+	es.mu.Lock()
+	// If this is the only live channel currently, recreate center channel.
+	if es.liveCounter == 0 {
+		es.center = make(chan chanResult)
+	}
+
+	es.liveCounter += 1
+	es.mu.Unlock()
+
 	go func(i int) {
 		// Until the channel is closed, receiving all it values then send them
 		// to the center channel.
@@ -33,16 +46,15 @@ func (es *eselector) recv(c <-chan any) int {
 		}
 
 		es.mu.Lock()
-		defer es.mu.Unlock()
-
-		// When all channels are closed, also closing the center channel.
-		es.counter += 1
-		if es.counter == len(es.cases) {
+		es.liveCounter -= 1
+		// If there is no more live channel, closing the center channel.
+		if es.liveCounter == 0 {
 			close(es.center)
 		}
-	}(n)
+		es.mu.Unlock()
+	}(es.counter)
 
-	return n
+	return es.counter
 }
 
 func (es *eselector) send(any, any) int {
@@ -51,8 +63,6 @@ func (es *eselector) send(any, any) int {
 }
 
 func (es *eselector) xselect(isDefault bool) (index int, value any, recvOk error) {
-	es.isSelected = true
-
 	var r chanResult
 	var ok bool
 	if isDefault {

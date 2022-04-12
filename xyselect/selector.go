@@ -40,13 +40,16 @@ type safeSelector struct {
 // The center channel is only closed if all channel-cases are closed. This is
 // the reason why you must call Select until there is no any alive channel.
 func E() *safeSelector {
+	// Create a closed channel
+	var center = make(chan chanResult)
+	close(center)
+
 	return &safeSelector{
 		selector: &eselector{
-			cases:      nil,
-			center:     make(chan chanResult),
-			isSelected: false,
-			counter:    0,
-			mu:         sync.Mutex{},
+			counter:     0,
+			liveCounter: 0,
+			center:      center,
+			mu:          sync.Mutex{},
 		},
 		mu: sync.Mutex{},
 	}
