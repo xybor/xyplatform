@@ -52,7 +52,7 @@ func (es *eselector) recv(c <-chan any) int {
 			close(es.center)
 		}
 		es.mu.Unlock()
-	}(es.counter)
+	}(es.counter - 1)
 
 	return es.counter
 }
