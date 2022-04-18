@@ -27,16 +27,16 @@ type eselector struct {
 }
 
 func (es *eselector) recv(c <-chan any) int {
-	es.counter += 1
-
 	es.mu.Lock()
+	es.mu.Unlock()
+
 	// If this is the only live channel currently, recreate center channel.
 	if es.liveCounter == 0 {
 		es.center = make(chan chanResult)
 	}
 
+	es.counter += 1
 	es.liveCounter += 1
-	es.mu.Unlock()
 
 	go func(i int) {
 		// Until the channel is closed, receiving all it values then send them
@@ -46,12 +46,13 @@ func (es *eselector) recv(c <-chan any) int {
 		}
 
 		es.mu.Lock()
+		es.mu.Unlock()
+
 		es.liveCounter -= 1
 		// If there is no more live channel, closing the center channel.
 		if es.liveCounter == 0 {
 			close(es.center)
 		}
-		es.mu.Unlock()
 	}(es.counter - 1)
 
 	return es.counter
