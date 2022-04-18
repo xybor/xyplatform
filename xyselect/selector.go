@@ -16,7 +16,6 @@ type selector interface {
 // safeSelector is the struct supporting thread-safe, type-safe selector.
 type safeSelector struct {
 	selector
-	mu sync.Mutex
 }
 
 // IMPORTANT: ONLY use this selector if (1) exhausted-select, a type of select
@@ -51,7 +50,6 @@ func E() *safeSelector {
 			center:      center,
 			mu:          sync.Mutex{},
 		},
-		mu: sync.Mutex{},
 	}
 }
 
@@ -59,8 +57,10 @@ func E() *safeSelector {
 // customized select statment.
 func R() *safeSelector {
 	return &safeSelector{
-		selector: &rselector{cases: nil},
-		mu:       sync.Mutex{},
+		selector: &rselector{
+			cases: nil,
+			mu:    sync.Mutex{},
+		},
 	}
 }
 
@@ -89,21 +89,24 @@ func C[T any](c <-chan T) <-chan any {
 //     selector.Recv(c1)
 //     selector.Recv(xyselector.C(c2))
 func (s *safeSelector) Recv(c <-chan any) int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	return s.selector.recv(c)
 }
 
 // Send adds a sending case to selector. The first parameter c must be a
 // writable channel. This method returns the index of the added case.
 func (s *safeSelector) Send(c any, v any) int {
-	dir := reflect.ValueOf(c).Type().ChanDir()
+	cType := reflect.TypeOf(c)
+	xycond.Condition(cType.Kind() == reflect.Chan).
+		Assert("The first parameter must be a channel.")
+
+	dir := cType.ChanDir()
 	xycond.Condition(dir == reflect.BothDir || dir == reflect.SendDir).
 		Assert("The first parameter of Send must be a writable channel.")
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	cKind := cType.Elem().Kind()
+	vKind := reflect.ValueOf(v).Kind()
+	xycond.Condition(cKind == vKind).
+		Assertf("channel and value must be the same type, but got chan %s and %s.", cKind, vKind)
 
 	return s.selector.send(c, v)
 }
@@ -120,8 +123,5 @@ func (s *safeSelector) Send(c any, v any) int {
 // the case of default. ExhaustedError if there is no more available channel in
 // exhausted-selector.
 func (s *safeSelector) Select(isDefault bool) (index int, v any, err error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	return s.selector.xselect(isDefault)
 }

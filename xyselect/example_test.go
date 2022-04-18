@@ -42,7 +42,7 @@ func ExampleR() {
 	var chans []chan int
 	for i := 0; i < 10; i++ {
 		chans = append(chans, make(chan int))
-		go func(c chan int, v int) {
+		go func(c chan<- int, v int) {
 			c <- v
 			close(c)
 		}(chans[i], i)
@@ -51,6 +51,7 @@ func ExampleR() {
 	rselector := xyselect.R()
 	for _, c := range chans {
 		rselector.Recv(xyselect.C(c))
+		rselector.Send(make(chan int, 1), 1)
 	}
 
 	okCounter := 0
@@ -61,7 +62,7 @@ func ExampleR() {
 			okCounter += 1
 		}
 
-		if okCounter == 10 {
+		if okCounter == 20 {
 			break
 		}
 	}
