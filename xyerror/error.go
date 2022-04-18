@@ -32,3 +32,14 @@ func (xerr xyerror) Is(target error) bool {
 
 	return xerr.c.belongsTo(tc)
 }
+
+// Or returns the first not-nil error. If all errors are nil, return nil.
+func Or(errs ...error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
