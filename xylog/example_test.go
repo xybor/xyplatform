@@ -157,3 +157,13 @@ func ExampleSFile() {
 
 	// Output:
 }
+
+func ExampleLogT() {
+	xylog.Config(ExampleModule, xylog.AllowAll(), xylog.Format("$MESSAGE$"), xylog.StdWriter())
+
+	// Using the template Log to print your custom level.
+	xylog.InfoT(ExampleModule, "print-log", xylog.T{"level": "INFO", "module": "Example"})
+
+	// Output:
+	// event=print-log level=INFO module=Example
+}

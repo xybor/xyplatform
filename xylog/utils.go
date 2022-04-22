@@ -10,14 +10,22 @@ import (
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-func replaceLog(
-	f string, m xyplatform.Module, l string, msg string, a ...interface{},
-) string {
+func parseTemplate(e string, t T) string {
+	var s string = fmt.Sprintf("event=%s", e)
+
+	for k, v := range t {
+		s += fmt.Sprintf(" %s=%s", k, v)
+	}
+
+	return s
+}
+
+func makeRecord(f string, m xyplatform.Module, lvl string, msg string, a ...interface{}) string {
 	content := f
 
 	content = strings.Replace(content, "$MODULE$", m.Name(), 1)
 
-	content = strings.Replace(content, "$LEVEL$", l, 1)
+	content = strings.Replace(content, "$LEVEL$", lvl, 1)
 
 	t := time.Now().Format("01-02-2006 15:04:05")
 	content = strings.Replace(content, "$TIME$", t, 1)

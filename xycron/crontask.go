@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/xybor/xyplatform/xycond"
+	"github.com/xybor/xyplatform/xylog"
 )
 
 // cronTask is a task which is mainly used for cyclical task. It can help task
@@ -66,7 +67,8 @@ func (t *cronTask) run() {
 	// The next run could be scheduled now.
 	t.done <- nil
 
-	logger.Info("event=call-func task=%s remain=%d", t.id, t.t)
+	logger.InfoT("run-task", xylog.T{"status": "call", "params": t.params,
+		"task": t.id, "remain": t.t})
 	rv, err := callFunc(t.f, t.params...)
 
 	rvi := make([]any, len(rv))
@@ -75,11 +77,11 @@ func (t *cronTask) run() {
 	}
 
 	if err != nil {
-		logger.Error("event=call-func-failed task=%s params=%v return=%v err=%s",
-			t.id, t.params, rvi, err)
+		logger.ErrorT("run-task", xylog.T{"status": "failed", "task": t.id,
+			"return": rvi, "error": err})
 	} else {
-		logger.Debug("event=call-func-done task=%s params=%v return=%v",
-			t.id, t.params, rvi)
+		logger.DebugT("run-task", xylog.T{"status": "done", "task": t.id,
+			"return": rvi})
 	}
 }
 
@@ -175,7 +177,8 @@ func (t *cronTask) scheduleNextRun() {
 	now := time.Now().In(t.sched.loc)
 	nextTime := t.findNextRun(now)
 
-	logger.Debug("event=scheduled task=%s time=%s", t.id, nextTime.toTime(t.sched.loc))
+	logger.DebugT("schedule-task", xylog.T{"status": "schedule", "task": t.id,
+		"time": nextTime.toTime(t.sched.loc)})
 
 	d := nextTime.toTime(t.sched.loc).Sub(now)
 	timer := time.AfterFunc(d, func() {
@@ -188,7 +191,7 @@ func (t *cronTask) scheduleNextRun() {
 // start() begins a loop of calling task.scheduleNextRun(), it only stops if
 // there is no more run times.
 func (t *cronTask) start() {
-	logger.Info("event=start task=%s", t.id)
+	logger.InfoT("schedule-task", xylog.T{"status": "start", "task": t.id})
 
 	var isBreak = false
 
@@ -214,7 +217,7 @@ func (t *cronTask) start() {
 func (t *cronTask) stop() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	logger.Info("event=stop task=%s", t.id)
+	logger.InfoT("schedule-task", xylog.T{"status": "stop", "task": t.id})
 
 	if t.canceledFunc == nil && t.t > 0 {
 		return StopError.New("do not stop when the task has not started yet")
@@ -223,7 +226,7 @@ func (t *cronTask) stop() error {
 	t.t = 0
 
 	if t.canceledFunc != nil && t.canceledFunc() {
-		logger.Debug("event=cancel-timer task=%s", t.id)
+		logger.DebugT("schedule-task", xylog.T{"status": "cancel-timer", "task": t.id})
 		t.done <- nil
 	}
 

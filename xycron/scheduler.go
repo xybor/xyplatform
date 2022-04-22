@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/xybor/xyplatform/xyerror"
+	"github.com/xybor/xyplatform/xylog"
 	"github.com/xybor/xyplatform/xyselect"
 	"golang.org/x/sync/semaphore"
 )
@@ -124,7 +125,7 @@ func (sched *scheduler) loop() {
 		}
 
 		// Decrease the index by 1 because of the cancel channel at zero index.
-		logger.Debug("event=execute task=%s index=%d", sched.t[i-1], i-1)
+		logger.DebugT("execute-task", xylog.T{"task": sched.t[i-1], "index": i - 1})
 		go sched.execute(sched.t[i-1])
 	}
 }
@@ -136,6 +137,8 @@ func (sched *scheduler) loop() {
 // progress.
 func (sched *scheduler) Start() error {
 	sched.mu.Lock()
+	logger.InfoT("schedule", xylog.T{"stage": "start"})
+
 	if sched.inProgress {
 		sched.mu.Unlock()
 		return InProgressError.New("scheduler is in progress")
@@ -152,14 +155,13 @@ func (sched *scheduler) Start() error {
 	sched.inProgress = true
 	sched.mu.Unlock()
 
-	logger.Info("event=start")
-
 	sched.loop()
 
 	sched.mu.Lock()
 	sched.inProgress = false
 	sched.mu.Unlock()
-	logger.Info("event=stopped")
+
+	logger.InfoT("schedule", xylog.T{"stage": "stop"})
 
 	return nil
 }
@@ -167,7 +169,8 @@ func (sched *scheduler) Start() error {
 // Stop signals all tasks need to terminate their timer and not schedule any
 // more. It will return the first error if it occurs.
 func (sched *scheduler) Stop() error {
-	logger.Info("event=stopping")
+
+	logger.InfoT("stop-scheduler", xylog.T{})
 
 	sched.mu.Lock()
 	defer sched.mu.Unlock()
@@ -185,7 +188,7 @@ func (sched *scheduler) Stop() error {
 		e := t.stop()
 		if e != nil {
 			il = append(il, i)
-			logger.Error("An error occurs at %s: %s", t, e)
+			logger.ErrorT("stop-task-failed", xylog.T{"task": t, "error": e})
 		}
 	}
 
@@ -213,7 +216,7 @@ func (sched *scheduler) After(d time.Duration) *cronTask {
 	// The minimum duration which scheduler handles is one second.
 	if d < time.Second {
 		d = time.Second
-		logger.Warn("The duration is rounded up to one second.")
+		logger.WarnT("set-after-duration-failed", xylog.T{"got": d, "set-to": time.Second})
 	}
 
 	var tp = newTimePoint(time.Now().Add(d))

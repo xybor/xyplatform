@@ -31,10 +31,19 @@ var (
 
 var TimeFormat = "01-02-2006.15-04-05"
 
+// A shortcut of map[string]any is used for template logging.
+type T map[string]any
+
 // Log is a general log function allowing you to print a message with a custom
 // log level.
 func Log(m xyplatform.Module, level uint, msg string, a ...interface{}) {
 	Logger(m).Log(level, msg, a...)
+}
+
+// LogT is a template log function allowing you to print a template message
+// with a custom log level.
+func LogT(m xyplatform.Module, level uint, event string, t T) {
+	Logger(m).LogT(level, event, t)
 }
 
 // Config is a function allowing you to configure the logger. The returned
@@ -49,14 +58,26 @@ func Trace(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Trace(msg, a...)
 }
 
+func TraceT(m xyplatform.Module, event string, t T) {
+	Logger(m).TraceT(event, t)
+}
+
 // Debug logs helpful and diagnostic information for debugging.
 func Debug(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Debug(msg, a...)
 }
 
+func DebugT(m xyplatform.Module, event string, t T) {
+	Logger(m).DebugT(event, t)
+}
+
 // Info logs normal actions, such as start and stop a process.
 func Info(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Info(msg, a...)
+}
+
+func InfoT(m xyplatform.Module, event string, t T) {
+	Logger(m).InfoT(event, t)
 }
 
 // Warn logs errors the program can recover and continue after that, or
@@ -65,14 +86,26 @@ func Warn(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Warn(msg, a...)
 }
 
+func WarnT(m xyplatform.Module, event string, t T) {
+	Logger(m).WarnT(event, t)
+}
+
 // Error logs errors causing the function or operation to be stopped, but it
 // could be fixed later.
 func Error(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Error(msg, a...)
 }
 
+func ErrorT(m xyplatform.Module, event string, t T) {
+	Logger(m).ErrorT(event, t)
+}
+
 // Critical logs errors causing the application or program to be stopped, or
 // something needs to be fixed immediately.
 func Critical(m xyplatform.Module, msg string, a ...interface{}) {
 	Logger(m).Critical(msg, a...)
+}
+
+func CriticalT(m xyplatform.Module, event string, t T) {
+	Logger(m).CriticalT(event, t)
 }
