@@ -62,13 +62,13 @@ func (t *cronTask) signal() <-chan time.Time {
 func (t *cronTask) run() {
 	t.mu.Lock()
 	t.t -= 1
+	logger.InfoT("prepare-task", xylog.T{"params": t.params, "task": t.id, "remain": t.t})
 	t.mu.Unlock()
 
 	// The next run could be scheduled now.
 	t.done <- nil
 
-	logger.InfoT("run-task", xylog.T{"status": "call", "params": t.params,
-		"task": t.id, "remain": t.t})
+	logger.InfoT("run-task", xylog.T{"params": t.params, "task": t.id})
 	rv, err := callFunc(t.f, t.params...)
 
 	rvi := make([]any, len(rv))
@@ -77,11 +77,9 @@ func (t *cronTask) run() {
 	}
 
 	if err != nil {
-		logger.ErrorT("run-task", xylog.T{"status": "failed", "task": t.id,
-			"return": rvi, "error": err})
+		logger.ErrorT("run-task-failed", xylog.T{"task": t.id, "return": rvi, "error": err})
 	} else {
-		logger.DebugT("run-task", xylog.T{"status": "done", "task": t.id,
-			"return": rvi})
+		logger.DebugT("run-task-done", xylog.T{"task": t.id, "return": rvi})
 	}
 }
 

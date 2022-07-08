@@ -14,7 +14,11 @@ func parseTemplate(e string, t T) string {
 	var s string = fmt.Sprintf("event=%s", e)
 
 	for k, v := range t {
-		s += fmt.Sprintf(" %s=%s", k, v)
+		var vs = fmt.Sprint(v)
+		if strings.Contains(vs, " ") {
+			vs = fmt.Sprintf("\"%s\"", vs)
+		}
+		s += fmt.Sprintf(" %s=%s", k, vs)
 	}
 
 	return s

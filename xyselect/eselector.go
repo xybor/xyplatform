@@ -46,7 +46,7 @@ func (es *eselector) recv(c <-chan any) int {
 		}
 
 		es.mu.Lock()
-		es.mu.Unlock()
+		defer es.mu.Unlock()
 
 		es.liveCounter -= 1
 		// If there is no more live channel, closing the center channel.
