@@ -2,6 +2,7 @@ package xycond
 
 import (
 	"fmt"
+	"reflect"
 )
 
 type condition bool
@@ -62,34 +63,14 @@ func NotNil(a any) condition {
 	return Not(Nil(a))
 }
 
-// StringEmpty returns true if s is an empty string.
-func StringEmpty(s string) condition {
-	return Condition(len(s) == 0)
+// Empty returns true if a is an empty string, slice, array, or channel.
+func Empty(a any) condition {
+	return Zero(reflect.ValueOf(a).Len())
 }
 
-// StringNotEmpty returns true if s is not an empty string.
-func StringNotEmpty(s string) condition {
-	return Not(StringEmpty(s))
-}
-
-// SliceEmpty returns true if s is an empty slice.
-func SliceEmpty[T any](s []T) condition {
-	return Condition(len(s) == 0)
-}
-
-// SliceNotEmpty returns true if s is not an empty slice.
-func SliceNotEmpty[T any](s []T) condition {
-	return Not(SliceEmpty(s))
-}
-
-// MapEmpty returns true if s is an empty map.
-func MapEmpty[K comparable, T any](m map[K]T) condition {
-	return Condition(len(m) == 0)
-}
-
-// MapNotEmpty returns true if s is not an empty map.
-func MapNotEmpty[K comparable, T any](m map[K]T) condition {
-	return Not(MapEmpty(m))
+// NotEmpty returns true if a is a not empty string, slice, array, or channel.
+func NotEmpty(a any) condition {
+	return Not(Empty(a))
 }
 
 // Contains returns a condition checking whether or not the map m contains the
