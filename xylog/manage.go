@@ -36,7 +36,7 @@ func RegisterLevel(value uint, name string) uint {
 	xycond.Condition(value < maxLevel).
 		Assertf("Level value must less than %d, but got %d", maxLevel, value)
 
-	xycond.StringEmpty(levelManager[value]).
+	xycond.Empty(levelManager[value]).
 		Assertf("Level value %d has already registered", value)
 
 	levelManager[value] = strings.ToUpper(name)
