@@ -52,7 +52,7 @@ func NewClassf(m xyplatform.Module, name string, args ...interface{}) class {
 	}
 }
 
-// NewClass creates a new error class from another parent class.
+// NewClass creates a new error class from this class as parent.
 func (c class) NewClass(name string) class {
 	var m = extractModule(c.errno)
 	return class{
@@ -62,13 +62,23 @@ func (c class) NewClass(name string) class {
 	}
 }
 
-// NewClassf creates a new error class from another parent class with string
+// NewClassf creates a new error class from this class as parent with string
 // format.
 func (c class) NewClassf(name string, args ...interface{}) class {
 	var m = extractModule(c.errno)
 	return class{
 		errno:  nextErrno(m),
 		name:   fmt.Sprintf(name, args...),
+		parent: []class{c},
+	}
+}
+
+// NewClassM creates a new error class from this class as parent with another
+// module and same name.
+func (c class) NewClassM(m xyplatform.Module) class {
+	return class{
+		errno:  nextErrno(m),
+		name:   c.name,
 		parent: []class{c},
 	}
 }
