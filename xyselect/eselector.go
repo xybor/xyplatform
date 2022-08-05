@@ -28,7 +28,7 @@ type eselector struct {
 
 func (es *eselector) recv(c <-chan any) int {
 	es.mu.Lock()
-	es.mu.Unlock()
+	defer es.mu.Unlock()
 
 	// If this is the only live channel currently, recreate center channel.
 	if es.liveCounter == 0 {
@@ -46,7 +46,7 @@ func (es *eselector) recv(c <-chan any) int {
 		}
 
 		es.mu.Lock()
-		es.mu.Unlock()
+		defer es.mu.Unlock()
 
 		es.liveCounter -= 1
 		// If there is no more live channel, closing the center channel.
