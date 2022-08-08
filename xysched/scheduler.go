@@ -7,15 +7,16 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// Type alias of a generic callback function
+// CallbackFunc is a type alias of a generic callback function
 type CallbackFunc any
 
 // future interface defines a schedulable object.
 type future interface {
-	// This method calls the future's function.
+	// run calls the future's function.
 	run()
 
-	// Copy to another future, avoid race condition.
+	// copy creates a copy of this future to avoid race condition when adding
+	// callback futures to scheduler many times.
 	copy() future
 
 	// Return the next time this future will be run. Leave it as nil if you do
@@ -25,19 +26,6 @@ type future interface {
 	// Return callback future objects, they will be sent to scheduler once this
 	// future completes.
 	callbacks() []future
-}
-
-// event interface defines an object which scheduler will run callback functions
-// once event is triggered.
-type event interface {
-	// Wait returns a receive-only channel receiving the parameters passed into
-	// callback functions. Once receive parameters, the scheduler will schedule
-	// callback functions immediately. Close this channel to stop event waiting.
-	Wait() <-chan []any
-
-	// Callbacks return all callback functions of the event. Parameters of these
-	// functions need to be the same with the one in wait method.
-	Callbacks() []CallbackFunc
 }
 
 // scheduler is used for scheduling future objects.
@@ -59,12 +47,17 @@ func New() *scheduler {
 }
 
 // After creates a send-only channel. Sending a future to this channel will
-// add it to scheduler after a duration.
+// add it to scheduler after a duration. If d is negative, After will send the
+// future to scheduler immediately.
 //
 // NOTE: You should send ONLY ONE future to this channel because it is designed
 // to handle one. If you try sending another, it will be blocked forever. To
 // send other futures to scheduler, let call this method again.
 func (s *scheduler) After(d time.Duration) chan<- future {
+	if d < 0 {
+		d = 0
+	}
+
 	var c = make(chan future)
 	go func() {
 		var timer *time.Timer
@@ -89,18 +82,13 @@ func (s *scheduler) After(d time.Duration) chan<- future {
 	return c
 }
 
-// At is a shortcut of After(time.Until(next)).In case next time is in the past,
-// At will send the future to scheduler immediately.
+// At is a shortcut of After(time.Until(next)).
 //
 // NOTE: You should send ONLY ONE future to this channel because it is designed
 // to handle one. If you try sending another, it will be blocked forever. To
 // send other futures to scheduler, let call this method again.
 func (s *scheduler) At(next time.Time) chan<- future {
-	var d = time.Until(next)
-	if d < 0 {
-		d = 0
-	}
-	return s.After(d)
+	return s.After(time.Until(next))
 }
 
 // Now is a shortcut of After(0).
@@ -112,33 +100,8 @@ func (s *scheduler) Now() chan<- future {
 	return s.After(0)
 }
 
-// Register will send callback functions of event everytime it triggers.
-func (s *scheduler) Register(e event) {
-	go func() {
-		var isStop = false
-		var trigger = e.Wait()
-		for !isStop {
-			select {
-			case <-s.stop:
-				isStop = true
-			case params, ok := <-trigger:
-				if !ok {
-					isStop = true
-					break
-				}
-				var t = Task(func() []any { return params })
-				t.Variadic(len(params))
-				for _, cb := range e.Callbacks() {
-					t.Then(cb)
-				}
-				s.Now() <- t
-			}
-		}
-	}()
-}
-
-// Stop the scheduler, all not-yet-run futures will not run forever from now on.
-// Running futures still run until it completes.
+// Stop terminates the scheduler and all pending futures from now on. Running
+// futures still run until they complete.
 func (s *scheduler) Stop() {
 	logger.Debug("event=stopping scheduler=%p", s)
 	close(s.stop)
@@ -149,7 +112,7 @@ func (s *scheduler) Singleton() {
 	s.Concurrent(1)
 }
 
-// Singleton limits the number of running futures at the same time. By default,
+// Concurrent limits the number of running futures at the same time. By default,
 // there is no limited.
 func (s *scheduler) Concurrent(n int) {
 	logger.Trace("event=set-concurrent scheduler=%p n=%d", s, n)
@@ -173,7 +136,7 @@ func (s *scheduler) start() {
 				}
 				f.run()
 				for _, cb := range f.callbacks() {
-					s.Now() <- cb
+					s.Now() <- cb.copy()
 				}
 				if next := f.next(); next != nil {
 					s.At(*next) <- f
