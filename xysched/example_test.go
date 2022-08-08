@@ -42,7 +42,7 @@ func ExampleTask() {
 	<-done
 
 	// Example 4: Catch adds a callback handling the panicked error of task if
-	// task panicked.
+	// the task panicked.
 	// NOTE: if task panics a non-error interface, it will be wrapped into
 	//       xysched.CallError.
 	done = make(chan any)
@@ -68,7 +68,7 @@ func ExampleTask() {
 }
 
 func ExampleGlobal() {
-	// Example 1: It can used the global scheduler throughout program without
+	// Example 1: You can use the global scheduler throughout program without
 	// creating a new one.
 	var done = make(chan any)
 	var future = xysched.Task(func() {
@@ -122,7 +122,7 @@ func ExampleCron() {
 	scheduler.Now() <- future
 	wait(done, 2)
 
-	// Example 3: Callback, Then, Catch are also used on cron.
+	// Example 3: Callback, Then, Catch can also be used on cron.
 	done = make(chan any)
 	future = xysched.Cron(fmt.Println, "3.", "foobar").Times(3)
 	future.Callback(func() { done <- nil })

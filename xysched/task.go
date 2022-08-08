@@ -155,9 +155,6 @@ func (t *task) callbacks() []future {
 		}
 	}
 
-	for i := range cb {
-		cb[i] = cb[i].copy()
-	}
 	return cb
 }
 
