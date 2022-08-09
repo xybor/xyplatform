@@ -4,12 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/xybor/xyplatform"
-	"github.com/xybor/xyplatform/xylog"
 	"github.com/xybor/xyplatform/xysched"
 )
-
-var _ = xylog.Config(xyplatform.XySched, xylog.NoAllow())
 
 func ExampleTask() {
 	var scheduler = xysched.New()
