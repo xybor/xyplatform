@@ -2,8 +2,6 @@ package xyerror
 
 import (
 	"fmt"
-
-	"github.com/xybor/xyplatform"
 )
 
 // xyerror.class (also called error class) is a special error with error number
@@ -20,11 +18,9 @@ import (
 //   + class C.
 //   + another error class which is created by C.
 type class struct {
-	// The unique number of each error class. The prefix of this number is the
-	// value of module.
-	//
-	// For example, if the error number is 100001, the module of this error
-	// class is DEFAULT (100000).
+	// The unique number of each error class.
+	// If the error number is 100001, the module of this error class is DEFAULT
+	// (100000).
 	errno int
 
 	// The error name of this class
@@ -35,52 +31,40 @@ type class struct {
 }
 
 // NewClass creates a ROOT error class.
-func NewClass(m xyplatform.Module, name string) class {
+func (eid errorid) NewClass(name string) class {
+	manager[eid].count += 1
 	return class{
-		errno:  nextErrno(m),
+		errno:  manager[eid].count + int(eid),
 		name:   name,
 		parent: nil,
 	}
 }
 
 // NewClassf creates a ROOT error class with string format.
-func NewClassf(m xyplatform.Module, name string, args ...interface{}) class {
-	return class{
-		errno:  nextErrno(m),
-		name:   fmt.Sprintf(name, args...),
-		parent: nil,
-	}
+func (eid errorid) NewClassf(name string, args ...interface{}) class {
+	return eid.NewClass(fmt.Sprintf(name, args...))
 }
 
 // NewClass creates a new error class from this class as parent.
 func (c class) NewClass(name string) class {
-	var m = extractModule(c.errno)
-	return class{
-		errno:  nextErrno(m),
-		name:   name,
-		parent: []class{c},
-	}
+	var eid = getErrorId(c.errno)
+	var child = eid.NewClass(name)
+	child.parent = []class{c}
+	return child
 }
 
 // NewClassf creates a new error class from this class as parent with string
 // format.
 func (c class) NewClassf(name string, args ...interface{}) class {
-	var m = extractModule(c.errno)
-	return class{
-		errno:  nextErrno(m),
-		name:   fmt.Sprintf(name, args...),
-		parent: []class{c},
-	}
+	return c.NewClass(fmt.Sprintf(name, args...))
 }
 
 // NewClassM creates a new error class from this class as parent with another
-// module and same name.
-func (c class) NewClassM(m xyplatform.Module) class {
-	return class{
-		errno:  nextErrno(m),
-		name:   c.name,
-		parent: []class{c},
-	}
+// errorid and same name.
+func (c class) NewClassM(eid errorid) class {
+	var child = eid.NewClass(c.name)
+	child.parent = []class{c}
+	return child
 }
 
 // New creates a xyerror.

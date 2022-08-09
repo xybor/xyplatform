@@ -1,53 +1,47 @@
 package xyerror
 
 import (
-	"github.com/xybor/xyplatform"
 	"github.com/xybor/xyplatform/xycond"
 )
 
-// manager is a map of module as key and errno as value.
-var manager = make(map[xyplatform.Module]int)
+// errorid is the type of a group of errors in a module.
+type errorid int
 
-// extractModule returns a Module given an errno.
-func extractModule(errno int) xyplatform.Module {
-	var module = xyplatform.NewModule(0, "")
-	var minD int
-	for m := range manager {
-		d := errno - m.ID()
-		if d < 0 || d > xyplatform.Default.ID() {
+// erroinfo includes the name and the number of created errors of an error id.
+type errorinfo struct {
+	name  string
+	count int
+}
+
+// The minimum and default id of module
+const minId errorid = 100000
+
+// manager is a map of errorid as key and errorinfo as value.
+var manager = make(map[errorid]*errorinfo)
+
+// getErrorId returns the error id with the given errno.
+func getErrorId(errno int) errorid {
+	for id := range manager {
+		d := errno - int(id)
+		if d < 0 || d > int(eid) {
 			continue
 		}
 
-		if module.ID() == 0 || d < minD {
-			minD = d
-			module = m
+		if d < int(minId) {
+			return id
 		}
 	}
 
-	xycond.NotZero(module.ID()).Assert("Cannot find the module of this error")
-
-	return module
+	return 0
 }
 
-// nextErrno returns the next errno given a Module.
-func nextErrno(m xyplatform.Module) int {
-	xycond.Contains(manager, m).Assertf("Module %s had not registered yet", m)
+// Register adds a Module to pool for managing new error types.
+func Register(name string, id int) errorid {
+	xycond.Divisible(id, int(minId)).Assertf(
+		"Cannot register: %d is not divisible by %d", id, minId)
+	var eid = errorid(id)
+	xycond.NotContains(manager, eid).Assertf("Id %d had already registered", id)
 
-	manager[m] += 1
-	return m.ID() + manager[m]
-}
-
-// Register adds a Module to pool for managing new error types. The returned
-// value of this function is meaningless, it only helps run it in the global
-// scope.
-func Register(m xyplatform.Module) bool {
-	defaultID := xyplatform.Default.ID()
-	xycond.Divisible(m.ID(), defaultID).
-		Assertf("%s's ID %d is not divisible by %d", m.Name(), m.ID(), defaultID)
-
-	xycond.NotContains(manager, m).Assertf("Module %s had already registered", m)
-
-	manager[m] = 0
-
-	return true
+	manager[eid] = &errorinfo{name: name, count: 0}
+	return eid
 }

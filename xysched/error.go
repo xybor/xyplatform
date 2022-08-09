@@ -1,13 +1,12 @@
 package xysched
 
 import (
-	"github.com/xybor/xyplatform"
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-var _ = xyerror.Register(xyplatform.XySched)
+var eid = xyerror.Register("xysched", 300000)
 
 var (
-	CallError      = xyerror.NewClass(xyplatform.XySched, "CallError")
-	ParameterError = xyerror.ParameterError.NewClassM(xyplatform.XySched)
+	CallError      = eid.NewClass("CallError")
+	ParameterError = xyerror.ParameterError.NewClassM(eid)
 )
