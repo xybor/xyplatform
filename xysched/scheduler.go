@@ -103,7 +103,6 @@ func (s *scheduler) Now() chan<- future {
 // Stop terminates the scheduler and all pending futures from now on. Running
 // futures still run until they complete.
 func (s *scheduler) Stop() {
-	logger.Debug("event=stopping scheduler=%p", s)
 	close(s.stop)
 }
 
@@ -115,13 +114,11 @@ func (s *scheduler) Singleton() {
 // Concurrent limits the number of running futures at the same time. By default,
 // there is no limited.
 func (s *scheduler) Concurrent(n int) {
-	logger.Trace("event=set-concurrent scheduler=%p n=%d", s, n)
 	s.sem = semaphore.NewWeighted(int64(n))
 }
 
 // start begins the scheduled loop.
 func (s *scheduler) start() {
-	logger.Debug("event=start scheduler=%p", s)
 	var isStop = false
 
 	for !isStop {
@@ -144,5 +141,4 @@ func (s *scheduler) start() {
 			}()
 		}
 	}
-	logger.Debug("event=stop scheduler=%p", s)
 }
