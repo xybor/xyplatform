@@ -4,17 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xybor/xyplatform"
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-// Create example module and register it with xyerror.
-var ExampleModule = xyplatform.NewModule(40000, "ExampleModule")
-var _ = xyerror.Register(ExampleModule)
+var eid = xyerror.Register("example", 400000)
 
 func ExampleClass() {
 	// To create a root error class, call xyerror.NewClass with that module.
-	var RootError = xyerror.NewClass(ExampleModule, "RootError")
+	var RootError = eid.NewClass("RootError")
 
 	// You can create an error class from another error class.
 	var ChildError = RootError.NewClass("ChildError")
@@ -23,8 +20,8 @@ func ExampleClass() {
 	fmt.Println(ChildError)
 
 	// Output:
-	// [40001] RootError
-	// [40002] ChildError
+	// [400001] RootError
+	// [400002] ChildError
 }
 
 // You can compare a xyerror with an error class by using built-in method
@@ -66,7 +63,7 @@ func ExampleXyError() {
 func ExampleGroup() {
 	CombinedErrorClass := xyerror.
 		Combine(xyerror.KeyError, xyerror.ValueError).
-		NewClass(xyplatform.Default, "CombinedErrorClass")
+		NewClass(eid, "CombinedErrorClass")
 
 	err := CombinedErrorClass.New("something is wrong")
 

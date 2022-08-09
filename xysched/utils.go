@@ -6,10 +6,10 @@ import (
 	"github.com/xybor/xyplatform/xycond"
 )
 
-// ::callFunc:: calls a function and returns its returned values. This function
+// callFunc calls a function and returns its returned values. This function
 // return a non-nil error if parameter is mismatched or function panics.
 //
-// if ::variadic:: is true, this function will convert the returned values from
+// if variadic is true, this function will convert the returned values from
 // []any to ...any. It is helpful to pass them as parameters of other functions.
 func callFunc(fv reflect.Value, p []any, variadic bool) []any {
 	var ftype = fv.Type()

@@ -38,9 +38,13 @@ func (c condition) Assertf(format string, args ...any) {
 	c.Assert(fmt.Sprintf(format, args...) + "\n")
 }
 
-type number interface {
+type integer interface {
 	int | int8 | int16 | int32 | int64 |
-		uint | uint8 | uint16 | uint32 | uint64 | float32 | float64
+		uint | uint8 | uint16 | uint32 | uint64
+}
+
+type number interface {
+	integer | float32 | float64
 }
 
 // Zero returns true if a is zero. Zero only accepts number parameter.
@@ -88,7 +92,7 @@ func NotContains[kt comparable, vt any](m map[kt]vt, key kt) condition {
 }
 
 // Divisible returns a condition checking if a is divisible by b.
-func Divisible(a, b int) condition {
+func Divisible[t integer](a, b t) condition {
 	return Condition(a%b == 0)
 }
 

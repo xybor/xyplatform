@@ -1,15 +1,13 @@
 package xyselect
 
 import (
-	"github.com/xybor/xyplatform"
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-var _ = xyerror.Register(xyplatform.XySelector)
+var eid = xyerror.Register("xyselect", 200000)
 
 var (
-	SelectorError = xyerror.NewClass(xyplatform.XySelector, "SelectorError")
-
+	SelectorError      = eid.NewClass("SelectorError")
 	ClosedChannelError = SelectorError.NewClass("ClosedChannelError")
 	DefaultCaseError   = SelectorError.NewClass("DefaultCaseError")
 	ExhaustedError     = SelectorError.NewClass("ExhaustedError")
