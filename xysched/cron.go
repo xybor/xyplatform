@@ -4,7 +4,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/xybor/xyplatform/xycond"
 )
 
@@ -97,8 +96,11 @@ func (c *cron) Finish(f any, params ...any) *task {
 
 // Required method of future. This method overrides the one of task.
 func (c *cron) next() *time.Time {
-	c.n -= 1
-	if c.n > 0 {
+	var n = c.lock.RLockFunc(func() any {
+		c.n -= 1
+		return c.n
+	}).(int)
+	if n > 0 {
 		var t = time.Now().Add(c.d)
 		return &t
 	}
@@ -109,14 +111,8 @@ func (c *cron) next() *time.Time {
 func (c *cron) callbacks() []future {
 	var cb []future
 	cb = append(cb, c.task.callbacks()...)
-	if c.n == 1 {
+	if c.lock.RLockFunc(func() any { return c.n }).(int) == 0 {
 		cb = append(cb, c.onfinish...)
 	}
 	return cb
-}
-
-func (c *cron) copy() future {
-	var f = new(cron)
-	copier.Copy(f, c)
-	return f
 }
