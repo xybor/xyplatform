@@ -34,9 +34,9 @@ func (xerr xyerror) Is(target error) bool {
 
 // Or returns the first not-nil error. If all errors are nil, return nil.
 func Or(errs ...error) error {
-	for _, err := range errs {
-		if err != nil {
-			return err
+	for i := range errs {
+		if errs[i] != nil {
+			return errs[i]
 		}
 	}
 

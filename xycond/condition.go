@@ -25,17 +25,12 @@ func (c condition) JustAssert() {
 	}
 }
 
-// Assert prints a message and terminates the program if the condition fails.
-func (c condition) Assert(msg string) {
-	if !c {
-		panic(msg)
-	}
-}
-
-// Assertf prints a formatted message and terminates the program if the
+// Assert prints a formatted message and terminates the program if the
 // condition fails.
-func (c condition) Assertf(format string, args ...any) {
-	c.Assert(fmt.Sprintf(format, args...) + "\n")
+func (c condition) Assert(format string, args ...any) {
+	if !c {
+		panic(fmt.Sprintf(format, args...))
+	}
 }
 
 type integer interface {
@@ -77,23 +72,65 @@ func NotEmpty(a any) condition {
 	return Not(Empty(a))
 }
 
-// Contains returns a condition checking whether or not the map m contains the
-// key.
-func Contains[kt comparable, vt any](m map[kt]vt, key kt) condition {
-	_, ok := m[key]
+// ContainM returns a condition checking if a map contains the key.
+func ContainM[kt comparable, vt any](m map[kt]vt, k kt) condition {
+	_, ok := m[k]
 	return True(ok)
 }
 
-// NotContains returns a condition checking whether or not the map m contains
-// the key.
-func NotContains[kt comparable, vt any](m map[kt]vt, key kt) condition {
-	_, ok := m[key]
-	return False(ok)
+// NotContainM returns a condition checking if a map doesn't contain the key.
+func NotContainM[kt comparable, vt any](m map[kt]vt, k kt) condition {
+	return Not(ContainM(m, k))
+}
+
+// ContainA returns a condition checking if an array contains the element.
+func ContainA(a any, e any) condition {
+	var v = reflect.ValueOf(a)
+	var kind = v.Kind()
+	Condition(kind == reflect.Array || kind == reflect.Slice).
+		Assert("Expected an array or slice, but got %s", kind)
+
+	for i := 0; i < v.Len(); i++ {
+		if v.Index(i).Interface() == e {
+			return Condition(true)
+		}
+	}
+	return Condition(false)
+}
+
+// NotContainA returns a condition checking if an array doesn't contains the
+// element.
+func NotContainA(a any, e any) condition {
+	return Not(ContainA(a, e))
 }
 
 // Divisible returns a condition checking if a is divisible by b.
 func Divisible[t integer](a, b t) condition {
 	return Condition(a%b == 0)
+}
+
+// IsKind returns a condition checking if a value belongs to one of basic types.
+func IsKind(v any, kinds ...reflect.Kind) condition {
+	var kindV = reflect.TypeOf(v).Kind()
+	for i := range kinds {
+		if kindV == kinds[i] {
+			return Condition(true)
+		}
+	}
+
+	return Condition(false)
+}
+
+// SameType returns a condition checking if values are the same type.
+func SameType(v ...any) condition {
+	var k0 = reflect.TypeOf(v[0]).Kind()
+	for i := 1; i < len(v); i++ {
+		if k0 != reflect.TypeOf(v[i]).Kind() {
+			return Condition(false)
+		}
+	}
+
+	return Condition(true)
 }
 
 func True(b bool) condition {
@@ -109,12 +146,7 @@ func JustPanic() {
 	c.JustAssert()
 }
 
-func Panic(msg string) {
+func Panic(msg string, a ...any) {
 	c := Condition(false)
-	c.Assert(msg)
-}
-
-func Panicf(msg string, a ...any) {
-	c := Condition(false)
-	c.Assertf(msg, a...)
+	c.Assert(msg, a...)
 }

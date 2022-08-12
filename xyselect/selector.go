@@ -106,7 +106,7 @@ func (s *Selector) Send(c any, v any) int {
 	cKind := cType.Elem().Kind()
 	vKind := reflect.ValueOf(v).Kind()
 	xycond.Condition(cKind == vKind).
-		Assertf("channel and value must be the same type, but got chan %s and %s.", cKind, vKind)
+		Assert("channel and value must be the same type, but got chan %s and %s.", cKind, vKind)
 
 	return s.selector.send(c, v)
 }

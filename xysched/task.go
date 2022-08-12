@@ -44,7 +44,7 @@ type task struct {
 func Task(f any, params ...any) *task {
 	var fv = reflect.ValueOf(f)
 	xycond.True(fv.Kind() == reflect.Func).
-		Assertf("Expected a function, but got %s", fv.Kind())
+		Assert("Expected a function, but got %s", fv.Kind())
 
 	return &task{
 		fv: fv, params: params,
@@ -62,11 +62,11 @@ func Task(f any, params ...any) *task {
 func (t *task) Variadic(n int) *task {
 	var ftype = t.fv.Type()
 	var nout = ftype.NumOut()
-	xycond.True(nout == 1).Assertf(
+	xycond.True(nout == 1).Assert(
 		"Expected only one output, but %d found", nout)
 
 	var outkind = ftype.Out(0).Kind()
-	xycond.True(outkind == reflect.Array || outkind == reflect.Slice).Assertf(
+	xycond.True(outkind == reflect.Array || outkind == reflect.Slice).Assert(
 		"Expected output as []any, but got %s", outkind)
 
 	t.variadic = true
@@ -84,7 +84,7 @@ func (t *task) Callback(f any, params ...any) *task {
 	cb, ok := f.(future)
 	if ok {
 		xycond.Empty(params).
-			Assertf("Do not pass params if f was already a tasker")
+			Assert("Do not pass params if f was already a tasker")
 	} else {
 		cb = Task(f, params...)
 	}
@@ -124,7 +124,7 @@ func (t *task) run() {
 			if r := recover(); r != nil {
 				var e, ok = r.(error)
 				if !ok {
-					e = CallError.Newf("%s", r)
+					e = CallError.New("%s", r)
 				}
 				t.lock.LockFunc(func() { t.recover = e })
 			}
@@ -150,14 +150,14 @@ func (t *task) callbacks() []future {
 
 	var rdata = t.lock.RLockFunc(func() any { return t.recover })
 	if rdata != nil {
-		for _, ft := range t.onfailure {
-			ft.params = []any{rdata}
-			cb = append(cb, ft)
+		for i := range t.onfailure {
+			t.onfailure[i].params = []any{rdata}
+			cb = append(cb, t.onfailure[i])
 		}
 	} else {
-		for _, fs := range t.onsuccess {
-			fs.params = t.ret
-			cb = append(cb, fs)
+		for i := range t.onsuccess {
+			t.onsuccess[i].params = t.ret
+			cb = append(cb, t.onsuccess[i])
 		}
 	}
 
