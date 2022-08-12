@@ -1,10 +1,9 @@
 package xysched
 
 import (
-	"context"
 	"time"
 
-	"golang.org/x/sync/semaphore"
+	"github.com/xybor/xyplatform/xylock"
 )
 
 // CallbackFunc is a type alias of a generic callback function
@@ -14,10 +13,6 @@ type CallbackFunc any
 type future interface {
 	// run calls the future's function.
 	run()
-
-	// copy creates a copy of this future to avoid race condition when adding
-	// callback futures to scheduler many times.
-	copy() future
 
 	// Return the next time this future will be run. Leave it as nil if you do
 	// not want to run anymore.
@@ -32,7 +27,7 @@ type future interface {
 type scheduler struct {
 	futureQ chan future
 	stop    chan any
-	sem     *semaphore.Weighted
+	sem     *xylock.Semaphore
 }
 
 // New creates a scheduler and starts it.
@@ -114,7 +109,7 @@ func (s *scheduler) Singleton() {
 // Concurrent limits the number of running futures at the same time. By default,
 // there is no limited.
 func (s *scheduler) Concurrent(n int) {
-	s.sem = semaphore.NewWeighted(int64(n))
+	s.sem = xylock.NewSemaphore(int64(n))
 }
 
 // start begins the scheduled loop.
@@ -126,19 +121,15 @@ func (s *scheduler) start() {
 		case <-s.stop:
 			isStop = true
 		case f := <-s.futureQ:
-			go func() {
-				if s.sem != nil {
-					s.sem.Acquire(context.TODO(), 1)
-					defer s.sem.Release(1)
-				}
+			if next := f.next(); next != nil {
+				s.At(*next) <- f
+			}
+			go s.sem.AcquireFunc(1, func() {
 				f.run()
 				for _, cb := range f.callbacks() {
-					s.Now() <- cb.copy()
+					s.Now() <- cb
 				}
-				if next := f.next(); next != nil {
-					s.At(*next) <- f
-				}
-			}()
+			})
 		}
 	}
 }

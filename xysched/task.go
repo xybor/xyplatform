@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/xybor/xyplatform/xycond"
+	"github.com/xybor/xyplatform/xylock"
 )
 
 // task is a future which runs one time.
@@ -34,6 +34,9 @@ type task struct {
 
 	// Other callback futures.
 	cb []future
+
+	// Avoid task to be called simultaneously.
+	lock xylock.Lock
 }
 
 // Task creates a future which runs function f with parameters params. This
@@ -46,7 +49,7 @@ func Task(f any, params ...any) *task {
 	return &task{
 		fv: fv, params: params,
 		variadic: false, ret: make([]any, fv.Type().NumOut()),
-		cb: make([]future, 0),
+		cb: make([]future, 0), lock: xylock.Lock{},
 	}
 }
 
@@ -119,18 +122,20 @@ func (t *task) run() {
 	if len(t.onfailure) > 0 {
 		defer func() {
 			if r := recover(); r != nil {
-				if e, ok := r.(error); ok {
-					t.recover = e
-				} else {
-					t.recover = CallError.Newf("%s", r)
+				var e, ok = r.(error)
+				if !ok {
+					e = CallError.Newf("%s", r)
 				}
+				t.lock.LockFunc(func() { t.recover = e })
 			}
 		}()
 	}
 
-	v := callFunc(t.fv, t.params, t.variadic)
-	copy(t.ret, v)
-	t.recover = nil
+	t.lock.LockFunc(func() {
+		v := callFunc(t.fv, t.params, t.variadic)
+		copy(t.ret, v)
+		t.recover = nil
+	})
 }
 
 // Required method of future.
@@ -143,9 +148,10 @@ func (t *task) callbacks() []future {
 	var cb []future
 	cb = append(cb, t.cb...)
 
-	if t.recover != nil {
+	var rdata = t.lock.RLockFunc(func() any { return t.recover })
+	if rdata != nil {
 		for _, ft := range t.onfailure {
-			ft.params = []any{t.recover}
+			ft.params = []any{rdata}
 			cb = append(cb, ft)
 		}
 	} else {
@@ -156,10 +162,4 @@ func (t *task) callbacks() []future {
 	}
 
 	return cb
-}
-
-func (t *task) copy() future {
-	var f = new(task)
-	copier.Copy(f, t)
-	return f
 }
