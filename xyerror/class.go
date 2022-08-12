@@ -30,33 +30,22 @@ type class struct {
 	parent []class
 }
 
-// NewClass creates a ROOT error class.
-func (eid errorid) NewClass(name string) class {
+// NewClassf creates a ROOT error class with string format.
+func (eid errorid) NewClass(name string, args ...any) class {
 	manager[eid].count += 1
 	return class{
 		errno:  manager[eid].count + int(eid),
-		name:   name,
+		name:   fmt.Sprintf(name, args...),
 		parent: nil,
 	}
 }
 
-// NewClassf creates a ROOT error class with string format.
-func (eid errorid) NewClassf(name string, args ...interface{}) class {
-	return eid.NewClass(fmt.Sprintf(name, args...))
-}
-
 // NewClass creates a new error class from this class as parent.
-func (c class) NewClass(name string) class {
+func (c class) NewClass(name string, args ...any) class {
 	var eid = getErrorId(c.errno)
-	var child = eid.NewClass(name)
+	var child = eid.NewClass(name, args...)
 	child.parent = []class{c}
 	return child
-}
-
-// NewClassf creates a new error class from this class as parent with string
-// format.
-func (c class) NewClassf(name string, args ...interface{}) class {
-	return c.NewClass(fmt.Sprintf(name, args...))
 }
 
 // NewClassM creates a new error class from this class as parent with another
@@ -67,13 +56,8 @@ func (c class) NewClassM(eid errorid) class {
 	return child
 }
 
-// New creates a xyerror.
-func (c class) New(msg string) xyerror {
-	return xyerror{c: c, msg: msg}
-}
-
 // Newf creates a xyerror with string format.
-func (c class) Newf(msg string, a ...interface{}) xyerror {
+func (c class) New(msg string, a ...any) xyerror {
 	return xyerror{c: c, msg: fmt.Sprintf(msg, a...)}
 }
 
@@ -86,8 +70,8 @@ func (c class) belongsTo(t class) bool {
 		return true
 	}
 
-	for _, p := range c.parent {
-		if p.belongsTo(t) {
+	for i := range c.parent {
+		if c.parent[i].belongsTo(t) {
 			return true
 		}
 	}

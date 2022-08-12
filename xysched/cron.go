@@ -81,7 +81,7 @@ func (c *cron) Finish(f any, params ...any) *task {
 	cb, ok := f.(future)
 	if ok {
 		xycond.Empty(params).
-			Assertf("Do not pass params if f was already a tasker")
+			Assert("Do not pass params if f was already a tasker")
 	} else {
 		cb = Task(f, params...)
 	}

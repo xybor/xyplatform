@@ -15,10 +15,10 @@ func callFunc(fv reflect.Value, p []any, variadic bool) []any {
 	var ftype = fv.Type()
 	var ninput = ftype.NumIn()
 	if ftype.IsVariadic() {
-		xycond.Condition(len(p) >= ninput-1).Assertf(
+		xycond.Condition(len(p) >= ninput-1).Assert(
 			"expected at least %d, but got %d parameters", ninput-1, len(p))
 	} else {
-		xycond.Condition(len(p) == ninput).Assertf(
+		xycond.Condition(len(p) == ninput).Assert(
 			"expected %d, but got %d parameters", ninput, len(p))
 	}
 
@@ -29,8 +29,8 @@ func callFunc(fv reflect.Value, p []any, variadic bool) []any {
 
 	var result = fv.Call(in)
 	var iresult = make([]any, 0)
-	for _, r := range result {
-		iresult = append(iresult, r.Interface())
+	for i := range result {
+		iresult = append(iresult, result[i].Interface())
 	}
 
 	if variadic {

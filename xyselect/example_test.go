@@ -18,8 +18,8 @@ func ExampleE() {
 	}
 
 	eselector := xyselect.E()
-	for _, c := range chans {
-		eselector.Recv(xyselect.C(c))
+	for i := range chans {
+		eselector.Recv(xyselect.C(chans[i]))
 	}
 
 	okCounter := 0
@@ -49,8 +49,8 @@ func ExampleR() {
 	}
 
 	rselector := xyselect.R()
-	for _, c := range chans {
-		rselector.Recv(xyselect.C(c))
+	for i := range chans {
+		rselector.Recv(xyselect.C(chans[i]))
 		rselector.Send(make(chan int, 1), 1)
 	}
 

@@ -14,14 +14,9 @@ func Combine(cs ...class) group {
 	return cs
 }
 
-// NewClass creates an error class of multiparents.
-func (g group) NewClass(eid errorid, name string) class {
-	var child = eid.NewClass(name)
+// NewClass creates an error class of multiparents with format string.
+func (g group) NewClass(eid errorid, name string, a ...any) class {
+	var child = eid.NewClass(fmt.Sprintf(name, a...))
 	child.parent = g
 	return child
-}
-
-// NewClassf creates an error class of multiparents with format string.
-func (g group) NewClassf(eid errorid, name string, a ...interface{}) class {
-	return g.NewClass(eid, fmt.Sprintf(name, a...))
 }

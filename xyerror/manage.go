@@ -37,10 +37,10 @@ func getErrorId(errno int) errorid {
 
 // Register adds a Module to pool for managing new error types.
 func Register(name string, id int) errorid {
-	xycond.Divisible(id, int(minId)).Assertf(
+	xycond.Divisible(id, int(minId)).Assert(
 		"Cannot register: %d is not divisible by %d", id, minId)
 	var eid = errorid(id)
-	xycond.NotContains(manager, eid).Assertf("Id %d had already registered", id)
+	xycond.NotContainM(manager, eid).Assert("Id %d had already registered", id)
 
 	manager[eid] = &errorinfo{name: name, count: 0}
 	return eid
