@@ -33,11 +33,11 @@ func (base *filterer) AddFilter(f Filter) {
 }
 
 // RemoveFilter removes an existed filter.
-func (fr *filterer) RemoveFilter(f Filter) {
-	fr.lock.WLockFunc(func() {
-		for i := range fr.filters {
-			if fr.filters[i] == f {
-				fr.filters = append(fr.filters[:i], fr.filters[i+1:]...)
+func (base *filterer) RemoveFilter(f Filter) {
+	base.lock.WLockFunc(func() {
+		for i := range base.filters {
+			if base.filters[i] == f {
+				base.filters = append(base.filters[:i], base.filters[i+1:]...)
 				break
 			}
 		}
@@ -46,15 +46,15 @@ func (fr *filterer) RemoveFilter(f Filter) {
 
 // filter checks all filters in filterer, if there is any failed filter, it will
 // returns false.
-func (fr *filterer) filter(record LogRecord) bool {
+func (f *filterer) filter(record LogRecord) bool {
 	// Avoid calling locks.
-	if len(fr.filters) == 0 {
+	if len(f.filters) == 0 {
 		return true
 	}
 
-	return fr.lock.RLockFunc(func() any {
-		for i := range fr.filters {
-			if !fr.filters[i].Filter(record) {
+	return f.lock.RLockFunc(func() any {
+		for i := range f.filters {
+			if !f.filters[i].Filter(record) {
 				return false
 			}
 		}
