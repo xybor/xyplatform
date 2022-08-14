@@ -19,11 +19,11 @@ type emiter interface {
 	emit(LogRecord)
 }
 
-// baseHandler acts as a placeholder which defines the handler interface.
+// BaseHandler acts as a placeholder which defines the handler interface.
 // Handlers can optionally use Formatter instances to format records as desired.
 // By default, no formatter is specified; in this case, the 'raw' message as
 // determined by record.message is logged.
-type baseHandler struct {
+type BaseHandler struct {
 	filterer
 
 	base      emiter
@@ -35,8 +35,8 @@ type baseHandler struct {
 // newBaseHandler creates the baseHandler with a specified emiter as the base
 // object of baseHandler. This function is useful in create a new concrete
 // handler (rather than baseHandler).
-func newBaseHandler(e emiter) baseHandler {
-	return baseHandler{
+func newBaseHandler(e emiter) *BaseHandler {
+	return &BaseHandler{
 		filterer:  newfilterer(),
 		base:      e,
 		level:     NOTSET,
@@ -46,24 +46,24 @@ func newBaseHandler(e emiter) baseHandler {
 }
 
 // SetLevel sets the new logging level of handler. It is NOTSET by default.
-func (h *baseHandler) SetLevel(level int) {
+func (h *BaseHandler) SetLevel(level int) {
 	h.lock.WLockFunc(func() { h.level = checkLevel(level) })
 }
 
 // SetFormatter sets the new formatter of handler. It is defaultFormatter by
 // default.
-func (h *baseHandler) SetFormatter(f Formatter) {
+func (h *BaseHandler) SetFormatter(f Formatter) {
 	h.lock.WLockFunc(func() { h.formatter = f })
 }
 
 // format uses formatter to format the record.
-func (h *baseHandler) format(record LogRecord) string {
+func (h *BaseHandler) format(record LogRecord) string {
 	return h.formatter.Format(record)
 }
 
 // handle handles a new record, it will check if the record should be logged or
 // not, then call emit if it is.
-func (h *baseHandler) handle(record LogRecord) {
+func (h *BaseHandler) handle(record LogRecord) {
 	if h.filter(record) && record.LevelNo >= h.level {
 		h.lock.WLockFunc(func() { h.base.emit(record) })
 	}
@@ -73,7 +73,7 @@ func (h *baseHandler) handle(record LogRecord) {
 // Note that this class does not close the stream, as os.Stdout or os.Stderr may
 // be used.
 type StreamHandler struct {
-	baseHandler
+	BaseHandler
 	stream *bufio.Writer
 }
 
@@ -83,7 +83,7 @@ func NewStreamHandler() *StreamHandler {
 	var hdr = &StreamHandler{
 		stream: bufio.NewWriter(os.Stderr),
 	}
-	hdr.baseHandler = newBaseHandler(hdr)
+	hdr.BaseHandler = *newBaseHandler(hdr)
 
 	return hdr
 }

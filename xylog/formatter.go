@@ -1,4 +1,3 @@
-// This file copied and modified comments of python logging.
 package xylog
 
 import (
