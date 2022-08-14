@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	var handler = xylog.NewStreamHandler()
+	var handler = xylog.NewStreamHandler("xyplatform")
 	handler.SetStream(os.Stdout)
 	handler.SetLevel(xylog.WARNING)
 	handler.SetFormatter(xylog.NewTextFormatter(

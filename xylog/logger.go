@@ -25,7 +25,7 @@ type Logger struct {
 	children map[string]*Logger
 	parent   *Logger
 	level    int
-	handlers []handler
+	handlers []Handler
 	lock     xylock.RWLock
 	cache    map[int]bool
 }
@@ -60,12 +60,12 @@ func (lg *Logger) SetLevel(level int) {
 }
 
 // AddHandler adds a new handler.
-func (lg *Logger) AddHandler(h handler) {
+func (lg *Logger) AddHandler(h Handler) {
 	lg.lock.WLockFunc(func() { lg.handlers = append(lg.handlers, h) })
 }
 
 // RemoveHandler removes an existed handler.
-func (lg *Logger) RemoveHandler(h handler) {
+func (lg *Logger) RemoveHandler(h Handler) {
 	lg.lock.WLockFunc(func() {
 		for i := range lg.handlers {
 			if lg.handlers[i] == h {
