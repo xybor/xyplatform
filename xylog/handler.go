@@ -1,4 +1,3 @@
-// This file copied and modified comments of python logging.
 package xylog
 
 import (
@@ -29,7 +28,7 @@ type baseHandler struct {
 
 	base      emiter
 	level     int
-	formatter formatter
+	formatter Formatter
 	lock      xylock.RWLock
 }
 
@@ -53,7 +52,7 @@ func (h *baseHandler) SetLevel(level int) {
 
 // SetFormatter sets the new formatter of handler. It is defaultFormatter by
 // default.
-func (h *baseHandler) SetFormatter(f formatter) {
+func (h *baseHandler) SetFormatter(f Formatter) {
 	h.lock.WLockFunc(func() { h.formatter = f })
 }
 
@@ -70,18 +69,18 @@ func (h *baseHandler) handle(record LogRecord) {
 	}
 }
 
-// streamHandler writes logging records, appropriately formatted, to a stream.
-// Note that this class does not close the stream, as os.stdout or os.stderr
-// may be used.
-type streamHandler struct {
+// StreamHandler writes logging records, appropriately formatted, to a stream.
+// Note that this class does not close the stream, as os.Stdout or os.Stderr may
+// be used.
+type StreamHandler struct {
 	*baseHandler
 	stream *bufio.Writer
 }
 
-// StreamHandler returns a streamHandler, the handler writes records to a stream
-// (os.Stderr by default).
-func StreamHandler() *streamHandler {
-	var hdr = &streamHandler{
+// NewStreamHandler returns a StreamHandler, the handler writes records to a
+// stream (os.Stderr by default).
+func NewStreamHandler() *StreamHandler {
+	var hdr = &StreamHandler{
 		stream: bufio.NewWriter(os.Stderr),
 	}
 	hdr.baseHandler = newBaseHandler(hdr)
@@ -91,14 +90,14 @@ func StreamHandler() *streamHandler {
 
 // SetStream sets a new stream for this handler. Note that this stream will not
 // be closed, so it may use os.Stderr or os.Stdout.
-func (hdr *streamHandler) SetStream(f *os.File) {
+func (hdr *StreamHandler) SetStream(f *os.File) {
 	var stream = bufio.NewWriter(f)
 	stream.Flush()
 	hdr.lock.WLockFunc(func() { hdr.stream = stream })
 }
 
 // emit will be called after a record was decided to log.
-func (hdr *streamHandler) emit(record LogRecord) {
+func (hdr *StreamHandler) emit(record LogRecord) {
 	var msg = hdr.format(record)
 	if msg == "" {
 		return

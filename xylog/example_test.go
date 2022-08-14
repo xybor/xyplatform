@@ -7,9 +7,10 @@ import (
 )
 
 func Example() {
-	var handler = xylog.StreamHandler()
+	var handler = xylog.NewStreamHandler()
 	handler.SetStream(os.Stdout)
-	handler.SetFormatter(xylog.Formatter("module=%(name)s level=%(levelname)s %(message)s"))
+	handler.SetFormatter(xylog.NewTextFormatter(
+		"module=%(name)s level=%(levelname)s %(message)s"))
 
 	var logger = xylog.GetLogger("example")
 	logger.AddHandler(handler)
