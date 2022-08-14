@@ -6,11 +6,17 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// handler instances handle logging events.
-type handler interface {
+// Handler instances handle logging events.
+//
+// Any Handler created with a not-empty name will be associated with this name.
+// Later calls of this function with the same name will return the same Handler.
+// If a name is associated with a Handler type, do not reuse this name for other
+// types.
+type Handler interface {
 	handle(LogRecord)
 }
 
@@ -79,13 +85,24 @@ type StreamHandler struct {
 
 // NewStreamHandler returns a StreamHandler, the handler writes records to a
 // stream (os.Stderr by default).
-func NewStreamHandler() *StreamHandler {
-	var hdr = &StreamHandler{
-		stream: bufio.NewWriter(os.Stderr),
+func NewStreamHandler(name string) *StreamHandler {
+	var handler *StreamHandler
+	var existedHandler = getHandler(name)
+	if existedHandler == nil {
+		handler = &StreamHandler{
+			stream: bufio.NewWriter(os.Stderr),
+		}
+		handler.BaseHandler = *newBaseHandler(handler)
+		if name != "" {
+			mapHandler(name, handler)
+		}
+	} else {
+		xycond.SameType(handler, existedHandler).
+			Assert("Do use one name with two different handler types")
+		handler = existedHandler.(*StreamHandler)
 	}
-	hdr.BaseHandler = *newBaseHandler(hdr)
 
-	return hdr
+	return handler
 }
 
 // SetStream sets a new stream for this handler. Note that this stream will not

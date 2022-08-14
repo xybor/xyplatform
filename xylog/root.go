@@ -1,12 +1,12 @@
 package xylog
 
 // AddHandler adds a new handler to root logger.
-func AddHandler(h handler) {
+func AddHandler(h Handler) {
 	rootLogger.AddHandler(h)
 }
 
 // RemoveHandler removes an existed handler from root logger.
-func RemoveHandler(h handler) {
+func RemoveHandler(h Handler) {
 	rootLogger.RemoveHandler(h)
 }
 

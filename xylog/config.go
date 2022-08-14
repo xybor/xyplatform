@@ -13,6 +13,7 @@ import (
 func init() {
 	rootLogger = newlogger("", nil)
 	rootLogger.SetLevel(WARNING)
+	handlerManager = make(map[string]Handler)
 }
 
 var (
@@ -46,7 +47,10 @@ var timeLayout = time.RFC3339Nano
 var defaultFormatter = NewTextFormatter("%(message)s")
 
 // lastHandler is used when no handler is configured to handle the log record.
-var lastHandler = NewStreamHandler()
+var lastHandler = NewStreamHandler("")
+
+// handlerManager is a map to search handler by name.
+var handlerManager map[string]Handler
 
 var levelToName = map[int]string{
 	CRITICAL: "CRITICAL",
@@ -110,4 +114,21 @@ func checkLevel(level int) int {
 			Assert("Level %d is not registered", level)
 		return level
 	}).(int)
+}
+
+// getHandler returns the handler associated with the name. If no handler found,
+// returns nil.
+func getHandler(name string) Handler {
+	var h, ok = handlerManager[name]
+	if ok {
+		return h
+	}
+	return nil
+}
+
+// mapHandler associates a name with a handler.
+func mapHandler(name string, h Handler) {
+	xycond.NotContainM(handlerManager, name).
+		Assert("Do not set handler with the same name: %s", name)
+	handlerManager[name] = h
 }
