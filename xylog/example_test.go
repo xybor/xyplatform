@@ -7,6 +7,23 @@ import (
 )
 
 func Example() {
+	// You can directly use xylog functions to log with the root logger.
+	var handler = xylog.NewStreamHandler()
+	handler.SetStream(os.Stdout)
+
+	xylog.SetLevel(xylog.DEBUG)
+	xylog.AddHandler(handler)
+	xylog.Debug("foo")
+
+	// Handlers in the root logger will affect to other logger, so in this
+	// example, it should remove this handler from the root logger.
+	xylog.RemoveHandler(handler)
+
+	// Output:
+	// foo
+}
+
+func ExampleGetLogger() {
 	var handler = xylog.NewStreamHandler()
 	handler.SetStream(os.Stdout)
 	handler.SetFormatter(xylog.NewTextFormatter(
