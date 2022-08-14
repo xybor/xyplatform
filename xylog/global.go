@@ -1,4 +1,4 @@
-// This file copied and modified comments of python logging.
+// xylog is a logging module based on the design of python logging.
 package xylog
 
 import (
@@ -27,7 +27,7 @@ var (
 )
 
 // startTime is used as the base when calculating the relative time of events.
-var startTime = time.Now().Unix()
+var startTime = time.Now().UnixMilli()
 
 // lock is used to serialize access to shared data structures in this module.
 var lock = xylock.RWLock{}
@@ -37,16 +37,16 @@ var processid = os.Getpid()
 
 // rootLogger is the logger managing all loggers in program, it only should be
 // used to set default handler or propagate level to all loggers.
-var rootLogger *logger
+var rootLogger *Logger
 
 // timeLayout is the default time layout used to print asctime when logging.
 var timeLayout = "2006-01-02T15:04:05"
 
 // defaultFormatter is the formatter used to initialize handler.
-var defaultFormatter formatter = Formatter("%(message)s")
+var defaultFormatter = NewTextFormatter("%(message)s")
 
 // lastHandler is used when no handler is configured to handle the log record.
-var lastHandler = StreamHandler()
+var lastHandler = NewStreamHandler()
 
 var levelToName = map[int]string{
 	CRITICAL: "CRITICAL",
@@ -75,12 +75,12 @@ func AddLevel(level int, levelName string) {
 	lock.WLockFunc(func() { levelToName[level] = levelName })
 }
 
-// Get a logger with the specified name (channel name), creating it if it
-// doesn't yet exist. This name is a dot-separated hierarchical name, such as
-// "a", "a.b", "a.b.c" or similar.
+// GetLogger gets a logger with the specified name (channel name), creating it
+// if it doesn't yet exist. This name is a dot-separated hierarchical name, such
+// as "a", "a.b", "a.b.c" or similar.
 //
-// Leave name to empty string to get the root logger.
-func GetLogger(name string) *logger {
+// Leave name as empty string to get the root logger.
+func GetLogger(name string) *Logger {
 	if name == "" {
 		return rootLogger
 	}
@@ -93,7 +93,7 @@ func GetLogger(name string) *logger {
 			lg = lg.children[part]
 		}
 		return lg
-	}).(*logger)
+	}).(*Logger)
 }
 
 // getLevelName returns a name associated with the given level.

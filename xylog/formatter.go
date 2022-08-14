@@ -7,23 +7,29 @@ import (
 	"strings"
 )
 
-// formatter instances are used to convert a LogRecord to text.
-type formatter interface {
+// Formatter instances are used to convert a LogRecord to text.
+//
+// Formatter need to know how a LogRecord is constructed. They are responsible
+// for converting a LogRecord to a string which can be interpreted by either a
+// human or an external system.
+type Formatter interface {
 	Format(LogRecord) string
 }
 
-// Formatter need to know how a LogRecord is constructed. They are responsible
-// for converting a LogRecord to (usually) a string which can be interpreted by
-// either a human or an external system. The base Formatter allows a formatting
-// string to be specified.
-//
-// The Formatter can be initialized with a format string which makes use of
-// knowledge of the LogRecord attributes - e.g. %(message)s or %(levelname).
-// See LogRecord for more details about attributes.
-type Formatter string
+// The TextFormatter can be initialized with a format string which makes use of
+// knowledge of the LogRecord attributes - e.g. %(message)s or %(levelno)d. See
+// LogRecord for more details.
+type textFormatter string
+
+// NewTextFormatter creates a textFormatter which uses LogRecord attributes to
+// contribute logging string, e.g. %(message)s or %(levelno)d. See LogRecord for
+// more details.
+func NewTextFormatter(f string) textFormatter {
+	return textFormatter(f)
+}
 
 // Format creates a logging string by combine format string and logging record.
-func (f Formatter) Format(record LogRecord) string {
+func (f textFormatter) Format(record LogRecord) string {
 	var m = tomap(record)
 	var s = string(f)
 	for k, v := range m {
@@ -43,6 +49,7 @@ func (f Formatter) Format(record LogRecord) string {
 	return s
 }
 
+// tomap converts a struct to map[string]any.
 func tomap(a any) map[string]any {
 	var result = make(map[string]any)
 	var v = reflect.ValueOf(a)

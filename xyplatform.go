@@ -7,14 +7,16 @@ import (
 )
 
 func init() {
-	var handler = xylog.StreamHandler()
+	var handler = xylog.NewStreamHandler()
 	handler.SetStream(os.Stdout)
 	handler.SetLevel(xylog.WARNING)
-	handler.SetFormatter(
-		xylog.Formatter(
-			"source=%(filename)s.%(funcname)s:%(lineno)d time=%(asctime)s+%(msecs)d " +
-				"level=%(levelname)s %(message)s",
-		))
+	handler.SetFormatter(xylog.NewTextFormatter(
+		"time=%(asctime)s+%(msecs)d " +
+			"source=%(filename)s.%(funcname)s:%(lineno)d " +
+			"level=%(levelname)s " +
+			"module=%(module)s " +
+			"%(message)s",
+	))
 
 	var logger = xylog.GetLogger("xyplatform")
 	logger.SetLevel(xylog.WARNING)

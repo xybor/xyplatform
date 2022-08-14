@@ -1,4 +1,3 @@
-// This file copied and modified comments of python logging.
 package xylog
 
 import (
@@ -8,14 +7,14 @@ import (
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// filter instances are used to perform arbitrary filtering of LogRecord.
-type filter interface {
+// Filter instances are used to perform arbitrary filtering of LogRecord.
+type Filter interface {
 	Filter(record LogRecord) bool
 }
 
 // A base class for loggers and handlers which allows them to share common code.
 type filterer struct {
-	filters []filter
+	filters []Filter
 	lock    xylock.RWLock
 }
 
@@ -27,7 +26,7 @@ func newfilterer() filterer {
 }
 
 // AddFilter adds a specified filter. Passed filter must be a pointer.
-func (fr *filterer) AddFilter(f filter) {
+func (fr *filterer) AddFilter(f Filter) {
 	xycond.IsKind(f, reflect.Pointer).Assert("Expected a pointer of filter")
 
 	fr.lock.WLockFunc(func() {
@@ -38,7 +37,7 @@ func (fr *filterer) AddFilter(f filter) {
 }
 
 // RemoveFilter removes a specified filter. Passed filter must be a pointer.
-func (fr *filterer) RemoveFilter(f filter) {
+func (fr *filterer) RemoveFilter(f Filter) {
 	xycond.IsKind(f, reflect.Pointer).Assert("Expected a pointer of filter")
 
 	fr.lock.WLockFunc(func() {
