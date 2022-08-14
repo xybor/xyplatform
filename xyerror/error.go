@@ -4,30 +4,31 @@ import (
 	"errors"
 )
 
-// xyerror is the error of xybor projects. It supports checking if an error
-// belongs to a class or not.
+// XyError is the error of xyplatform. It supports checking if an error belongs
+// to a class or not.
 //
-// errors.Is(err, cls) returns true if err is created by:
-// 	- cls.
-// 	- another class created by cls.
-type xyerror struct {
+// errors.Is(err, cls) returns true if err is created by cls itself or cls's
+// child class.
+type XyError struct {
 	// error class
-	c class
+	c Class
 
 	// error message
 	msg string
 }
 
-func (xerr xyerror) Error() string {
+// Error is the method to treat XyError as an error.
+func (xerr XyError) Error() string {
 	return xerr.msg
 }
 
-func (xerr xyerror) Is(target error) bool {
-	if !errors.As(target, &class{}) {
+// Is is the method used to customize errors.Is method.
+func (xerr XyError) Is(target error) bool {
+	if !errors.As(target, &Class{}) {
 		return false
 	}
 
-	tc := target.(class)
+	tc := target.(Class)
 
 	return xerr.c.belongsTo(tc)
 }

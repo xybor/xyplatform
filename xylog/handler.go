@@ -35,8 +35,8 @@ type baseHandler struct {
 // newBaseHandler creates the baseHandler with a specified emiter as the base
 // object of baseHandler. This function is useful in create a new concrete
 // handler (rather than baseHandler).
-func newBaseHandler(e emiter) *baseHandler {
-	return &baseHandler{
+func newBaseHandler(e emiter) baseHandler {
+	return baseHandler{
 		filterer:  newfilterer(),
 		base:      e,
 		level:     NOTSET,
@@ -73,7 +73,7 @@ func (h *baseHandler) handle(record LogRecord) {
 // Note that this class does not close the stream, as os.Stdout or os.Stderr may
 // be used.
 type StreamHandler struct {
-	*baseHandler
+	baseHandler
 	stream *bufio.Writer
 }
 

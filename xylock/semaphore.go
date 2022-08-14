@@ -1,5 +1,3 @@
-// This file copies comments from golang.org/x/sync/semaphore/semaphore.go
-// (go1.18.4).
 package xylock
 
 import (

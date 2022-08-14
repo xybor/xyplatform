@@ -2,11 +2,11 @@ package xysched
 
 import "sync"
 
-var global *scheduler = nil
+var global *Scheduler = nil
 var globalOnce sync.Once
 
 // A scheduler you could use throughout the program without creating a new one.
-func Global() *scheduler {
-	globalOnce.Do(func() { global = New() })
+func Global() *Scheduler {
+	globalOnce.Do(func() { global = NewScheduler() })
 	return global
 }

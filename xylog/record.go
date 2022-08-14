@@ -11,8 +11,8 @@ import (
 //
 // LogRecord instances are created every time something is logged. They contain
 // all the information pertinent to the event being logged. The main information
-// passed in is in Message. The record also includes information as when the
-// record was created or the source line where the logging call was made.
+// passed in is Message. The record also includes information as when the record
+// was created or the source line where the logging call was made.
 type LogRecord struct {
 	// Textual time when the LogRecord was created.
 	Asctime string `map:"asctime"`
@@ -34,13 +34,13 @@ type LogRecord struct {
 	// CRITICAL).
 	LevelNo int `map:"levelno"`
 
-	// Source line number where the logging call was issued (if available).
+	// Source line number where the logging call was issued.
 	LineNo int `map:"lineno"`
 
 	// The logging message.
 	Message string `map:"message"`
 
-	// Module (name portion of filename).
+	// The module called log method.
 	Module string `map:"module"`
 
 	// Millisecond portion of the creation time.
@@ -49,11 +49,10 @@ type LogRecord struct {
 	// Name of the logger.
 	Name string `map:"name"`
 
-	// Full pathname of the source file where the logging call was issued (if
-	// available).
+	// Full pathname of the source file where the logging call was issued.
 	PathName string `map:"pathname"`
 
-	// Process ID (if available).
+	// Process ID.
 	Process int `map:"process"`
 
 	// Time in milliseconds when the LogRecord was created, relative to the time

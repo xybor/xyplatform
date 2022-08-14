@@ -1,15 +1,15 @@
 package xyerror
 
-var eid = Register("default", 100000)
+var defaultGen = Register("default", 100000)
 
 var (
-	UnknownError        = eid.NewClass("UnknownError")
-	IOError             = eid.NewClass("IOError")
-	FloatingPointError  = eid.NewClass("FloatingPointError")
-	IndexError          = eid.NewClass("IndexError")
-	KeyError            = eid.NewClass("KeyError")
-	NotImplementedError = eid.NewClass("NotImplementedError")
-	ValueError          = eid.NewClass("ValueError")
-	ParameterError      = eid.NewClass("ParameterError")
-	TypeError           = eid.NewClass("TypeError")
+	UnknownError        = defaultGen.NewClass("UnknownError")
+	IOError             = defaultGen.NewClass("IOError")
+	FloatingPointError  = defaultGen.NewClass("FloatingPointError")
+	IndexError          = defaultGen.NewClass("IndexError")
+	KeyError            = defaultGen.NewClass("KeyError")
+	NotImplementedError = defaultGen.NewClass("NotImplementedError")
+	ValueError          = defaultGen.NewClass("ValueError")
+	ParameterError      = defaultGen.NewClass("ParameterError")
+	TypeError           = defaultGen.NewClass("TypeError")
 )

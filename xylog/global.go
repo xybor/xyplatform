@@ -40,7 +40,7 @@ var processid = os.Getpid()
 var rootLogger *Logger
 
 // timeLayout is the default time layout used to print asctime when logging.
-var timeLayout = "2006-01-02T15:04:05"
+var timeLayout = time.RFC3339Nano
 
 // defaultFormatter is the formatter used to initialize handler.
 var defaultFormatter = NewTextFormatter("%(message)s")
@@ -57,8 +57,8 @@ var levelToName = map[int]string{
 	NOTSET:   "NOTSET",
 }
 
-// SetTimeLayout sets the time layout to print asctime.
-// It is "2006-01-02T15:04:05.000" by default.
+// SetTimeLayout sets the time layout to print asctime. It is time.RFC3339Nano
+// by default.
 func SetTimeLayout(layout string) {
 	lock.WLockFunc(func() { timeLayout = layout })
 }

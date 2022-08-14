@@ -1,4 +1,3 @@
-// This file copies comments from sync/rwmutex.go (go1.18.4).
 package xylock
 
 import "sync"

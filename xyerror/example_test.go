@@ -7,13 +7,13 @@ import (
 	"github.com/xybor/xyplatform/xyerror"
 )
 
-var eid = xyerror.Register("example", 400000)
+var exampleGen = xyerror.Register("example", 400000)
 
 func ExampleClass() {
-	// To create a root error class, call xyerror.NewClass with that module.
-	var RootError = eid.NewClass("RootError")
+	// To create a root Class, call Generator.NewClass with the name of Class.
+	var RootError = exampleGen.NewClass("RootError")
 
-	// You can create an error class from another error class.
+	// You can create a class from another one.
 	var ChildError = RootError.NewClass("ChildError")
 
 	fmt.Println(RootError)
@@ -24,16 +24,15 @@ func ExampleClass() {
 	// [400002] ChildError
 }
 
-// You can compare a xyerror with an error class by using built-in method
-// errors.Is(...).
 func ExampleXyError() {
+	// You can compare a XyError with an Class by using the built-in method
+	// errors.Is.
 	var NegativeIndexError = xyerror.IndexError.NewClass("NegativeIndexError")
 
 	err1 := xyerror.ValueError.New("some value error")
 	if errors.Is(err1, xyerror.ValueError) {
 		fmt.Println("err1 is a ValueError")
 	}
-
 	if !errors.Is(err1, NegativeIndexError) {
 		fmt.Println("err1 is not a NegativeIndexError")
 	}
@@ -42,11 +41,9 @@ func ExampleXyError() {
 	if errors.Is(err2, NegativeIndexError) {
 		fmt.Println("err2 is a NegativeIndexError")
 	}
-
 	if errors.Is(err2, xyerror.IndexError) {
 		fmt.Println("err2 is a IndexError")
 	}
-
 	if !errors.Is(err2, xyerror.ValueError) {
 		fmt.Println("err2 is not a ValueError")
 	}
@@ -59,13 +56,13 @@ func ExampleXyError() {
 	// err2 is not a ValueError
 }
 
-// Group allows you to create an error class with multiparents.
 func ExampleGroup() {
-	CombinedErrorClass := xyerror.
+	// Group allows you to create a class with multiparents.
+	KeyValueError := xyerror.
 		Combine(xyerror.KeyError, xyerror.ValueError).
-		NewClass(eid, "CombinedErrorClass")
+		NewClass(exampleGen, "KeyValueError")
 
-	err := CombinedErrorClass.New("something is wrong")
+	err := KeyValueError.New("something is wrong")
 
 	if errors.Is(err, xyerror.KeyError) {
 		fmt.Println("err is a KeyError")

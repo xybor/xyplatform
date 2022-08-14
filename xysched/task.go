@@ -8,8 +8,8 @@ import (
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// task is a future which runs one time.
-type task struct {
+// Task is a future which runs one time.
+type Task struct {
 	// The function's reflect value.
 	fv reflect.Value
 
@@ -24,13 +24,13 @@ type task struct {
 	ret []any
 
 	// Callback tasks handle the returned values if task ran successfully.
-	onsuccess []*task
+	onsuccess []*Task
 
 	// The recovered error in case the function panicked.
 	recover error
 
 	// Callback tasks handle the panicked error if task panicked in runtime.
-	onfailure []*task
+	onfailure []*Task
 
 	// Other callback futures.
 	cb []future
@@ -39,14 +39,14 @@ type task struct {
 	lock xylock.Lock
 }
 
-// Task creates a future which runs function f with parameters params. This
+// NewTask creates a future which runs function f with parameters params. This
 // future runs only one time.
-func Task(f any, params ...any) *task {
+func NewTask(f any, params ...any) *Task {
 	var fv = reflect.ValueOf(f)
 	xycond.True(fv.Kind() == reflect.Func).
 		Assert("Expected a function, but got %s", fv.Kind())
 
-	return &task{
+	return &Task{
 		fv: fv, params: params,
 		variadic: false, ret: make([]any, fv.Type().NumOut()),
 		cb: make([]future, 0), lock: xylock.Lock{},
@@ -59,7 +59,7 @@ func Task(f any, params ...any) *task {
 // slice or array.
 //
 // n is the number of returned values of function.
-func (t *task) Variadic(n int) *task {
+func (t *Task) Variadic(n int) *Task {
 	var ftype = t.fv.Type()
 	var nout = ftype.NumOut()
 	xycond.True(nout == 1).Assert(
@@ -80,18 +80,18 @@ func (t *task) Variadic(n int) *task {
 //
 // It returns the callback task if you passed a function or task, otherwise,
 // nil.
-func (t *task) Callback(f any, params ...any) *task {
+func (t *Task) Callback(f any, params ...any) *Task {
 	cb, ok := f.(future)
 	if ok {
 		xycond.Empty(params).
 			Assert("Do not pass params if f was already a tasker")
 	} else {
-		cb = Task(f, params...)
+		cb = NewTask(f, params...)
 	}
 
 	t.cb = append(t.cb, cb)
 
-	if t, ok := cb.(*task); ok {
+	if t, ok := cb.(*Task); ok {
 		return t
 	}
 	return nil
@@ -101,8 +101,8 @@ func (t *task) Callback(f any, params ...any) *task {
 // The callback task's input parameters are the output of this task.
 //
 // It returns the callback task.
-func (t *task) Then(f any) *task {
-	var cb = Task(f)
+func (t *Task) Then(f any) *Task {
+	var cb = NewTask(f)
 	t.onsuccess = append(t.onsuccess, cb)
 	return cb
 }
@@ -111,14 +111,14 @@ func (t *task) Then(f any) *task {
 // only parameter of the callback task is the panicked error.
 //
 // It returns the callback task.
-func (t *task) Catch(f any) *task {
-	var cb = Task(f)
+func (t *Task) Catch(f any) *Task {
+	var cb = NewTask(f)
 	t.onfailure = append(t.onfailure, cb)
 	return cb
 }
 
 // Required method of future.
-func (t *task) run() {
+func (t *Task) run() {
 	if len(t.onfailure) > 0 {
 		defer func() {
 			if r := recover(); r != nil {
@@ -139,12 +139,12 @@ func (t *task) run() {
 }
 
 // Required method of future.
-func (t *task) next() *time.Time {
+func (t *Task) next() *time.Time {
 	return nil
 }
 
 // Required method of future.
-func (t *task) callbacks() []future {
+func (t *Task) callbacks() []future {
 	var cb []future
 	cb = append(cb, t.cb...)
 

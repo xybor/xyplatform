@@ -23,9 +23,6 @@ type Selector struct {
 // exhausted, the error returned in Select() method will be StoppedError; (2)
 // only receiving cases.
 //
-// NOTE: Don't add channel to this selector after calling Select() method,
-// otherwise, it panics.
-//
 // ESelector is the exhausted-version selector. Its workflow is that all
 // channels will send its received values to a center channel.
 // Instead of calling select statement with all channels, you only need to

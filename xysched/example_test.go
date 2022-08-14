@@ -8,11 +8,11 @@ import (
 )
 
 func ExampleTask() {
-	var scheduler = xysched.New()
+	var scheduler = xysched.NewScheduler()
 
 	// Example 1: Task is a simple future used for scheduling to run a function.
 	var done = make(chan any)
-	var future = xysched.Task(func(a ...any) {
+	var future = xysched.NewTask(func(a ...any) {
 		fmt.Println(a...)
 		close(done)
 	}, "1. foo")
@@ -21,7 +21,7 @@ func ExampleTask() {
 
 	// Example 2: Callback will be run after the task completed.
 	done = make(chan any)
-	future = xysched.Task(fmt.Println, "2. foo foo")
+	future = xysched.NewTask(fmt.Println, "2. foo foo")
 	future.Callback(func() { close(done) })
 	scheduler.Now() <- future
 	<-done
@@ -29,7 +29,7 @@ func ExampleTask() {
 	// Example 3: Then adds a callback handling returned values of task after
 	// task completed.
 	done = make(chan any)
-	future = xysched.Task(fmt.Sprintf, "3. foo %s", "bar")
+	future = xysched.NewTask(fmt.Sprintf, "3. foo %s", "bar")
 	future.Then(func(s string) {
 		fmt.Println(s)
 		close(done)
@@ -42,7 +42,7 @@ func ExampleTask() {
 	// NOTE: if task panics a non-error interface, it will be wrapped into
 	//       xysched.CallError.
 	done = make(chan any)
-	future = xysched.Task(fmt.Fprint, "string-not-a-file")
+	future = xysched.NewTask(fmt.Fprint, "string-not-a-file")
 	future.Then(func(n int, e error) {
 		fmt.Println("4.", n, e)
 		close(done)
@@ -67,7 +67,7 @@ func ExampleGlobal() {
 	// Example 1: You can use the global scheduler throughout program without
 	// creating a new one.
 	var done = make(chan any)
-	var future = xysched.Task(func() {
+	var future = xysched.NewTask(func() {
 		fmt.Println("1. bar bar")
 		close(done)
 	})
@@ -76,7 +76,7 @@ func ExampleGlobal() {
 
 	// Example 2: Scheduler can schedule one future After or At a time.
 	done = make(chan any)
-	future = xysched.Task(func() {
+	future = xysched.NewTask(func() {
 		fmt.Println("2. barfoo")
 		close(done)
 	})
@@ -95,11 +95,11 @@ func wait(c chan any, n int) {
 }
 
 func ExampleCron() {
-	var scheduler = xysched.New()
+	var scheduler = xysched.NewScheduler()
 	// Example 1: Cron is a future which runs function periodically. By default,
 	// it runs secondly forever.
 	var done = make(chan any)
-	var future = xysched.Cron(func(a ...any) {
+	var future = xysched.NewCron(func(a ...any) {
 		fmt.Println(a...)
 		done <- nil
 	}, "1.", "foo", "bar")
@@ -107,11 +107,11 @@ func ExampleCron() {
 	wait(done, 2)
 	scheduler.Stop()
 
-	scheduler = xysched.New()
+	scheduler = xysched.NewScheduler()
 	// Example 2: It can modify periodic duration and the maximum times the
 	// function could run.
 	done = make(chan any)
-	future = xysched.Cron(func() {
+	future = xysched.NewCron(func() {
 		fmt.Println("2. bar bar")
 		done <- nil
 	}).Every(1 * time.Millisecond).Twice()
@@ -120,7 +120,7 @@ func ExampleCron() {
 
 	// Example 3: Callback, Then, Catch can also be used on cron.
 	done = make(chan any)
-	future = xysched.Cron(fmt.Println, "3.", "foobar").Times(3)
+	future = xysched.NewCron(fmt.Println, "3.", "foobar").Times(3)
 	future.Callback(func() { done <- nil })
 	scheduler.Now() <- future
 	wait(done, 3)
@@ -128,7 +128,7 @@ func ExampleCron() {
 	// Example 4: Finish adds a callback future which will be run when cron ran
 	// out of times.
 	done = make(chan any)
-	future = xysched.Cron(fmt.Println, "4.", "foobar").Twice()
+	future = xysched.NewCron(fmt.Println, "4.", "foobar").Twice()
 	future.Finish(func() { close(done) })
 	scheduler.Now() <- future
 	wait(done, 1)
