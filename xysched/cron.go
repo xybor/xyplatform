@@ -7,10 +7,10 @@ import (
 	"github.com/xybor/xyplatform/xycond"
 )
 
-// cron is a future which runs a task periodically.
-type cron struct {
+// Cron is a future which runs a task periodically.
+type Cron struct {
 	// cron struct is a wrapper of task
-	*task
+	Task
 
 	// The maximum times which this future runs.
 	n int
@@ -22,11 +22,11 @@ type cron struct {
 	onfinish []future
 }
 
-// Cron creates a future which calls function f with parameter params
+// NewCron creates a future which calls function f with parameter params
 // periodically. By default, it runs the function forever secondly.
-func Cron(f any, params ...any) *cron {
-	return &cron{
-		task:     Task(f, params...),
+func NewCron(f any, params ...any) *Cron {
+	return &Cron{
+		Task:     *NewTask(f, params...),
 		n:        math.MaxInt,
 		d:        time.Second,
 		onfinish: make([]future, 0),
@@ -34,68 +34,68 @@ func Cron(f any, params ...any) *cron {
 }
 
 // Secondly requires the cron to run once per second.
-func (c *cron) Secondly() *cron {
+func (c *Cron) Secondly() *Cron {
 	return c.Every(time.Second)
 }
 
 // Minutely requires the cron to run the cron once per minute.
-func (c *cron) Minutely() *cron {
+func (c *Cron) Minutely() *Cron {
 	return c.Every(time.Minute)
 }
 
 // Hourly requires the cron to run once per hour.
-func (c *cron) Hourly() *cron {
+func (c *Cron) Hourly() *Cron {
 	return c.Every(time.Hour)
 }
 
 // Daily requires the cron to run once per day.
-func (c *cron) Daily() *cron {
+func (c *Cron) Daily() *Cron {
 	return c.Every(24 * time.Hour)
 }
 
 // Every requires the cron to run with a custom periodic duration.
-func (c *cron) Every(d time.Duration) *cron {
+func (c *Cron) Every(d time.Duration) *Cron {
 	c.d = d
 	return c
 }
 
 // Times sets the maximum times which the cron will run.
-func (c *cron) Times(n int) *cron {
+func (c *Cron) Times(n int) *Cron {
 	c.n = n
 	return c
 }
 
 // Once is a shortcut of Times(1)
-func (c *cron) Once() *cron {
+func (c *Cron) Once() *Cron {
 	return c.Times(1)
 }
 
 // Twice is a shortcut of Times(2)
-func (c *cron) Twice() *cron {
+func (c *Cron) Twice() *Cron {
 	return c.Times(2)
 }
 
 // Finish sets a callback future which will run after the cron ran out of times.
 // See task.Callback for further details.
-func (c *cron) Finish(f any, params ...any) *task {
+func (c *Cron) Finish(f any, params ...any) *Task {
 	cb, ok := f.(future)
 	if ok {
 		xycond.Empty(params).
 			Assert("Do not pass params if f was already a tasker")
 	} else {
-		cb = Task(f, params...)
+		cb = NewTask(f, params...)
 	}
 
 	c.onfinish = append(c.onfinish, cb)
 
-	if t, ok := cb.(*task); ok {
+	if t, ok := cb.(*Task); ok {
 		return t
 	}
 	return nil
 }
 
 // Required method of future. This method overrides the one of task.
-func (c *cron) next() *time.Time {
+func (c *Cron) next() *time.Time {
 	var n = c.lock.RLockFunc(func() any {
 		c.n -= 1
 		return c.n
@@ -108,9 +108,9 @@ func (c *cron) next() *time.Time {
 }
 
 // Required method of future. This method overrides the one of task.
-func (c *cron) callbacks() []future {
+func (c *Cron) callbacks() []future {
 	var cb []future
-	cb = append(cb, c.task.callbacks()...)
+	cb = append(cb, c.Task.callbacks()...)
 	if c.lock.RLockFunc(func() any { return c.n }).(int) == 0 {
 		cb = append(cb, c.onfinish...)
 	}

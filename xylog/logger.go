@@ -2,10 +2,8 @@ package xylog
 
 import (
 	"fmt"
-	"reflect"
 	"runtime"
 
-	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
 
@@ -61,16 +59,13 @@ func (lg *Logger) SetLevel(level int) {
 	rootLogger.clearCache()
 }
 
-// AddHandler adds a new handler. The passed handler must be a pointer.
+// AddHandler adds a new handler.
 func (lg *Logger) AddHandler(h handler) {
-	xycond.IsKind(h, reflect.Pointer).Assert("h must be a pointer of handler")
 	lg.lock.WLockFunc(func() { lg.handlers = append(lg.handlers, h) })
 }
 
-// RemoveHandler removes a existed handler. The passed handler must be a
-// pointer.
+// RemoveHandler removes an existed handler.
 func (lg *Logger) RemoveHandler(h handler) {
-	xycond.IsKind(h, reflect.Pointer).Assert("h must be a pointer of handler")
 	lg.lock.WLockFunc(func() {
 		for i := range lg.handlers {
 			if lg.handlers[i] == h {

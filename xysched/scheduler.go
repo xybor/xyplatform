@@ -6,9 +6,6 @@ import (
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// CallbackFunc is a type alias of a generic callback function
-type CallbackFunc any
-
 // future interface defines a schedulable object.
 type future interface {
 	// run calls the future's function.
@@ -23,16 +20,16 @@ type future interface {
 	callbacks() []future
 }
 
-// scheduler is used for scheduling future objects.
-type scheduler struct {
+// Scheduler is used for scheduling future objects.
+type Scheduler struct {
 	futureQ chan future
 	stop    chan any
 	sem     *xylock.Semaphore
 }
 
-// New creates a scheduler and starts it.
-func New() *scheduler {
-	sched := &scheduler{
+// NewScheduler creates a scheduler and starts it.
+func NewScheduler() *Scheduler {
+	sched := &Scheduler{
 		futureQ: make(chan future),
 		stop:    make(chan any),
 		sem:     nil,
@@ -48,7 +45,7 @@ func New() *scheduler {
 // NOTE: You should send ONLY ONE future to this channel because it is designed
 // to handle one. If you try sending another, it will be blocked forever. To
 // send other futures to scheduler, let call this method again.
-func (s *scheduler) After(d time.Duration) chan<- future {
+func (s *Scheduler) After(d time.Duration) chan<- future {
 	if d < 0 {
 		d = 0
 	}
@@ -82,7 +79,7 @@ func (s *scheduler) After(d time.Duration) chan<- future {
 // NOTE: You should send ONLY ONE future to this channel because it is designed
 // to handle one. If you try sending another, it will be blocked forever. To
 // send other futures to scheduler, let call this method again.
-func (s *scheduler) At(next time.Time) chan<- future {
+func (s *Scheduler) At(next time.Time) chan<- future {
 	return s.After(time.Until(next))
 }
 
@@ -91,29 +88,29 @@ func (s *scheduler) At(next time.Time) chan<- future {
 // NOTE: You should send ONLY ONE future to this channel because it is designed
 // to handle one. If you try sending another, it will be blocked forever. To
 // send other futures to scheduler, let call this method again.
-func (s *scheduler) Now() chan<- future {
+func (s *Scheduler) Now() chan<- future {
 	return s.After(0)
 }
 
 // Stop terminates the scheduler and all pending futures from now on. Running
 // futures still run until they complete.
-func (s *scheduler) Stop() {
+func (s *Scheduler) Stop() {
 	close(s.stop)
 }
 
 // Singleton is a shortcut of Concurrent(1).
-func (s *scheduler) Singleton() {
+func (s *Scheduler) Singleton() {
 	s.Concurrent(1)
 }
 
 // Concurrent limits the number of running futures at the same time. By default,
 // there is no limited.
-func (s *scheduler) Concurrent(n int) {
+func (s *Scheduler) Concurrent(n int) {
 	s.sem = xylock.NewSemaphore(int64(n))
 }
 
 // start begins the scheduled loop.
-func (s *scheduler) start() {
+func (s *Scheduler) start() {
 	var isStop = false
 
 	for !isStop {

@@ -1,8 +1,6 @@
 package xylog
 
 import (
-	"reflect"
-
 	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
@@ -25,21 +23,17 @@ func newfilterer() filterer {
 	}
 }
 
-// AddFilter adds a specified filter. Passed filter must be a pointer.
-func (fr *filterer) AddFilter(f Filter) {
-	xycond.IsKind(f, reflect.Pointer).Assert("Expected a pointer of filter")
-
-	fr.lock.WLockFunc(func() {
-		if xycond.NotContainA(fr.filters, f) {
-			fr.filters = append(fr.filters, f)
+// AddFilter adds a specified filter.
+func (base *filterer) AddFilter(f Filter) {
+	base.lock.WLockFunc(func() {
+		if xycond.NotContainA(base.filters, f) {
+			base.filters = append(base.filters, f)
 		}
 	})
 }
 
-// RemoveFilter removes a specified filter. Passed filter must be a pointer.
+// RemoveFilter removes an existed filter.
 func (fr *filterer) RemoveFilter(f Filter) {
-	xycond.IsKind(f, reflect.Pointer).Assert("Expected a pointer of filter")
-
 	fr.lock.WLockFunc(func() {
 		for i := range fr.filters {
 			if fr.filters[i] == f {

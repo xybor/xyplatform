@@ -1,4 +1,4 @@
-// This file copies comments from sync/mutex.go (go1.18.4).
+// This module defines wrapper types of sync mutex, rwmutex, and semaphore.
 package xylock
 
 import (

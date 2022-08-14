@@ -4,68 +4,61 @@ import (
 	"fmt"
 )
 
-// xyerror.class (also called error class) is a special error with error number
-// and error name. Error number is a unique number for each error class and
-// helps to determine which module the error class belongs to.
+// Class is a special error with error number and error name. Error number is a
+// unique number of Class and helps to determine which module the error Class
+// belongs to.
 //
-// The purpose of error class is creating a xyerror, so that it should not be
-// used for returning.
+// The main purpose of error Class is creating a XyError, so that it should not
+// be used for returning.
 //
-// A error class can be created by one or many parent classes. The error class
-// without parent is called ROOT error class.
-//
-// The xyerror belongs to an error class C if this error is created by:
-//   + class C.
-//   + another error class which is created by C.
-type class struct {
-	// The unique number of each error class.
-	// If the error number is 100001, the module of this error class is DEFAULT
-	// (100000).
+// A Class can be created by one or many parent Classes. The Class without
+// parent is called root Class..
+type Class struct {
+	// The unique number of each Class.
 	errno int
 
-	// The error name of this class
+	// The error name
 	name string
 
 	// The parent classes
-	parent []class
+	parent []Class
 }
 
-// NewClassf creates a ROOT error class with string format.
-func (eid errorid) NewClass(name string, args ...any) class {
-	manager[eid].count += 1
-	return class{
-		errno:  manager[eid].count + int(eid),
+// NewClass creates a root Class with error number will be determined by
+// module's id in Generator.
+func (gen Generator) NewClass(name string, args ...any) Class {
+	manager[gen].count += 1
+	return Class{
+		errno:  manager[gen].count + gen.id,
 		name:   fmt.Sprintf(name, args...),
 		parent: nil,
 	}
 }
 
-// NewClass creates a new error class from this class as parent.
-func (c class) NewClass(name string, args ...any) class {
-	var eid = getErrorId(c.errno)
-	var child = eid.NewClass(name, args...)
-	child.parent = []class{c}
-	return child
+// NewClass creates a new Class with called Class as parent.
+func (c Class) NewClass(name string, args ...any) Class {
+	var gen = getGenerator(c.errno)
+	var class = gen.NewClass(name, args...)
+	class.parent = []Class{c}
+	return class
 }
 
-// NewClassM creates a new error class from this class as parent with another
-// errorid and same name.
-func (c class) NewClassM(eid errorid) class {
-	var child = eid.NewClass(c.name)
-	child.parent = []class{c}
-	return child
+// NewClassM creates a new error class with this class as parent. It has another
+// errorid and the same name.
+func (c Class) NewClassM(gen Generator) Class {
+	var class = gen.NewClass(c.name)
+	class.parent = []Class{c}
+	return class
 }
 
-// Newf creates a xyerror with string format.
-func (c class) New(msg string, a ...any) xyerror {
-	return xyerror{c: c, msg: fmt.Sprintf(msg, a...)}
+// New creates a XyError with an error message.
+func (c Class) New(msg string, a ...any) XyError {
+	return XyError{c: c, msg: fmt.Sprintf(msg, a...)}
 }
 
-// belongsTo checks if an error class is inherited from a target class. A class
-// belongs to thr target class if:
-//   + it is created by the target class.
-//   + it is created by the class which belongs to the target class.
-func (c class) belongsTo(t class) bool {
+// belongsTo checks if a Class is inherited from a target class. A class belongs
+// to the target Class if it is created by the target itself or target's child.
+func (c Class) belongsTo(t Class) bool {
 	if c.errno == t.errno {
 		return true
 	}
@@ -79,6 +72,7 @@ func (c class) belongsTo(t class) bool {
 	return false
 }
 
-func (c class) Error() string {
+// Error is the method to treat Class as an error.
+func (c Class) Error() string {
 	return fmt.Sprintf("[%d] %s", c.errno, c.name)
 }

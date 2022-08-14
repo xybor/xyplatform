@@ -4,8 +4,12 @@ import (
 	"github.com/xybor/xyplatform/xycond"
 )
 
-// errorid is the type of a group of errors in a module.
-type errorid int
+// Generator is used to generate root Class for every module. It is determined
+// by the identifier of module.
+type Generator struct {
+	// The identifier of module.
+	id int
+}
 
 // erroinfo includes the name and the number of created errors of an error id.
 type errorinfo struct {
@@ -14,34 +18,35 @@ type errorinfo struct {
 }
 
 // The minimum and default id of module
-const minId errorid = 100000
+var minid = 100000
 
 // manager is a map of errorid as key and errorinfo as value.
-var manager = make(map[errorid]*errorinfo)
+var manager = make(map[Generator]*errorinfo)
 
-// getErrorId returns the error id with the given errno.
-func getErrorId(errno int) errorid {
-	for id := range manager {
-		d := errno - int(id)
-		if d < 0 || d > int(eid) {
+// getGenerator returns the Generator with the given errno.
+func getGenerator(errno int) Generator {
+	for gen := range manager {
+		d := errno - gen.id
+		if d < 0 || d > gen.id {
 			continue
 		}
 
-		if d < int(minId) {
-			return id
+		if d < minid {
+			return gen
 		}
 	}
 
-	return 0
+	return Generator{0}
 }
 
-// Register adds a Module to pool for managing new error types.
-func Register(name string, id int) errorid {
-	xycond.Divisible(id, int(minId)).Assert(
-		"Cannot register: %d is not divisible by %d", id, minId)
-	var eid = errorid(id)
-	xycond.NotContainM(manager, eid).Assert("Id %d had already registered", id)
+// Register adds a Module with its identifier to managing pool for creating new
+// Classes.
+func Register(name string, id int) Generator {
+	xycond.Zero(id%minid).Assert(
+		"Cannot register: %d is not divisible by %d", id, minid)
+	var gen = Generator{id}
+	xycond.NotContainM(manager, gen).Assert("Id %d had already registered", id)
 
-	manager[eid] = &errorinfo{name: name, count: 0}
-	return eid
+	manager[gen] = &errorinfo{name: name, count: 0}
+	return gen
 }
