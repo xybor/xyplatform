@@ -39,7 +39,7 @@ func ContainM(m map, k any) Condition
 Besides, Xycond also has two functions to panic without using a `Condition`,
 they are `Panic` and `JustPanic`.
 
-Visit [pkg.dev.go](https://pkg.go.dev/github.com/xybor/xyplatform/xycond) for
+Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform/xycond) for
 more details.
 
 # Example

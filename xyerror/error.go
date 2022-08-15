@@ -2,10 +2,11 @@ package xyerror
 
 import (
 	"errors"
+	"fmt"
 )
 
-// XyError is the error of xyplatform. It supports checking if an error belongs
-// to a class or not.
+// XyError is an error supporting to check if an error belongs to a class or
+// not.
 //
 // errors.Is(err, cls) returns true if err is created by cls itself or cls's
 // child class.
@@ -19,7 +20,7 @@ type XyError struct {
 
 // Error is the method to treat XyError as an error.
 func (xerr XyError) Error() string {
-	return xerr.msg
+	return fmt.Sprintf("%s: %s", xerr.c.name, xerr.msg)
 }
 
 // Is is the method used to customize errors.Is method.
