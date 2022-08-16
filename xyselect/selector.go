@@ -51,7 +51,7 @@ func E() *Selector {
 }
 
 // RSelector is the reflect-version selector. It uses reflect module to handle
-// customized select statment.
+// customized select statement.
 func R() *Selector {
 	return &Selector{
 		selector: &rselector{
