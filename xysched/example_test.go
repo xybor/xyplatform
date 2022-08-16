@@ -60,7 +60,7 @@ func ExampleTask() {
 	// 1. foo
 	// 2. foo foo
 	// 3. foo bar
-	// 4. reflect: Call using string as type io.Writer
+	// 4. CallError: reflect: Call using string as type io.Writer
 }
 
 func ExampleGlobal() {
