@@ -6,8 +6,8 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// Semaphore is a wrapper of semaphore.Weighted. All method of Semaphore support
-// to do nothing if Semaphore pointer is nil.
+// Semaphore is a wrapper of semaphore.Weighted. All methods of Semaphore
+// support to do nothing if Semaphore pointer is nil.
 type Semaphore struct {
 	w *semaphore.Weighted
 }
