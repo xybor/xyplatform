@@ -51,8 +51,7 @@ xysched.Now() <- future
 xysched.Now() <- xysched.NewCron(fmt.Println, "welcome").Secondly()
 ```
 
-4. Increase x, then print a message. Loop over it seven times. After all, print
-x.
+4. Increase x, then print a message. Loop over seven times. After all, print x.
 ```golang
 var x int = 0
 var future = xyshed.NewCron(func(){ x++ }).Secondly().Times(7)
@@ -80,11 +79,11 @@ future.Catch(func(e error) { fmt.Println(e) })
 xysched.Now() <- future
 ```
 
-6. It can creates a new scheduler.
+6. Create a new scheduler if it is necessary.
 ```golang
 var scheduler = xysched.New()
 scheduler.After(3 * time.Second) <- xysched.NewTask(fmt.Println, "x")
 
-// A scheduler should be stopped if it isn't used anymore.
+// A scheduler should be stopped if it won't be used anymore.
 scheduler.Stop()
 ```
