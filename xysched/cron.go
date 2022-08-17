@@ -80,8 +80,8 @@ func (c *Cron) Twice() *Cron {
 func (c *Cron) Finish(f any, params ...any) *Task {
 	cb, ok := f.(future)
 	if ok {
-		xycond.Empty(params).
-			Assert("Do not pass params if f was already a tasker")
+		xycond.MustEmpty(params).
+			Assert("do not pass params if f was already a tasker")
 	} else {
 		cb = NewTask(f, params...)
 	}

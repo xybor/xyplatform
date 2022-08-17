@@ -9,19 +9,20 @@ import (
 // If the condition is false, the program will be panicked.
 type Condition bool
 
-func Not(c Condition) Condition {
+// not returns the reverse condition of the origin.
+func not(c Condition) Condition {
 	return !c
 }
 
-// JustAssert terminates the program without a message if condition fails.
+// JustAssert panics the program without a message if condition fails.
 func (c Condition) JustAssert() {
 	if !c {
 		panic("Something was wrong")
 	}
 }
 
-// Assert prints a formatted message and terminates the program if the
-// condition fails.
+// Assert prints a formatted message and panics the program if the condition
+// fails.
 func (c Condition) Assert(format string, args ...any) {
 	if !c {
 		panic(fmt.Sprintf(format, args...))
@@ -37,53 +38,66 @@ type number interface {
 	integer | float32 | float64
 }
 
-// Zero returns true if a is zero. Zero only accepts number parameter.
-func Zero[T number](a T) Condition {
+// MustZero returns true if a is zero. MustZero only accepts number parameter.
+func MustZero[T number](a T) Condition {
 	return Condition(a == 0)
 }
 
-// NotZero returns true if a is not zero. NotZero only accepts number parameter.
-func NotZero[T number](a T) Condition {
-	return Not(Zero(a))
+// MustNotZero returns true if a is not zero. MustNotZero only accepts number
+// parameter.
+func MustNotZero[T number](a T) Condition {
+	return not(MustZero(a))
 }
 
-// Nil returns true if a is nil.
-func Nil(a any) Condition {
+// MustNil returns true if a is nil.
+func MustNil(a any) Condition {
 	return Condition(a == nil)
 }
 
-// NotNil returns true if a is not nil.
-func NotNil(a any) Condition {
-	return Not(Nil(a))
+// MustNotNil returns true if a is not nil.
+func MustNotNil(a any) Condition {
+	return not(MustNil(a))
 }
 
-// Empty returns true if a is an empty string, slice, array, or channel.
-func Empty(a any) Condition {
-	return Zero(reflect.ValueOf(a).Len())
+// MustBeLengthType returns true if a is a string, slice, array, or chan.
+func MustBeLenghtType(a any) Condition {
+	return MustBe(a, reflect.String, reflect.Slice, reflect.Array, reflect.Chan)
 }
 
-// NotEmpty returns true if a is a not empty string, slice, array, or channel.
-func NotEmpty(a any) Condition {
-	return Not(Empty(a))
+// MustBeElemType returns true if a is LengthType or Pointer.
+func MustBeElemType(a any) Condition {
+	return MustBeLenghtType(a) || MustBe(a, reflect.Pointer)
 }
 
-// ContainM returns a condition checking if a map contains the key.
-func ContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
+// MustEmpty returns true if a is an empty string, slice, array, or channel.
+func MustEmpty(a any) Condition {
+	MustBeLenghtType(a).Assert("parameter must be a length type")
+	return MustZero(reflect.ValueOf(a).Len())
+}
+
+// MustNotEmpty returns true if a is a not empty string, slice, array, or
+// channel.
+func MustNotEmpty(a any) Condition {
+	MustBeLenghtType(a).Assert("parameter must be a length type")
+	return MustNotZero(reflect.ValueOf(a).Len())
+}
+
+// MustContainM returns true if map contains the key.
+func MustContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
 	_, ok := m[k]
-	return True(ok)
+	return MustTrue(ok)
 }
 
-// NotContainM returns a condition checking if a map doesn't contain the key.
-func NotContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
-	return Not(ContainM(m, k))
+// MustNotContainM returns true if map doesn't contain the key.
+func MustNotContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
+	return not(MustContainM(m, k))
 }
 
-// ContainA returns a condition checking if an array contains the element.
-func ContainA(a any, e any) Condition {
+// MustContainA returns true if array or slice contains the element.
+func MustContainA(a any, e any) Condition {
 	var v = reflect.ValueOf(a)
-	var kind = v.Kind()
-	Condition(kind == reflect.Array || kind == reflect.Slice).
-		Assert("Expected an array or slice, but got %s", kind)
+	MustBe(a, reflect.Array, reflect.Slice).
+		Assert("expected an array or slice, but got %s", v.Kind())
 
 	for i := 0; i < v.Len(); i++ {
 		if v.Index(i).Interface() == e {
@@ -93,26 +107,24 @@ func ContainA(a any, e any) Condition {
 	return Condition(false)
 }
 
-// NotContainA returns a condition checking if an array doesn't contains the
-// element.
-func NotContainA(a any, e any) Condition {
-	return Not(ContainA(a, e))
+// MustNotContainA returns true if array doesn't contains the element.
+func MustNotContainA(a any, e any) Condition {
+	return not(MustContainA(a, e))
 }
 
-// IsKind returns a condition checking if a value belongs to one of basic types.
-func IsKind(v any, kinds ...reflect.Kind) Condition {
+// MustBe returns a condition checking if a value belongs to one of basic types.
+func MustBe(v any, kinds ...reflect.Kind) Condition {
 	var kindV = reflect.TypeOf(v).Kind()
 	for i := range kinds {
 		if kindV == kinds[i] {
 			return Condition(true)
 		}
 	}
-
 	return Condition(false)
 }
 
-// SameType returns a condition checking if values are the same type.
-func SameType(v ...any) Condition {
+// MustSameType returns true if values are the same type.
+func MustSameType(v ...any) Condition {
 	var t0 = reflect.TypeOf(v[0])
 	for i := 1; i < len(v); i++ {
 		if t0 != reflect.TypeOf(v[i]) {
@@ -122,36 +134,36 @@ func SameType(v ...any) Condition {
 	return Condition(true)
 }
 
-// IsWritableChan returns true if channel is writable.
-func IsWritableChan(c any) Condition {
+// MustWritableChan returns true if channel is writable.
+func MustWritableChan(c any) Condition {
+	MustBe(c, reflect.Chan).Assert("c must be a channel")
 	var dir = reflect.TypeOf(c).ChanDir()
 	return dir == reflect.BothDir || dir == reflect.SendDir
 }
 
-// IsReadableChan returns true if channel is readable.
-func IsReadableChan(c any) Condition {
+// MustReadableChan returns true if channel is readable.
+func MustReadableChan(c any) Condition {
+	MustBe(c, reflect.Chan).Assert("c must be a channel")
 	var dir = reflect.TypeOf(c).ChanDir()
 	return dir == reflect.BothDir || dir == reflect.RecvDir
 }
 
-// True checks if b is true.
-func True(b bool) Condition {
+// MustTrue checks if b is true.
+func MustTrue(b bool) Condition {
 	return Condition(b)
 }
 
-// False checks if b is false
-func False(b bool) Condition {
-	return Not(True(b))
+// MustFalse checks if b is false.
+func MustFalse(b bool) Condition {
+	return not(MustTrue(b))
 }
 
-// JustPanic panics immediately. It is equivalent to
-// Condition(false).JustAssert()
+// JustPanic panics immediately.
 func JustPanic() {
-	Condition(false).JustAssert()
+	MustTrue(false).JustAssert()
 }
 
 // Panic panics with a formatted string.
 func Panic(msg string, a ...any) {
-	c := Condition(false)
-	c.Assert(msg, a...)
+	MustTrue(false).Assert(msg, a...)
 }

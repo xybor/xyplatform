@@ -92,13 +92,13 @@ func (s *Selector) Recv(c <-chan any) int {
 // Send adds a sending case to selector. The first parameter c must be a
 // writable channel. This method returns the index of the added case.
 func (s *Selector) Send(c any, v any) int {
-	xycond.IsWritableChan(c).
-		Assert("The first parameter of Send must be a writable channel.")
+	xycond.MustWritableChan(c).
+		Assert("the first parameter of Send must be a writable channel")
 
 	var cType = reflect.TypeOf(c)
 	var vType = reflect.TypeOf(v)
-	xycond.Condition(cType.Elem() == vType).Assert(
-		"channel and value must be the sametype, but got chan %s and %s.",
+	xycond.MustTrue(cType.Elem() == vType).Assert(
+		"channel and value must be the sametype, but got chan %s and %s",
 		cType.Elem(), vType)
 
 	return s.selector.send(c, v)
