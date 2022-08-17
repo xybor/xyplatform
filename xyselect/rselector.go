@@ -45,12 +45,16 @@ func (rs *rselector) xselect(isDefault bool) (index int, value any, err error) {
 	}
 
 	i, v, ok := reflect.Select(cases)
-	if i == len(cases)-1 && isDefault {
-		return 0, nil, DefaultCaseError.New("default case")
+	switch cases[i].Dir {
+	case reflect.SelectSend:
+		return i, nil, nil
+	case reflect.SelectRecv:
+		if ok {
+			return i, v.Interface(), nil
+		}
+		return i, nil, ClosedChannelError.New("channel closed")
+	default:
+		// reflect.SelectDefault
+		return -1, nil, nil
 	}
-	if !ok {
-		return i, nil, ClosedChannelError.New("channel is closed")
-	}
-
-	return i, v.Interface(), nil
 }

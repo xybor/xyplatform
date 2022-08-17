@@ -115,10 +115,10 @@ func (s *Selector) Send(c any, v any) int {
 // can proceed and then executes that case. If isDefault is true, it will be
 // the non-blocking select.
 //
-// It returns the index of the chosen case, the value received, and a error of
-// selector. Nil for the case of receiving is not closed. DefaultCaseError for
-// the case of default. ExhaustedError if there is no more available channel in
-// exhausted-selector.
+// It returns the index of the chosen case (-1 if default case), the value
+// received, and a error of selector. Nil for the case of receiving is not
+// closed. ClosedChannelError if the channel is closed in receiving case,
+// ExhaustedError if there is no more available channel in exhausted-selector.
 func (s *Selector) Select(isDefault bool) (index int, v any, err error) {
 	return s.selector.xselect(isDefault)
 }

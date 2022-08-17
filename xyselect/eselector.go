@@ -7,8 +7,9 @@ import (
 )
 
 type chanResult struct {
-	index int
-	value any
+	index  int
+	value  any
+	recvOK bool
 }
 
 // See documentation of E().
@@ -42,8 +43,9 @@ func (es *eselector) recv(c <-chan any) int {
 		// Until the channel is closed, receiving all it values then send them
 		// to the center channel.
 		for v := range c {
-			es.center <- chanResult{i, v}
+			es.center <- chanResult{i, v, true}
 		}
+		es.center <- chanResult{i, nil, false}
 
 		es.mu.Lock()
 		defer es.mu.Unlock()
@@ -70,19 +72,26 @@ func (es *eselector) xselect(isDefault bool) (index int, value any, recvOk error
 		select {
 		case r, ok = <-es.center:
 		default:
-			r = chanResult{-1, nil}
+			r = chanResult{-1, nil, false}
 			ok = true
 		}
 	} else {
 		r, ok = <-es.center
 	}
 
+	// Default case
 	if r.index == -1 {
-		return 0, nil, DefaultCaseError.New("default case")
+		return -1, nil, nil
 	}
 
+	// There is no live channel, the selector is exhausted.
 	if !ok {
 		return 0, nil, ExhaustedError.New("selector is exhausted")
+	}
+
+	// The channel closed.
+	if !r.recvOK {
+		return r.index, nil, ClosedChannelError.New("channel closed")
 	}
 
 	return r.index, r.value, nil
