@@ -7,7 +7,7 @@ import (
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// Logger represent a single logging channel. A "logging channel" indicates an
+// Logger represents a single logging channel. A "logging channel" indicates an
 // area of an application. Exactly how an "area" is defined is up to the
 // application developer. Since an application can have any number of areas,
 // logging channels are identified by a unique string. Application areas can be
