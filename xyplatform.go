@@ -18,7 +18,7 @@ func init() {
 			"%(message)s",
 	))
 
-	var logger = xylog.GetLogger("xyplatform")
+	var logger = xylog.GetLogger("xybor.xyplatform")
 	logger.SetLevel(xylog.WARNING)
 	logger.AddHandler(handler)
 }

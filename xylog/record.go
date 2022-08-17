@@ -17,7 +17,7 @@ type LogRecord struct {
 	// Textual time when the LogRecord was created.
 	Asctime string `map:"asctime"`
 
-	//Time when the LogRecord was created (time.Now().Unix() return value).
+	// Time when the LogRecord was created (time.Now().Unix() return value).
 	Created int64 `map:"created"`
 
 	// Filename portion of pathname.
