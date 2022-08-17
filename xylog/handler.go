@@ -97,8 +97,8 @@ func NewStreamHandler(name string) *StreamHandler {
 			mapHandler(name, handler)
 		}
 	} else {
-		xycond.SameType(handler, existedHandler).
-			Assert("Do use one name with two different handler types")
+		xycond.MustSameType(handler, existedHandler).
+			Assert("do use one name with two different handler types")
 		handler = existedHandler.(*StreamHandler)
 	}
 

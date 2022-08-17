@@ -26,7 +26,7 @@ func newfilterer() filterer {
 // AddFilter adds a specified filter.
 func (base *filterer) AddFilter(f Filter) {
 	base.lock.WLockFunc(func() {
-		if xycond.NotContainA(base.filters, f) {
+		if xycond.MustNotContainA(base.filters, f) {
 			base.filters = append(base.filters, f)
 		}
 	})

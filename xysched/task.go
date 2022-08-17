@@ -43,8 +43,8 @@ type Task struct {
 // future runs only one time.
 func NewTask(f any, params ...any) *Task {
 	var fv = reflect.ValueOf(f)
-	xycond.IsKind(f, reflect.Func).
-		Assert("Expected a function, but got %s", fv.Kind())
+	xycond.MustBe(f, reflect.Func).
+		Assert("expected a function, but got %s", fv.Kind())
 
 	return &Task{
 		fv: fv, params: params,
@@ -62,12 +62,12 @@ func NewTask(f any, params ...any) *Task {
 func (t *Task) Variadic(n int) *Task {
 	var ftype = t.fv.Type()
 	var nout = ftype.NumOut()
-	xycond.True(nout == 1).
-		Assert("Expected only one output, but %d found", nout)
+	xycond.MustTrue(nout == 1).
+		Assert("expected only one output, but %d found", nout)
 
 	var out = ftype.Out(0)
-	xycond.IsKind(out, reflect.Array, reflect.Slice).
-		Assert("Expected output as []any, but got %s", out.Kind())
+	xycond.MustBe(out, reflect.Array, reflect.Slice).
+		Assert("expected output as []any, but got %s", out.Kind())
 
 	t.variadic = true
 	t.ret = make([]any, n)
@@ -83,8 +83,8 @@ func (t *Task) Variadic(n int) *Task {
 func (t *Task) Callback(f any, params ...any) *Task {
 	cb, ok := f.(future)
 	if ok {
-		xycond.Empty(params).
-			Assert("Do not pass params if f was already a tasker")
+		xycond.MustEmpty(params).
+			Assert("do not pass params if f was already a future")
 	} else {
 		cb = NewTask(f, params...)
 	}
