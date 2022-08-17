@@ -113,14 +113,25 @@ func IsKind(v any, kinds ...reflect.Kind) Condition {
 
 // SameType returns a condition checking if values are the same type.
 func SameType(v ...any) Condition {
-	var k0 = reflect.TypeOf(v[0]).Kind()
+	var t0 = reflect.TypeOf(v[0])
 	for i := 1; i < len(v); i++ {
-		if k0 != reflect.TypeOf(v[i]).Kind() {
+		if t0 != reflect.TypeOf(v[i]) {
 			return Condition(false)
 		}
 	}
-
 	return Condition(true)
+}
+
+// IsWritableChan returns true if channel is writable.
+func IsWritableChan(c any) Condition {
+	var dir = reflect.TypeOf(c).ChanDir()
+	return dir == reflect.BothDir || dir == reflect.SendDir
+}
+
+// IsReadableChan returns true if channel is readable.
+func IsReadableChan(c any) Condition {
+	var dir = reflect.TypeOf(c).ChanDir()
+	return dir == reflect.BothDir || dir == reflect.RecvDir
 }
 
 // True checks if b is true.
