@@ -3,6 +3,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/xybor/xyplatform?color=yellow)
 ![GitHub top language](https://img.shields.io/github/languages/top/xybor/xyplatform?color=lightblue)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/xybor/xyplatform)
+![GitHub release (release name instead of tag name)](https://img.shields.io/github/v/release/xybor/xyplatform?include_prereleases)
 
 Xyplatform contains platform libraries developed by Xybor.
 
@@ -14,5 +15,7 @@ comparison and debugging.
 3. [xylock](./xylock) contains wrapper structs of built-in `sync` library, such
 as `sync.Mutex` or `semaphore.Weighted`.
 4. [xylog](./xylog) provides flexible logging methods to the program.
-5. [xyselect](./xyselect) is a library used to call `select` with an unknown
+5. [xysched](./xysched) provides a mechanism of job scheduling in future with a
+simple syntax.
+6. [xyselect](./xyselect) is a library used to call `select` with an unknown
 number of `case` statements.
