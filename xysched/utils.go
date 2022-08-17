@@ -18,8 +18,8 @@ func callFunc(fv reflect.Value, p []any, variadic bool) []any {
 		xycond.Condition(len(p) >= ninput-1).Assert(
 			"expected at least %d, but got %d parameters", ninput-1, len(p))
 	} else {
-		xycond.Condition(len(p) == ninput).Assert(
-			"expected %d, but got %d parameters", ninput, len(p))
+		xycond.Condition(len(p) == ninput).
+			Assert("expected %d, but got %d parameters", ninput, len(p))
 	}
 
 	in := make([]reflect.Value, len(p))

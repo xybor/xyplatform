@@ -42,8 +42,8 @@ func getGenerator(errno int) Generator {
 // Register adds a Module with its identifier to managing pool for creating new
 // Classes.
 func Register(name string, id int) Generator {
-	xycond.Zero(id%minid).Assert(
-		"Cannot register: %d is not divisible by %d", id, minid)
+	xycond.Condition(id%minid == 0).
+		Assert("Cannot register: %d is not divisible by %d", id, minid)
 	var gen = Generator{id}
 	xycond.NotContainM(manager, gen).Assert("Id %d had already registered", id)
 
