@@ -45,12 +45,12 @@ more details.
 # Example
 ```golang
 // Assert 1 == 2
-xycond.False(1 == 2).Assert("Weird")
+xycond.MustFalse(1 == 2).Assert("weird")
 
 // Assert x is 0
 var x int
-xycond.Zero(x).Assert("%d is not initialized with zero", x)
+xycond.MustZero(x).Assert("%d is not initialized with zero", x)
 
 // Assert string is empty, panic without any message if the condition fails.
-xycond.Empty("").JustAssert()
+xycond.MustEmpty("").JustAssert()
 ```

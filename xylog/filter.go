@@ -44,6 +44,11 @@ func (ftr *filterer) RemoveFilter(f Filter) {
 	})
 }
 
+// GetFilters returns all filters of filterer.
+func (ftr *filterer) GetFilters() []Filter {
+	return ftr.lock.RLockFunc(func() any { return ftr.filters }).([]Filter)
+}
+
 // filter checks all filters in filterer, if there is any failed filter, it will
 // returns false.
 func (ftr *filterer) filter(record LogRecord) bool {

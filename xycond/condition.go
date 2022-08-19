@@ -3,6 +3,7 @@ package xycond
 import (
 	"fmt"
 	"reflect"
+	"testing"
 )
 
 // Condition is a type of bool which later you must call JustAssert or Assert.
@@ -29,6 +30,20 @@ func (c Condition) Assert(format string, args ...any) {
 	}
 }
 
+// Test will call t.Error if condition is false.
+func (c Condition) Test(t *testing.T, args ...any) {
+	if !c {
+		t.Error(args...)
+	}
+}
+
+// Testf will call t.Errorf if condition is false.
+func (c Condition) Testf(t *testing.T, format string, args ...any) {
+	if !c {
+		t.Errorf(format, args...)
+	}
+}
+
 type integer interface {
 	int | int8 | int16 | int32 | int64 |
 		uint | uint8 | uint16 | uint32 | uint64
@@ -36,6 +51,34 @@ type integer interface {
 
 type number interface {
 	integer | float32 | float64
+}
+
+// MustEqual returns true if two values are the same.
+func MustEqual(a, b any) Condition {
+	MustSameType(a, b).Assert("two parameters must be the same type")
+	return Condition(a == b)
+}
+
+// MustNotEqual returns true if two values are not the same.
+func MustNotEqual(a, b any) Condition {
+	return not(MustEqual(a, b))
+}
+
+func MustPanic(f func()) (c Condition) {
+	defer func() {
+		var r = recover()
+		if r == nil {
+			c = false
+		}
+	}()
+
+	c = true
+	f()
+	return
+}
+
+func MustNotPanic(f func()) (c Condition) {
+	return not(MustPanic(f))
 }
 
 // MustZero returns true if a is zero. MustZero only accepts number parameter.
@@ -63,16 +106,6 @@ func MustNil(a any) Condition {
 // MustNotNil returns true if a is not nil.
 func MustNotNil(a any) Condition {
 	return not(MustNil(a))
-}
-
-// MustBeLengthType returns true if a is a string, slice, array, or chan.
-func MustBeLenghtType(a any) Condition {
-	return MustBe(a, reflect.String, reflect.Slice, reflect.Array, reflect.Chan)
-}
-
-// MustBeElemType returns true if a is LengthType or Pointer.
-func MustBeElemType(a any) Condition {
-	return MustBeLenghtType(a) || MustBe(a, reflect.Pointer)
 }
 
 // MustEmpty returns true if a is an empty string, slice, array, or channel.
@@ -107,10 +140,10 @@ func MustContainA(a any, e any) Condition {
 
 	for i := 0; i < v.Len(); i++ {
 		if v.Index(i).Interface() == e {
-			return Condition(true)
+			return true
 		}
 	}
-	return Condition(false)
+	return false
 }
 
 // MustNotContainA returns true if array doesn't contains the element.
@@ -118,15 +151,15 @@ func MustNotContainA(a any, e any) Condition {
 	return not(MustContainA(a, e))
 }
 
-// MustBe returns a condition checking if a value belongs to one of basic types.
+// MustBe returns true if value belongs to one of basic types.
 func MustBe(v any, kinds ...reflect.Kind) Condition {
 	var kindV = reflect.TypeOf(v).Kind()
 	for i := range kinds {
 		if kindV == kinds[i] {
-			return Condition(true)
+			return true
 		}
 	}
-	return Condition(false)
+	return false
 }
 
 // MustNotBe returns true if value doesn't belong to all of basic types.
@@ -134,15 +167,25 @@ func MustNotBe(v any, kinds ...reflect.Kind) Condition {
 	return not(MustBe(v, kinds...))
 }
 
+// MustBeLengthType returns true if a is a string, slice, array, or chan.
+func MustBeLenghtType(a any) Condition {
+	return MustBe(a, reflect.String, reflect.Slice, reflect.Array, reflect.Chan)
+}
+
+// MustBeElemType returns true if a is LengthType or Pointer.
+func MustBeElemType(a any) Condition {
+	return MustBeLenghtType(a) || MustBe(a, reflect.Pointer)
+}
+
 // MustSameType returns true if values are the same type.
 func MustSameType(v ...any) Condition {
 	var t0 = reflect.TypeOf(v[0])
 	for i := 1; i < len(v); i++ {
 		if t0 != reflect.TypeOf(v[i]) {
-			return Condition(false)
+			return false
 		}
 	}
-	return Condition(true)
+	return true
 }
 
 // MustWritableChan returns true if channel is writable.

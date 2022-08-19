@@ -2,8 +2,8 @@ package xylog
 
 import (
 	"bufio"
-	"fmt"
-	"os"
+	"io"
+	"log"
 	"runtime/debug"
 
 	"github.com/xybor/xyplatform/xycond"
@@ -35,7 +35,7 @@ type Handler struct {
 func NewHandler(name string, e Emitter) *Handler {
 	var handler = GetHandler(name)
 	xycond.MustNil(handler).Assert(
-		"The handler with name %s is associated with another Emitter", name)
+		"the handler with name %s is associated with another Emitter", name)
 
 	handler = &Handler{
 		f:         newfilterer(),
@@ -59,6 +59,7 @@ func (h *Handler) SetLevel(level int) {
 
 // SetFormatter sets the new formatter of handler.
 func (h *Handler) SetFormatter(f Formatter) {
+	xycond.MustNotNil(f).Assert("expected a not-nil Formatter")
 	h.lock.WLockFunc(func() { h.formatter = f })
 }
 
@@ -70,6 +71,11 @@ func (h *Handler) AddFilter(f Filter) {
 // RemoveFilter removes an existed filter.
 func (h *Handler) RemoveFilter(f Filter) {
 	h.f.RemoveFilter(f)
+}
+
+// GetFilters returns all filters of filterer.
+func (h *Handler) GetFilters() []Filter {
+	return h.f.GetFilters()
 }
 
 // filter checks all filters in filterer, if there is any failed filter, it will
@@ -101,7 +107,8 @@ type StreamEmitter struct {
 
 // NewStreamEmitter creates a StreamEmitter which writes message to a stream
 // (os.Stderr by default).
-func NewStreamEmitter(f *os.File) *StreamEmitter {
+func NewStreamEmitter(f io.Writer) *StreamEmitter {
+	xycond.MustNotNil(f).Assert("Expected a not nil file")
 	var stream = bufio.NewWriter(f)
 	stream.Flush()
 	return &StreamEmitter{stream: stream}
@@ -115,9 +122,8 @@ func (e *StreamEmitter) Emit(msg string) {
 	}
 
 	if err != nil {
-		os.Stderr.Write([]byte("------------ Logging error ------------\n"))
-		os.Stderr.Write([]byte(
-			fmt.Sprintf("An error occurs when logging: %s\n", err)))
-		debug.PrintStack()
+		log.Println("------------ Logging error ------------")
+		log.Printf("An error occurs when logging: %s\n", err)
+		log.Panic(string(debug.Stack()))
 	}
 }
