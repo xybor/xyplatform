@@ -10,120 +10,108 @@ import (
 	"github.com/xybor/xyplatform/xylock"
 )
 
-// Handler instances handle logging events.
+// Emitter instances dispatch logging events to specific destinations.
+type Emitter interface {
+	Emit(string)
+}
+
+// Handler handles logging events. Do NOT instantiated directly this struct.
 //
-// Any Handler created with a not-empty name will be associated with this name.
-// Later calls of this function with the same name will return the same Handler.
-// If a name is associated with a Handler type, do not reuse this name for other
-// types.
-type Handler interface {
-	handle(LogRecord)
-}
+// Any Handler with a not-empty name will be associated with its name.
+type Handler struct {
+	f *filterer
+	e Emitter
 
-// emiter instances dispatch logging events to specific destinations.
-type emiter interface {
-	emit(LogRecord)
-}
-
-// BaseHandler acts as a placeholder which defines the handler interface.
-// Handlers can optionally use Formatter instances to format records as desired.
-// By default, no formatter is specified; in this case, the 'raw' message as
-// determined by record.message is logged.
-type BaseHandler struct {
-	filterer
-
-	base      emiter
 	level     int
 	formatter Formatter
 	lock      xylock.RWLock
 }
 
-// newBaseHandler creates the baseHandler with a specified emiter as the base
-// object of baseHandler. This function is useful in create a new concrete
-// handler (rather than baseHandler).
-func newBaseHandler(e emiter) *BaseHandler {
-	return &BaseHandler{
-		filterer:  newfilterer(),
-		base:      e,
+// NewHandler creates a Handler with a specified Emitter.
+//
+// Any Handler with a not-empty name will be associated with its name. Calling
+// NewHandler twice with the same name will cause a panic. If you want to create
+// an anonymous Handler, call this function with an empty name.
+func NewHandler(name string, e Emitter) *Handler {
+	var handler = GetHandler(name)
+	xycond.MustNil(handler).Assert(
+		"The handler with name %s is associated with another Emitter", name)
+
+	handler = &Handler{
+		f:         newfilterer(),
+		e:         e,
 		level:     NOTSET,
 		formatter: defaultFormatter,
 		lock:      xylock.RWLock{},
 	}
-}
 
-// SetLevel sets the new logging level of handler. It is NOTSET by default.
-func (h *BaseHandler) SetLevel(level int) {
-	h.lock.WLockFunc(func() { h.level = checkLevel(level) })
-}
-
-// SetFormatter sets the new formatter of handler. It is defaultFormatter by
-// default.
-func (h *BaseHandler) SetFormatter(f Formatter) {
-	h.lock.WLockFunc(func() { h.formatter = f })
-}
-
-// format uses formatter to format the record.
-func (h *BaseHandler) format(record LogRecord) string {
-	return h.formatter.Format(record)
-}
-
-// handle handles a new record, it will check if the record should be logged or
-// not, then call emit if it is.
-func (h *BaseHandler) handle(record LogRecord) {
-	if h.filter(record) && record.LevelNo >= h.level {
-		h.lock.WLockFunc(func() { h.base.emit(record) })
-	}
-}
-
-// StreamHandler writes logging records, appropriately formatted, to a stream.
-// Note that this class does not close the stream, as os.Stdout or os.Stderr may
-// be used.
-type StreamHandler struct {
-	BaseHandler
-	stream *bufio.Writer
-}
-
-// NewStreamHandler returns a StreamHandler, the handler writes records to a
-// stream (os.Stderr by default).
-func NewStreamHandler(name string) *StreamHandler {
-	var handler *StreamHandler
-	var existedHandler = getHandler(name)
-	if existedHandler == nil {
-		handler = &StreamHandler{
-			stream: bufio.NewWriter(os.Stderr),
-		}
-		handler.BaseHandler = *newBaseHandler(handler)
-		if name != "" {
-			mapHandler(name, handler)
-		}
-	} else {
-		xycond.MustSameType(handler, existedHandler).
-			Assert("do use one name with two different handler types")
-		handler = existedHandler.(*StreamHandler)
+	if name != "" {
+		mapHandler(name, handler)
 	}
 
 	return handler
 }
 
-// SetStream sets a new stream for this handler. Note that this stream will not
-// be closed, so it may use os.Stderr or os.Stdout.
-func (hdr *StreamHandler) SetStream(f *os.File) {
-	var stream = bufio.NewWriter(f)
-	stream.Flush()
-	hdr.lock.WLockFunc(func() { hdr.stream = stream })
+// SetLevel sets the new logging level of handler. It is NOTSET by default.
+func (h *Handler) SetLevel(level int) {
+	h.lock.WLockFunc(func() { h.level = checkLevel(level) })
 }
 
-// emit will be called after a record was decided to log.
-func (hdr *StreamHandler) emit(record LogRecord) {
-	var msg = hdr.format(record)
-	if msg == "" {
-		return
-	}
+// SetFormatter sets the new formatter of handler.
+func (h *Handler) SetFormatter(f Formatter) {
+	h.lock.WLockFunc(func() { h.formatter = f })
+}
 
-	var err error
-	_, err = hdr.stream.WriteString(hdr.format(record) + "\n")
+// AddFilter adds a specified filter.
+func (h *Handler) AddFilter(f Filter) {
+	h.f.AddFilter(f)
+}
+
+// RemoveFilter removes an existed filter.
+func (h *Handler) RemoveFilter(f Filter) {
+	h.f.RemoveFilter(f)
+}
+
+// filter checks all filters in filterer, if there is any failed filter, it will
+// returns false.
+func (h *Handler) filter(r LogRecord) bool {
+	return h.f.filter(r)
+}
+
+// format uses formatter to format the record.
+func (h *Handler) format(record LogRecord) string {
+	var f = h.lock.RLockFunc(func() any { return h.formatter }).(Formatter)
+	return f.Format(record)
+}
+
+// handle handles a new record, it will check if the record should be logged or
+// not, then call emit if it is.
+func (h *Handler) handle(record LogRecord) {
+	var level = h.lock.RLockFunc(func() any { return h.level }).(int)
+	if h.filter(record) && record.LevelNo >= level {
+		h.e.Emit(h.format(record))
+	}
+}
+
+// StreamEmitter writes logging message to a stream. Note that this class does
+// not close the stream, as os.Stdout or os.Stderr may be used.
+type StreamEmitter struct {
+	stream *bufio.Writer
+}
+
+// NewStreamEmitter creates a StreamEmitter which writes message to a stream
+// (os.Stderr by default).
+func NewStreamEmitter(f *os.File) *StreamEmitter {
+	var stream = bufio.NewWriter(f)
+	stream.Flush()
+	return &StreamEmitter{stream: stream}
+}
+
+// Emit will be called after a record was decided to log.
+func (e *StreamEmitter) Emit(msg string) {
+	var _, err = e.stream.WriteString(msg + "\n")
 	if err == nil {
-		err = hdr.stream.Flush()
+		err = e.stream.Flush()
 	}
 
 	if err != nil {

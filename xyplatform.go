@@ -1,17 +1,14 @@
 package xyplatform
 
 import (
-	"os"
-
 	"github.com/xybor/xyplatform/xylog"
 )
 
 func init() {
-	var handler = xylog.NewStreamHandler("xyplatform")
-	handler.SetStream(os.Stdout)
+	var handler = xylog.NewHandler("xybor.xyplatform", xylog.StderrEmitter)
 	handler.SetLevel(xylog.WARNING)
 	handler.SetFormatter(xylog.NewTextFormatter(
-		"time=%(asctime)s+%(msecs)d " +
+		"time=%(asctime)s " +
 			"source=%(filename)s.%(funcname)s:%(lineno)d " +
 			"level=%(levelname)s " +
 			"module=%(module)s " +

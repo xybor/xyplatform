@@ -13,7 +13,7 @@ import (
 func init() {
 	rootLogger = newlogger("", nil)
 	rootLogger.SetLevel(WARNING)
-	handlerManager = make(map[string]Handler)
+	handlerManager = make(map[string]*Handler)
 }
 
 var (
@@ -26,6 +26,12 @@ var (
 	DEBUG    = 10
 	NOTSET   = 0
 )
+
+// StdoutEmitter is a shortcut of NewStreamEmitter(os.Stdout)
+var StdoutEmitter = NewStreamEmitter(os.Stdout)
+
+// StderrEmitter is a shortcut of NewStreamEmitter(os.Stderr)
+var StderrEmitter = NewStreamEmitter(os.Stderr)
 
 // startTime is used as the base when calculating the relative time of events.
 var startTime = time.Now().UnixMilli()
@@ -47,10 +53,10 @@ var timeLayout = time.RFC3339Nano
 var defaultFormatter = NewTextFormatter("%(message)s")
 
 // lastHandler is used when no handler is configured to handle the log record.
-var lastHandler = NewStreamHandler("")
+var lastHandler = NewHandler("", StderrEmitter)
 
 // handlerManager is a map to search handler by name.
-var handlerManager map[string]Handler
+var handlerManager map[string]*Handler
 
 var levelToName = map[int]string{
 	CRITICAL: "CRITICAL",
@@ -116,9 +122,9 @@ func checkLevel(level int) int {
 	}).(int)
 }
 
-// getHandler returns the handler associated with the name. If no handler found,
+// GetHandler returns the handler associated with the name. If no handler found,
 // returns nil.
-func getHandler(name string) Handler {
+func GetHandler(name string) *Handler {
 	var h, ok = handlerManager[name]
 	if ok {
 		return h
@@ -127,7 +133,7 @@ func getHandler(name string) Handler {
 }
 
 // mapHandler associates a name with a handler.
-func mapHandler(name string, h Handler) {
+func mapHandler(name string, h *Handler) {
 	xycond.MustNotContainM(handlerManager, name).
 		Assert("do not set handler with the same name (%s)", name)
 	handlerManager[name] = h
