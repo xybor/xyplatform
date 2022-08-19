@@ -116,6 +116,20 @@ func TestLoggerLogMethods(t *testing.T) {
 	}
 }
 
+func TestLoggerCallHandlerHierarchy(t *testing.T) {
+	var expectedMessage = "foo"
+	var handler = xylog.NewHandler("", &CapturedEmitter{})
+	var logger = xylog.GetLogger(t.Name())
+	logger.SetLevel(xylog.DEBUG)
+	logger.AddHandler(handler)
+
+	logger = xylog.GetLogger(t.Name() + ".main")
+	capturedOutput = ""
+	logger.Info(expectedMessage)
+	xycond.MustEqual(capturedOutput, expectedMessage).
+		Testf(t, "%s != %s", capturedOutput, expectedMessage)
+}
+
 func TestLoggerLogNoHandler(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 	logger.SetLevel(xylog.DEBUG)
