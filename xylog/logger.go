@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
 
@@ -61,6 +62,7 @@ func (lg *Logger) SetLevel(level int) {
 
 // AddHandler adds a new handler.
 func (lg *Logger) AddHandler(h *Handler) {
+	xycond.MustNotNil(h).Assert("expected a not-nil Handler")
 	lg.lock.WLockFunc(func() { lg.handlers = append(lg.handlers, h) })
 }
 
@@ -76,6 +78,11 @@ func (lg *Logger) RemoveHandler(h *Handler) {
 	})
 }
 
+// GetHandlers returns all handlers of logger.
+func (lg *Logger) GetHandlers() []*Handler {
+	return lg.lock.RLockFunc(func() any { return lg.handlers }).([]*Handler)
+}
+
 // AddFilter adds a specified filter.
 func (lg *Logger) AddFilter(f Filter) {
 	lg.f.AddFilter(f)
@@ -84,6 +91,11 @@ func (lg *Logger) AddFilter(f Filter) {
 // RemoveFilter removes an existed filter.
 func (lg *Logger) RemoveFilter(f Filter) {
 	lg.f.RemoveFilter(f)
+}
+
+// GetFilters returns all filters of filterer.
+func (lg *Logger) GetFilters() []Filter {
+	return lg.f.GetFilters()
 }
 
 // filter checks all filters in filterer, if there is any failed filter, it will
@@ -143,6 +155,7 @@ func (lg *Logger) Critical(msg string, a ...any) {
 
 // Log logs a message with a custom level.
 func (lg *Logger) Log(level int, msg string, a ...any) {
+	level = checkLevel(level)
 	if lg.isEnabledFor(level) {
 		lg.log(level, fmt.Sprintf(msg, a...))
 	}
@@ -151,7 +164,7 @@ func (lg *Logger) Log(level int, msg string, a ...any) {
 // log is a low-level logging method which creates a LogRecord and then calls
 // all the handlers of this logger to handle the record.
 func (lg *Logger) log(level int, msg string) {
-	pc, filename, lineno, ok := runtime.Caller(2)
+	var pc, filename, lineno, ok = runtime.Caller(2)
 	if !ok {
 		filename = "unknown"
 		lineno = -1

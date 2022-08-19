@@ -109,6 +109,19 @@ if it allows to log the `LogRecord`, and vice versa.
 
 `Filter` can be used in both `Handler` and `Logger`.
 
+
+# Benchmark
+
+| op name            | time per op |
+|--------------------|-------------|
+| GetSameLogger      |        180ns|
+| GetRandomLogger    |        315ns|
+| GetSameHandler     |          5ns|
+| GetRandomHandler   |         17ns|
+| TextFormatter      |       9352ns|
+| LogWithoutHandler  |         31ns|
+| LogWithOneHandler  |       9172ns|
+
 # Example
 ## Simple usage
 ```golang

@@ -19,3 +19,6 @@ jobs:
 
     - name: Test
       run: go test -v -race ./...
+
+    - name: Bench
+      run: go test -benchmem -run=^$ -bench . ./...

@@ -16,7 +16,7 @@ func init() {
 	handlerManager = make(map[string]*Handler)
 }
 
-var (
+const (
 	CRITICAL = 50
 	FATAL    = CRITICAL
 	ERROR    = 40
