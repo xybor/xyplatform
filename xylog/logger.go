@@ -192,7 +192,7 @@ func (lg *Logger) callHandlers(record LogRecord) {
 	var found = 0
 	for c != nil {
 		for i := range c.handlers {
-			lg.handlers[i].handle(record)
+			c.handlers[i].handle(record)
 			found += 1
 		}
 		c = c.parent
