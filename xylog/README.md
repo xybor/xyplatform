@@ -7,11 +7,12 @@ This package is inspired by idea of Python `logging`.
 The basic structs defined by the module, together with their functions, are
 listed below.
 1. Loggers expose the interface that application code directly uses.
-2. Handlers send the log records (created by loggers) to the appropriate
-destination.
-3. Filters provide a finer grained facility for determining which log records to
+2. Handlers convert log records (created by loggers) to log messages, then send
+them to the Emitter.
+3. Emitters write log messages to appropriate destination.
+4. Filters provide a finer grained facility for determining which log records to
 output.
-4. Formatters specify the layout of log records in the final output.
+5. Formatters specify the layout of log records in the final output.
 
 Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform/xylog) for
 more details.
@@ -54,17 +55,24 @@ name is lost.
 | NOTSET         |               0|
 
 ## Handler
-`Handler` instances handle logging events.
+`Handler` handles logging events. A `Handler` need to be instantiated with an `Emitter` instance rather than creating directly.
 
-Any `Handler` created with a not-empty name will be associated with this name.
-Later calls of this function with the same name will return the same `Handler`.
-If a name is associated with a `Handler` type, do not reuse this name for other
-types.
+Any `Handler` with a not-empty name will be associated with its name. Calling
+`NewHandler` twice with the same name will cause a panic. If you want to create
+an anonymous `Handler`, call this function with an empty name.
+
+To get an existed `Handler`, call `GetHandler` with its name. 
 
 `Handler` can use `SetFormatter` method to format the logging message.
 
-Each `Handler` has its own way and place to log the message. Such as
-`SteamHandler` is used to log into stdout or stderr.
+Like `Logger`, `Handler` is also able to call `AddFilter`.
+
+## Emitter
+`Emitter` instances write log messages to specified destination.
+
+Two basic built-in `Emitter` instances are `xylog.StdoutEmitter` and
+`xylog.StderrEmitter`.
+
 
 ## Formatter
 `Formatter` instances are used to convert a `LogRecord` to text.
@@ -104,7 +112,7 @@ if it allows to log the `LogRecord`, and vice versa.
 # Example
 ## Simple usage
 ```golang
-var handler = xylog.StreamHandler("xybor")
+var handler = xylog.NewHandler("xybor", xylog.StdoutEmitter)
 handler.SetFormatter(xylog.NewTextFormmater("%(level)s %(message)s"))
 
 var logger = xylog.GetLogger("xybor.service")
@@ -115,6 +123,18 @@ logger.Debug("foo")
 
 // Output:
 // DEBUG foo
+```
+
+## Get the existed Handler
+```golang
+// Get the handler of the first example.
+var handler = xylog.GetHandler("xybor")
+var logger = xylog.GetLogger("xybor.example")
+logger.AddHandler(handler)
+logger.Critical("foo foo")
+
+// Output:
+// CRITICAL foo foo
 ```
 
 ## Filter definition
@@ -128,7 +148,7 @@ func (f *LoggerNameFilter) Filter(r xylog.LogRecord) bool {
     return f.name == r.name
 }
 
-// Get the logger of above example
+// Get the logger of the first example.
 var logger = xylog.GetLogger("xybor.service")
 logger.AddFilter(&LoggerNameFilter{"xybor.service.chat"})
 
@@ -144,7 +164,7 @@ xylog.GetLogger("xybor.service.chat").Debug("chat foo")
 ```golang
 // A simple program with only one application area could use directly the root
 // logger.
-var handler = xylog.StreamHandler("")
+var handler = xylog.NewHandler("", xylog.StdoutEmitter)
 xylog.SetLevel(xylog.DEBUG)
 xylog.AddHandler(handler)
 

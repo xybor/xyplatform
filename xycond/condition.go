@@ -51,7 +51,13 @@ func MustNotZero[T number](a T) Condition {
 
 // MustNil returns true if a is nil.
 func MustNil(a any) Condition {
-	return Condition(a == nil)
+	if a == nil {
+		return true
+	}
+	if MustNotBe(a, reflect.Pointer) {
+		return false
+	}
+	return Condition(reflect.ValueOf(a).IsNil())
 }
 
 // MustNotNil returns true if a is not nil.
@@ -121,6 +127,11 @@ func MustBe(v any, kinds ...reflect.Kind) Condition {
 		}
 	}
 	return Condition(false)
+}
+
+// MustNotBe returns true if value doesn't belong to all of basic types.
+func MustNotBe(v any, kinds ...reflect.Kind) Condition {
+	return not(MustBe(v, kinds...))
 }
 
 // MustSameType returns true if values are the same type.

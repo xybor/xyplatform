@@ -16,28 +16,28 @@ type filterer struct {
 	lock    xylock.RWLock
 }
 
-func newfilterer() filterer {
-	return filterer{
+func newfilterer() *filterer {
+	return &filterer{
 		filters: nil,
 		lock:    xylock.RWLock{},
 	}
 }
 
 // AddFilter adds a specified filter.
-func (base *filterer) AddFilter(f Filter) {
-	base.lock.WLockFunc(func() {
-		if xycond.MustNotContainA(base.filters, f) {
-			base.filters = append(base.filters, f)
+func (ftr *filterer) AddFilter(f Filter) {
+	ftr.lock.WLockFunc(func() {
+		if xycond.MustNotContainA(ftr.filters, f) {
+			ftr.filters = append(ftr.filters, f)
 		}
 	})
 }
 
 // RemoveFilter removes an existed filter.
-func (base *filterer) RemoveFilter(f Filter) {
-	base.lock.WLockFunc(func() {
-		for i := range base.filters {
-			if base.filters[i] == f {
-				base.filters = append(base.filters[:i], base.filters[i+1:]...)
+func (ftr *filterer) RemoveFilter(f Filter) {
+	ftr.lock.WLockFunc(func() {
+		for i := range ftr.filters {
+			if ftr.filters[i] == f {
+				ftr.filters = append(ftr.filters[:i], ftr.filters[i+1:]...)
 				break
 			}
 		}
@@ -46,15 +46,15 @@ func (base *filterer) RemoveFilter(f Filter) {
 
 // filter checks all filters in filterer, if there is any failed filter, it will
 // returns false.
-func (f *filterer) filter(record LogRecord) bool {
+func (ftr *filterer) filter(record LogRecord) bool {
 	// Avoid calling locks.
-	if len(f.filters) == 0 {
+	if len(ftr.filters) == 0 {
 		return true
 	}
 
-	return f.lock.RLockFunc(func() any {
-		for i := range f.filters {
-			if !f.filters[i].Filter(record) {
+	return ftr.lock.RLockFunc(func() any {
+		for i := range ftr.filters {
+			if !ftr.filters[i].Filter(record) {
 				return false
 			}
 		}

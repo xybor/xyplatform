@@ -19,13 +19,13 @@ import (
 // "input.gnu" for the sub-levels. There is no arbitrary limit to the depth of
 // nesting.
 type Logger struct {
-	filterer
+	f *filterer
 
 	fullname string
 	children map[string]*Logger
 	parent   *Logger
 	level    int
-	handlers []Handler
+	handlers []*Handler
 	lock     xylock.RWLock
 	cache    map[int]bool
 }
@@ -41,7 +41,7 @@ func newlogger(name string, parent *Logger) *Logger {
 	}
 
 	return &Logger{
-		filterer: newfilterer(),
+		f:        newfilterer(),
 		fullname: name,
 		children: make(map[string]*Logger),
 		parent:   parent,
@@ -60,12 +60,12 @@ func (lg *Logger) SetLevel(level int) {
 }
 
 // AddHandler adds a new handler.
-func (lg *Logger) AddHandler(h Handler) {
+func (lg *Logger) AddHandler(h *Handler) {
 	lg.lock.WLockFunc(func() { lg.handlers = append(lg.handlers, h) })
 }
 
 // RemoveHandler removes an existed handler.
-func (lg *Logger) RemoveHandler(h Handler) {
+func (lg *Logger) RemoveHandler(h *Handler) {
 	lg.lock.WLockFunc(func() {
 		for i := range lg.handlers {
 			if lg.handlers[i] == h {
@@ -74,6 +74,22 @@ func (lg *Logger) RemoveHandler(h Handler) {
 			}
 		}
 	})
+}
+
+// AddFilter adds a specified filter.
+func (lg *Logger) AddFilter(f Filter) {
+	lg.f.AddFilter(f)
+}
+
+// RemoveFilter removes an existed filter.
+func (lg *Logger) RemoveFilter(f Filter) {
+	lg.f.RemoveFilter(f)
+}
+
+// filter checks all filters in filterer, if there is any failed filter, it will
+// returns false.
+func (lg *Logger) filter(r LogRecord) bool {
+	return lg.f.filter(r)
 }
 
 // Debug calls Log with DEBUG level.

@@ -7,10 +7,14 @@ import (
 	"github.com/xybor/xyplatform/xylog"
 )
 
+// NOTE: In example_test.go, xylog.StdoutEmitter is not accepted as the compared
+// output. For this reason, in all examples, we must create a new one.
+// In reality, you should use xylog.StdoutEmitter or xylog.StderrEmitter
+// instead.
+
 func Example() {
 	// You can directly use xylog functions to log with the root logger.
-	var handler = xylog.NewStreamHandler("")
-	handler.SetStream(os.Stdout)
+	var handler = xylog.NewHandler("", xylog.NewStreamEmitter(os.Stdout))
 
 	xylog.SetLevel(xylog.DEBUG)
 	xylog.AddHandler(handler)
@@ -25,8 +29,7 @@ func Example() {
 }
 
 func ExampleGetLogger() {
-	var handler = xylog.NewStreamHandler("")
-	handler.SetStream(os.Stdout)
+	var handler = xylog.NewHandler("", xylog.NewStreamEmitter(os.Stdout))
 	handler.SetFormatter(xylog.NewTextFormatter(
 		"module=%(name)s level=%(levelname)s %(message)s"))
 
@@ -42,8 +45,8 @@ func ExampleGetLogger() {
 func ExampleHandler() {
 	// You can use a handler throughout program without storing it in global
 	// scope. All handlers can be identified by their names.
-	var handlerA = xylog.NewStreamHandler("bar")
-	var handlerB = xylog.NewStreamHandler("bar")
+	var handlerA = xylog.NewHandler("example", xylog.StdoutEmitter)
+	var handlerB = xylog.GetHandler("example")
 	if handlerA == handlerB {
 		fmt.Println("handlerA == handlerB")
 	} else {
@@ -51,8 +54,8 @@ func ExampleHandler() {
 	}
 
 	// In case name is an empty string, it totally is a fresh handler.
-	var handlerC = xylog.NewStreamHandler("")
-	var handlerD = xylog.NewStreamHandler("")
+	var handlerC = xylog.NewHandler("", xylog.StdoutEmitter)
+	var handlerD = xylog.NewHandler("", xylog.StdoutEmitter)
 	if handlerC == handlerD {
 		fmt.Println("handlerC == handlerD")
 	} else {
