@@ -61,7 +61,7 @@ type number interface {
 // MustEqual returns true if two values are the same.
 func MustEqual(a, b any) Condition {
 	MustSameType(a, b).Assert("two parameters must be the same type")
-	return Condition(a == b)
+	return a == b
 }
 
 // MustNotEqual returns true if two values are not the same.
