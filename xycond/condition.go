@@ -3,8 +3,13 @@ package xycond
 import (
 	"fmt"
 	"reflect"
-	"testing"
 )
+
+// tester instances represent testing.T or testing.B.
+type tester interface {
+	Error(...any)
+	Errorf(string, ...any)
+}
 
 // Condition is a type of bool which later you must call JustAssert or Assert.
 // If the condition is false, the program will be panicked.
@@ -31,14 +36,14 @@ func (c Condition) Assert(format string, args ...any) {
 }
 
 // Test will call t.Error if condition is false.
-func (c Condition) Test(t *testing.T, args ...any) {
+func (c Condition) Test(t tester, args ...any) {
 	if !c {
 		t.Error(args...)
 	}
 }
 
 // Testf will call t.Errorf if condition is false.
-func (c Condition) Testf(t *testing.T, format string, args ...any) {
+func (c Condition) Testf(t tester, format string, args ...any) {
 	if !c {
 		t.Errorf(format, args...)
 	}
@@ -69,10 +74,11 @@ func MustPanic(f func()) (c Condition) {
 		var r = recover()
 		if r == nil {
 			c = false
+		} else {
+			c = true
 		}
 	}()
 
-	c = true
 	f()
 	return
 }
@@ -83,7 +89,7 @@ func MustNotPanic(f func()) (c Condition) {
 
 // MustZero returns true if a is zero. MustZero only accepts number parameter.
 func MustZero[T number](a T) Condition {
-	return Condition(a == 0)
+	return a == 0
 }
 
 // MustNotZero returns true if a is not zero. MustNotZero only accepts number
@@ -134,12 +140,12 @@ func MustNotContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
 
 // MustContainA returns true if array or slice contains the element.
 func MustContainA(a any, e any) Condition {
-	var v = reflect.ValueOf(a)
+	var va = reflect.ValueOf(a)
 	MustBe(a, reflect.Array, reflect.Slice).
-		Assert("expected an array or slice, but got %s", v.Kind())
+		Assert("expected an array or slice, but got %s", va.Kind())
 
-	for i := 0; i < v.Len(); i++ {
-		if v.Index(i).Interface() == e {
+	for i := 0; i < va.Len(); i++ {
+		if va.Index(i).Interface() == e {
 			return true
 		}
 	}

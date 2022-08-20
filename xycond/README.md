@@ -8,7 +8,7 @@ commands.
 # Features
 This package has only one struct, `Condition`, a type alias of `bool`.
 
-The package defines two methods for this struct:
+The package defines the following methods for this struct:
 ```golang
 // Panic without message if the Condition fails.
 func (Condition) JustAssert()
@@ -16,24 +16,34 @@ func (Condition) JustAssert()
 // Panic with a formatted messsage if the Condition fails.
 func (Condition) Assert(msg string, a ...any)
 ```
+```golang
+// Test will call t.Error if condition is false.
+func (c Condition) Test(t tester, args ...any)
+
+// Testf will call t.Errorf if condition is false.
+func (c Condition) Testf(t tester, format string, args ...any)
+```
 
 There are many functions to create `Condition` instances. Example:
 ```golang
 // Check condition directly.
-func True(bool) Condition
-func False(bool) Condition
+func MustTrue(bool) Condition
+func MustFalse(bool) Condition
 
-// Assert a number is zero.
-func Zero(number) Condition
+// Assert a number to be zero.
+func MustZero(number) Condition
 
-// Assert an object is nil.
-func Nil(any) Condition
+// Assert an object to be nil.
+func MustNil(any) Condition
 
-// Assert a slice contains the element.
-func ContainA(a any, e any) Condition
+// Assert a slice or array to contain the element.
+func MustContainA(a any, e any) Condition
 
-// Assert a map contains the key.
-func ContainM(m map, k any) Condition
+// Assert a map to contain the key.
+func MustContainM(m map, k any) Condition
+
+// Assert a snippet of code to cause a panic.
+func MustPanic(f func()) Condition
 ```
 
 Besides, Xycond also has two functions to panic without using a `Condition`,
