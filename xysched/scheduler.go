@@ -56,9 +56,9 @@ func (s *Scheduler) After(d time.Duration) chan<- future {
 		var done = make(chan any)
 		select {
 		case <-s.stop:
-		case t := <-c:
+		case f := <-c:
 			timer = time.AfterFunc(d, func() {
-				s.futureQ <- t
+				s.futureQ <- f
 				close(done)
 			})
 		}

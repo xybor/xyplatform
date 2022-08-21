@@ -2,13 +2,14 @@ package xycond
 
 import (
 	"fmt"
+	"log"
 	"reflect"
+	"runtime"
 )
 
 // tester instances represent testing.T or testing.B.
 type tester interface {
-	Error(...any)
-	Errorf(string, ...any)
+	Fail()
 }
 
 // Condition is a type of bool which later you must call JustAssert or Assert.
@@ -38,14 +39,24 @@ func (c Condition) Assert(format string, args ...any) {
 // Test will call t.Error if condition is false.
 func (c Condition) Test(t tester, args ...any) {
 	if !c {
-		t.Error(args...)
+		var _, fn, ln, ok = runtime.Caller(1)
+		if ok {
+			fmt.Printf("%s:%d: ", fn, ln)
+		}
+		fmt.Println(args...)
+		t.Fail()
 	}
 }
 
 // Testf will call t.Errorf if condition is false.
 func (c Condition) Testf(t tester, format string, args ...any) {
 	if !c {
-		t.Errorf(format, args...)
+		var _, fn, ln, ok = runtime.Caller(1)
+		if ok {
+			log.Printf("%s:%d\n", fn, ln)
+		}
+		log.Printf(format, args...)
+		t.Fail()
 	}
 }
 
@@ -76,6 +87,7 @@ func MustPanic(f func()) (c Condition) {
 			c = false
 		} else {
 			c = true
+			log.Println(r)
 		}
 	}()
 

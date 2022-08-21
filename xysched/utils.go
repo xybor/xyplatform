@@ -6,23 +6,9 @@ import (
 	"github.com/xybor/xyplatform/xycond"
 )
 
-// callFunc calls a function and returns its returned values. This function
-// return a non-nil error if parameter is mismatched or function panics.
-//
-// if variadic is true, this function will convert the returned values from
-// []any to ...any. It is helpful to pass them as parameters of other functions.
-func callFunc(fv reflect.Value, p []any, variadic bool) []any {
-	var ftype = fv.Type()
-	var ninput = ftype.NumIn()
-	if ftype.IsVariadic() {
-		xycond.MustTrue(len(p) >= ninput-1).Assert(
-			"expected at least %d, but got %d parameters", ninput-1, len(p))
-	} else {
-		xycond.MustTrue(len(p) == ninput).
-			Assert("expected %d, but got %d parameters", ninput, len(p))
-	}
-
-	in := make([]reflect.Value, len(p))
+// callFunc calls a function and returns its returned values.
+func callFunc(fv reflect.Value, p []any) []any {
+	var in = make([]reflect.Value, len(p))
 	for k, param := range p {
 		in[k] = reflect.ValueOf(param)
 	}
@@ -33,8 +19,58 @@ func callFunc(fv reflect.Value, p []any, variadic bool) []any {
 		iresult = append(iresult, result[i].Interface())
 	}
 
-	if variadic {
-		iresult = iresult[0].([]any)
-	}
 	return iresult
+}
+
+// checkParam panics if function input can not fit with params.
+func checkParam(params []reflect.Type, in []reflect.Type, isVariadic bool) {
+	var ninput = len(params)
+	if isVariadic {
+		ninput--
+	}
+	xycond.MustFalse(len(in) < ninput).
+		Assert("call with too few input arguments")
+	if !isVariadic {
+		xycond.MustFalse(len(in) > ninput).
+			Assert("call with too many input arguments")
+	}
+
+	for i := range in {
+		xycond.MustNotEqual(in[i].Kind(), reflect.Invalid).
+			Assert("using zero Value argument")
+	}
+
+	for i := 0; i < ninput; i++ {
+		xycond.MustTrue(in[i].AssignableTo(params[i])).
+			Assert("using %s as type %s", in[i].String(), params[i].String())
+	}
+}
+
+// anyArrayToTypeArray converts an array of any to array of reflect.Type.
+func anyArrayToTypeArray(a []any) []reflect.Type {
+	var in = make([]reflect.Type, len(a))
+	for i := range a {
+		in[i] = reflect.TypeOf(a[i])
+	}
+	return in
+}
+
+// getFuncIn returns all function's input parameters under an array of
+// reflect.Type.
+func getFuncIn(f reflect.Type) []reflect.Type {
+	var in = make([]reflect.Type, f.NumIn())
+	for i := range in {
+		in[i] = f.In(i)
+	}
+	return in
+}
+
+// getFuncOut returns all function's output parameters under an array of
+// reflect.Type.
+func getFuncOut(f reflect.Type) []reflect.Type {
+	var in = make([]reflect.Type, f.NumOut())
+	for i := range in {
+		in[i] = f.Out(i)
+	}
+	return in
 }

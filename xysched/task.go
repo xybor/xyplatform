@@ -41,37 +41,27 @@ type Task struct {
 
 // NewTask creates a future which runs function f with parameters params. This
 // future runs only one time.
-func NewTask(f any, params ...any) *Task {
+func NewTask(f any, p ...any) *Task {
 	var fv = reflect.ValueOf(f)
-	xycond.MustBe(f, reflect.Func).
-		Assert("expected a function, but got %s", fv.Kind())
+	var ft = fv.Type()
+	var params = anyArrayToTypeArray(p)
+	checkParam(getFuncIn(ft), params, ft.IsVariadic())
 
 	return &Task{
-		fv: fv, params: params,
-		variadic: false, ret: make([]any, fv.Type().NumOut()),
+		fv: fv, params: p,
+		variadic: false, ret: make([]any, ft.NumOut()),
 		cb: make([]future, 0), lock: xylock.Lock{},
 	}
 }
 
-// Variadic requires the task to convert returned values from []any to ...any.
-// It is helpful if you are using a generic function in task (output is []any)
-// and want to pass them to another callback function as variadic instead of
-// slice or array.
-//
-// n is the number of returned values of function.
-func (t *Task) Variadic(n int) *Task {
-	var ftype = t.fv.Type()
-	var nout = ftype.NumOut()
-	xycond.MustTrue(nout == 1).
-		Assert("expected only one output, but %d found", nout)
-
-	var out = ftype.Out(0)
-	xycond.MustBe(out, reflect.Array, reflect.Slice).
-		Assert("expected output as []any, but got %s", out.Kind())
-
-	t.variadic = true
-	t.ret = make([]any, n)
-	return t
+// newPlaceholderTask creates a Task whose parameters is determined later.
+func newPlaceholderTask(f any) *Task {
+	var fv = reflect.ValueOf(f)
+	return &Task{
+		fv: fv, params: nil,
+		variadic: false, ret: make([]any, fv.Type().NumOut()),
+		cb: make([]future, 0), lock: xylock.Lock{},
+	}
 }
 
 // Callback sets a callback future which will run after the task completed. The
@@ -102,7 +92,9 @@ func (t *Task) Callback(f any, params ...any) *Task {
 //
 // It returns the callback task.
 func (t *Task) Then(f any) *Task {
-	var cb = NewTask(f)
+	var ft = reflect.TypeOf(f)
+	checkParam(getFuncIn(ft), getFuncOut(t.fv.Type()), ft.IsVariadic())
+	var cb = newPlaceholderTask(f)
 	t.onsuccess = append(t.onsuccess, cb)
 	return cb
 }
@@ -112,7 +104,15 @@ func (t *Task) Then(f any) *Task {
 //
 // It returns the callback task.
 func (t *Task) Catch(f any) *Task {
-	var cb = NewTask(f)
+	var ft = reflect.TypeOf(f)
+	xycond.MustTrue(ft.NumIn() == 1).
+		Assert("catch function must have exact one parameter")
+
+	var errtype = reflect.TypeOf((*error)(nil)).Elem()
+	xycond.MustTrue(ft.In(0).AssignableTo(errtype)).
+		Assert("catch function's parameter must be an error")
+
+	var cb = newPlaceholderTask(f)
 	t.onfailure = append(t.onfailure, cb)
 	return cb
 }
@@ -132,7 +132,7 @@ func (t *Task) run() {
 	}
 
 	t.lock.LockFunc(func() {
-		v := callFunc(t.fv, t.params, t.variadic)
+		v := callFunc(t.fv, t.params)
 		copy(t.ret, v)
 		t.recover = nil
 	})

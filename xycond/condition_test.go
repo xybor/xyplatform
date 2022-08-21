@@ -323,12 +323,8 @@ func TestConditionJustAssertNotOccur(t *testing.T) {
 
 type panictester struct{}
 
-func (*panictester) Error(a ...any) {
+func (*panictester) Fail() {
 	xycond.JustPanic()
-}
-
-func (*panictester) Errorf(m string, a ...any) {
-	xycond.Panic(m, a...)
 }
 
 func TestConditionTest(t *testing.T) {
