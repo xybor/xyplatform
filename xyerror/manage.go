@@ -26,7 +26,7 @@ var manager = make(map[Generator]*errorinfo)
 // getGenerator returns the Generator with the given errno.
 func getGenerator(errno int) Generator {
 	for gen := range manager {
-		d := errno - gen.id
+		var d = errno - gen.id
 		if d < 0 || d > gen.id {
 			continue
 		}

@@ -29,7 +29,7 @@ func ExampleXyError() {
 	// errors.Is.
 	var NegativeIndexError = xyerror.IndexError.NewClass("NegativeIndexError")
 
-	err1 := xyerror.ValueError.New("some value error")
+	var err1 = xyerror.ValueError.New("some value error")
 	if errors.Is(err1, xyerror.ValueError) {
 		fmt.Println("err1 is a ValueError")
 	}
@@ -37,7 +37,7 @@ func ExampleXyError() {
 		fmt.Println("err1 is not a NegativeIndexError")
 	}
 
-	err2 := NegativeIndexError.New("some negative index error")
+	var err2 = NegativeIndexError.New("some negative index error")
 	if errors.Is(err2, NegativeIndexError) {
 		fmt.Println("err2 is a NegativeIndexError")
 	}
@@ -58,11 +58,11 @@ func ExampleXyError() {
 
 func ExampleGroup() {
 	// Group allows you to create a class with multiparents.
-	KeyValueError := xyerror.
+	var KeyValueError = xyerror.
 		Combine(xyerror.KeyError, xyerror.ValueError).
 		NewClass(exampleGen, "KeyValueError")
 
-	err := KeyValueError.New("something is wrong")
+	var err = KeyValueError.New("something is wrong")
 
 	if errors.Is(err, xyerror.KeyError) {
 		fmt.Println("err is a KeyError")

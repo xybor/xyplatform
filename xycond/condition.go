@@ -141,7 +141,7 @@ func MustNotEmpty(a any) Condition {
 
 // MustContainM returns true if map contains the key.
 func MustContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
-	_, ok := m[k]
+	var _, ok = m[k]
 	return MustTrue(ok)
 }
 

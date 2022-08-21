@@ -15,7 +15,8 @@ func (rs *rselector) recv(c <-chan any) int {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
 
-	sc := reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(c)}
+	var sc = reflect.SelectCase{
+		Dir: reflect.SelectRecv, Chan: reflect.ValueOf(c)}
 	rs.cases = append(rs.cases, sc)
 
 	return len(rs.cases) - 2
@@ -25,9 +26,9 @@ func (rs *rselector) send(c any, v any) int {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
 
-	sc := reflect.SelectCase{
-		Dir:  reflect.SelectSend,
-		Chan: reflect.ValueOf(c), Send: reflect.ValueOf(v),
+	var sc = reflect.SelectCase{
+		Dir: reflect.SelectSend, Chan: reflect.ValueOf(c),
+		Send: reflect.ValueOf(v),
 	}
 
 	rs.cases = append(rs.cases, sc)
@@ -37,14 +38,14 @@ func (rs *rselector) send(c any, v any) int {
 
 func (rs *rselector) xselect(isDefault bool) (index int, value any, err error) {
 	rs.mu.Lock()
-	cases := rs.cases
+	var cases = rs.cases
 	rs.mu.Unlock()
 
 	if isDefault {
 		cases = append(cases, reflect.SelectCase{Dir: reflect.SelectDefault})
 	}
 
-	i, v, ok := reflect.Select(cases)
+	var i, v, ok = reflect.Select(cases)
 	switch cases[i].Dir {
 	case reflect.SelectSend:
 		return i, nil, nil

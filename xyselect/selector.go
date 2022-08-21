@@ -64,7 +64,7 @@ func R() *Selector {
 // C creates a read-only chan any from read-only chan T. This channel is only
 // closed when c channel is closed.
 func C[T any](c <-chan T) <-chan any {
-	r := make(chan any)
+	var r = make(chan any)
 	go func() {
 		for v := range c {
 			r <- v
@@ -81,8 +81,8 @@ func C[T any](c <-chan T) <-chan any {
 // Select() method.
 //
 // For example:
-//     c1 := make(chan any)
-//     c2 := make(chan int)
+//     var c1 = make(chan any)
+//     var c2 = make(chan int)
 //     selector.Recv(c1)
 //     selector.Recv(xyselector.C(c2))
 func (s *Selector) Recv(c <-chan any) int {

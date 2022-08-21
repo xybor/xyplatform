@@ -29,7 +29,7 @@ func (xerr XyError) Is(target error) bool {
 		return false
 	}
 
-	tc := target.(Class)
+	var tc = target.(Class)
 
 	return xerr.c.belongsTo(tc)
 }
