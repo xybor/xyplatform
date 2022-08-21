@@ -25,6 +25,13 @@ selector is faster.
 Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform/xyselect) for
 more details.
 
+# Benchmark
+
+| op name            | time per op |
+|--------------------|-------------|
+| RSelector          |        728ns|
+| ESelector          |        679ns|
+
 # Example
 ```golang
 var c = make(chan int)
@@ -33,10 +40,10 @@ go func() {
     close(c)
 }()
 
-eselector := xyselect.E()
+var eselector = xyselect.E()
 eselector.Recv(xyselect.C(c))
 
-_, v, _ := eselector.Select(false)
+var _, v, _ = eselector.Select(false)
 fmt.Println(v)
 
 // Output:
@@ -50,7 +57,7 @@ var rc = xyselect.C(c)
 
 go func() { c <- 10 }()
 rselector.Recv(rc)
-_, v, _ := rselector.Select(false)
+var _, v, _ = rselector.Select(false)
 fmt.Println("receive", v)
 
 rselector.Send(c, 20)

@@ -71,7 +71,7 @@ func newPlaceholderTask(f any) *Task {
 // It returns the callback task if you passed a function or task, otherwise,
 // nil.
 func (t *Task) Callback(f any, params ...any) *Task {
-	cb, ok := f.(future)
+	var cb, ok = f.(future)
 	if ok {
 		xycond.MustEmpty(params).
 			Assert("do not pass params if f was already a future")
@@ -132,7 +132,7 @@ func (t *Task) run() {
 	}
 
 	t.lock.LockFunc(func() {
-		v := callFunc(t.fv, t.params)
+		var v = callFunc(t.fv, t.params)
 		copy(t.ret, v)
 		t.recover = nil
 	})

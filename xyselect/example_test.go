@@ -13,10 +13,10 @@ func ExampleE() {
 		close(c)
 	}()
 
-	eselector := xyselect.E()
+	var eselector = xyselect.E()
 	eselector.Recv(xyselect.C(c))
 
-	_, v, _ := eselector.Select(false)
+	var _, v, _ = eselector.Select(false)
 	fmt.Println(v)
 
 	// Output:
@@ -30,7 +30,7 @@ func ExampleR() {
 
 	go func() { c <- 10 }()
 	rselector.Recv(rc)
-	_, v, _ := rselector.Select(false)
+	var _, v, _ = rselector.Select(false)
 	fmt.Println("receive", v)
 
 	rselector.Send(c, 20)

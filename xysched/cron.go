@@ -79,7 +79,7 @@ func (c *Cron) Twice() *Cron {
 // Finish sets a callback future which will run after the cron ran out of times.
 // See task.Callback for further details.
 func (c *Cron) Finish(f any, params ...any) *Task {
-	cb, ok := f.(future)
+	var cb, ok = f.(future)
 	if ok {
 		xycond.MustEmpty(params).
 			Assert("do not pass params if f was already a tasker")
