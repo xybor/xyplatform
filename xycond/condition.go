@@ -2,9 +2,10 @@ package xycond
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"runtime"
+
+	"github.com/xybor/xyplatform/xyerror"
 )
 
 // tester instances represent testing.T or testing.B.
@@ -24,7 +25,7 @@ func not(c Condition) Condition {
 // JustAssert panics the program without a message if condition fails.
 func (c Condition) JustAssert() {
 	if !c {
-		panic("Something was wrong")
+		panic(xyerror.AssertionError.New(""))
 	}
 }
 
@@ -32,7 +33,7 @@ func (c Condition) JustAssert() {
 // fails.
 func (c Condition) Assert(format string, args ...any) {
 	if !c {
-		panic(fmt.Sprintf(format, args...))
+		panic(xyerror.AssertionError.New(format, args...))
 	}
 }
 
@@ -53,9 +54,9 @@ func (c Condition) Testf(t tester, format string, args ...any) {
 	if !c {
 		var _, fn, ln, ok = runtime.Caller(1)
 		if ok {
-			log.Printf("%s:%d\n", fn, ln)
+			fmt.Printf("%s:%d\n", fn, ln)
 		}
-		log.Printf(format, args...)
+		fmt.Printf(format, args...)
 		t.Fail()
 	}
 }
@@ -87,7 +88,7 @@ func MustPanic(f func()) (c Condition) {
 			c = false
 		} else {
 			c = true
-			log.Println(r)
+			fmt.Println(r)
 		}
 	}()
 
