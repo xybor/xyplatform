@@ -1,4 +1,4 @@
-# Developing
+# V1.0.1
 1. Fix bugs.
 2. Refactor the design of xylog Handler.
 3. Add github workflow to test.
