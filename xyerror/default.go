@@ -12,4 +12,5 @@ var (
 	ValueError          = defaultGen.NewClass("ValueError")
 	ParameterError      = defaultGen.NewClass("ParameterError")
 	TypeError           = defaultGen.NewClass("TypeError")
+	AssertionError      = defaultGen.NewClass("AssertionError")
 )

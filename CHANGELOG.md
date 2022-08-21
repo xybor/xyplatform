@@ -1,5 +1,10 @@
-# Developmet
-1. Fix ClosedChannelError in xyselect.
+# Developing
+1. Fix bugs.
+2. Refactor the design of xylog Handler.
+3. Add github workflow to test.
+4. Write unittest for all modules.
+5. Xycond asserts a Error instead of string.
+
 
 # V1.0.0
 This release completed the following libraries:

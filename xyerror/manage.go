@@ -1,7 +1,7 @@
 package xyerror
 
 import (
-	"github.com/xybor/xyplatform/xycond"
+	"log"
 )
 
 // Generator is used to generate root Class for every module. It is determined
@@ -42,11 +42,13 @@ func getGenerator(errno int) Generator {
 // Register adds a Module with its identifier to managing pool for creating new
 // Classes.
 func Register(name string, id int) Generator {
-	xycond.MustTrue(id%minid == 0).
-		Assert("cannot register, %d is not divisible by %d", id, minid)
+	if id%minid != 0 {
+		log.Panicf("cannot register, %d is not divisible by %d", id, minid)
+	}
 	var gen = Generator{id}
-	xycond.MustNotContainM(manager, gen).
-		Assert("id %d had already registered", id)
+	if _, ok := manager[gen]; ok {
+		log.Panicf("id %d had already registered", id)
+	}
 
 	manager[gen] = &errorinfo{name: name, count: 0}
 	return gen
