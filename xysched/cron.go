@@ -13,7 +13,7 @@ type Cron struct {
 	Task
 
 	// The maximum times which this future runs.
-	n int
+	n uint
 
 	// The periodic duration.
 	d time.Duration
@@ -55,12 +55,13 @@ func (c *Cron) Daily() *Cron {
 
 // Every requires the cron to run with a custom periodic duration.
 func (c *Cron) Every(d time.Duration) *Cron {
+	xycond.MustTrue(d >= 0).Assert("duration must be positive")
 	c.d = d
 	return c
 }
 
 // Times sets the maximum times which the cron will run.
-func (c *Cron) Times(n int) *Cron {
+func (c *Cron) Times(n uint) *Cron {
 	c.n = n
 	return c
 }
@@ -99,7 +100,7 @@ func (c *Cron) next() *time.Time {
 	var n = c.lock.RLockFunc(func() any {
 		c.n -= 1
 		return c.n
-	}).(int)
+	}).(uint)
 	if n > 0 {
 		var t = time.Now().Add(c.d)
 		return &t
@@ -111,7 +112,7 @@ func (c *Cron) next() *time.Time {
 func (c *Cron) callbacks() []future {
 	var cb []future
 	cb = append(cb, c.Task.callbacks()...)
-	if c.lock.RLockFunc(func() any { return c.n }).(int) == 0 {
+	if c.lock.RLockFunc(func() any { return c.n }).(uint) == 0 {
 		cb = append(cb, c.onfinish...)
 	}
 	return cb

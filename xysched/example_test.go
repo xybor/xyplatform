@@ -7,6 +7,10 @@ import (
 	"github.com/xybor/xyplatform/xysched"
 )
 
+func panicFunc() {
+	panic("custom panic function")
+}
+
 func ExampleTask() {
 	var scheduler = xysched.NewScheduler()
 
@@ -42,13 +46,13 @@ func ExampleTask() {
 	// NOTE: if task panics a non-error interface, it will be wrapped into
 	//       xysched.CallError.
 	done = make(chan any)
-	future = xysched.NewTask(fmt.Fprint, "string-not-a-file")
-	future.Then(func(n int, e error) {
-		fmt.Println("4.", n, e)
+	future = xysched.NewTask(panicFunc)
+	future.Then(func() {
+		fmt.Println("4. Then branch")
 		close(done)
 	})
 	future.Catch(func(e error) {
-		fmt.Println("4.", e)
+		fmt.Println("4. Catch branch", e)
 		close(done)
 	})
 	scheduler.Now() <- future
@@ -60,7 +64,7 @@ func ExampleTask() {
 	// 1. foo
 	// 2. foo foo
 	// 3. foo bar
-	// 4. CallError: reflect: Call using string as type io.Writer
+	// 4. Catch branch CallError: custom panic function
 }
 
 func ExampleGlobal() {
