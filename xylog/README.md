@@ -120,13 +120,13 @@ if it allows to log the `LogRecord`, and vice versa.
 | GetRandomLogger    |        315ns|
 | GetSameHandler     |          5ns|
 | GetRandomHandler   |         17ns|
-| TextFormatter      |       9352ns|
+| TextFormatter      |        734ns|
 | LogWithoutHandler  |         31ns|
-| LogWithOneHandler  |       2517ns|
-| LogWith100Handler  |      19451ns|
-| LogWithStream      |      30703ns|
-| LogWithFile        |      36048ns|
-| LogWithRotateFile  |      40755ns|
+| LogWithOneHandler  |       2970ns|
+| LogWith100Handler  |      24912ns|
+| LogWithStream      |       8608ns|
+| LogWithFile        |      13509ns|
+| LogWithRotateFile  |      20082ns|
 
 # Example
 ## Simple usage

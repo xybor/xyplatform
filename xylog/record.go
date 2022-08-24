@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/xybor/xyplatform/xycond"
 )
 
 // A LogRecord instance represents an event being logged.
@@ -15,49 +17,121 @@ import (
 // was created or the source line where the logging call was made.
 type LogRecord struct {
 	// Textual time when the LogRecord was created.
-	Asctime string `map:"asctime"`
+	Asctime string
 
 	// Time when the LogRecord was created (time.Now().Unix() return value).
-	Created int64 `map:"created"`
+	Created int64
 
 	// Filename portion of pathname.
-	FileName string `map:"filename"`
+	FileName string
 
 	// Function name logged the record.
-	FuncName string `map:"funcname"`
+	FuncName string
 
 	// Text logging level for the message ("DEBUG", "INFO", "WARNING", "ERROR",
 	// "CRITICAL").
-	LevelName string `map:"levelname"`
+	LevelName string
 
 	// Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR,
 	// CRITICAL).
-	LevelNo int `map:"levelno"`
+	LevelNo int
 
 	// Source line number where the logging call was issued.
-	LineNo int `map:"lineno"`
+	LineNo int
 
 	// The logging message.
-	Message string `map:"message"`
+	Message string
 
 	// The module called log method.
-	Module string `map:"module"`
+	Module string
 
 	// Millisecond portion of the creation time.
-	Msecs int `map:"msecs"`
+	Msecs int
 
 	// Name of the logger.
-	Name string `map:"name"`
+	Name string
 
 	// Full pathname of the source file where the logging call was issued.
-	PathName string `map:"pathname"`
+	PathName string
 
 	// Process ID.
-	Process int `map:"process"`
+	Process int
 
 	// Time in milliseconds when the LogRecord was created, relative to the time
 	// the logging module was loaded (typically at application startup time).
-	RelativeCreated int64 `map:"relativeCreated"`
+	RelativeCreated int64
+}
+
+func (r LogRecord) mapIndex(i int) any {
+	switch i {
+	case 0:
+		return r.Asctime
+	case 1:
+		return r.Created
+	case 2:
+		return r.FileName
+	case 3:
+		return r.FuncName
+	case 4:
+		return r.LevelName
+	case 5:
+		return r.LevelNo
+	case 6:
+		return r.LineNo
+	case 7:
+		return r.Message
+	case 8:
+		return r.Module
+	case 9:
+		return r.Msecs
+	case 10:
+		return r.Name
+	case 11:
+		return r.PathName
+	case 12:
+		return r.Process
+	case 13:
+		return r.RelativeCreated
+	default:
+		xycond.Panic("unknown index %d", i)
+		return nil
+	}
+}
+
+func (r LogRecord) mapName(name string) int {
+	switch name {
+	case "asctime":
+		return 0
+	case "created":
+		return 1
+	case "filename":
+		return 2
+	case "funcname":
+		return 3
+	case "levelname":
+		return 4
+	case "levelno":
+		return 5
+	case "lineno":
+		return 6
+	case "message":
+		return 7
+	case "module":
+		return 8
+	case "msecs":
+		return 9
+	case "name":
+		return 10
+	case "pathname":
+		return 11
+	case "process":
+		return 12
+	case "relativeCreated":
+		return 13
+	default:
+		xycond.Panic("unknown name %s", name)
+		return -1
+	}
 }
 
 // makeRecord creates specialized LogRecords.
