@@ -1,3 +1,6 @@
+# Developing
+1. Add FileEmitter and RotatingFileEmitter to xylog.
+
 # V1.0.1
 1. Fix bugs.
 2. Refactor the design of xylog Handler.

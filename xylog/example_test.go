@@ -3,6 +3,7 @@ package xylog_test
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/xybor/xyplatform/xylog"
 )
@@ -65,4 +66,72 @@ func ExampleHandler() {
 	// Output:
 	// handlerA == handlerB
 	// handlerC != handlerD
+}
+
+func ExampleNewSizeRotatingFileEmitter() {
+	// Create a rotating emitter which rotates to another files if current file
+	// size is over than 30 bytes. Backup maximum of two log files.
+	var emitter = xylog.NewSizeRotatingFileEmitter("exampleSize.log", 30, 2)
+	var handler = xylog.NewHandler("", emitter)
+	handler.SetFormatter(xylog.NewTextFormatter("%(message)s"))
+	var logger = xylog.GetLogger("example_file_emitter")
+	logger.SetLevel(xylog.DEBUG)
+	logger.AddHandler(handler)
+
+	for i := 0; i < 20; i++ {
+		// logger will write 80 bytes (including newlines).
+		logger.Debug("foo")
+	}
+
+	if _, err := os.Stat("exampleSize.log"); err == nil {
+		fmt.Println("Created exampleSize.log")
+	}
+
+	if _, err := os.Stat("exampleSize.log.1"); err == nil {
+		fmt.Println("Created exampleSize.log.1")
+	}
+
+	if _, err := os.Stat("exampleSize.log.2"); err == nil {
+		fmt.Println("Created exampleSize.log.2")
+	}
+
+	// Output:
+	// Created exampleSize.log
+	// Created exampleSize.log.1
+	// Created exampleSize.log.2
+}
+
+func ExampleNewTimeRotatingFileEmitter() {
+	// Create a rotating emitter which rotates to another files if logger spent
+	// one second to log.
+	var emitter = xylog.NewTimeRotatingFileEmitter(
+		"exampleTime.log", time.Second, 2)
+	var handler = xylog.NewHandler("", emitter)
+	handler.SetFormatter(xylog.NewTextFormatter("%(message)s"))
+	var logger = xylog.GetLogger("example_file_emitter")
+	logger.SetLevel(xylog.DEBUG)
+	logger.AddHandler(handler)
+
+	for i := 0; i < 20; i++ {
+		// logger will write for 4s.
+		time.Sleep(200 * time.Millisecond)
+		logger.Debug("foo")
+	}
+
+	if _, err := os.Stat("exampleTime.log"); err == nil {
+		fmt.Println("Created exampleTime.log")
+	}
+
+	if _, err := os.Stat("exampleTime.log.1"); err == nil {
+		fmt.Println("Created exampleTime.log.1")
+	}
+
+	if _, err := os.Stat("exampleTime.log.2"); err == nil {
+		fmt.Println("Created exampleTime.log.2")
+	}
+
+	// Output:
+	// Created exampleTime.log
+	// Created exampleTime.log.1
+	// Created exampleTime.log.2
 }

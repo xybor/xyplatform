@@ -23,23 +23,7 @@ jobs:
     - name: Coverage
       env:
         COVERAGE_THRESHOLD: 90
-      run: |
-          for m in $(ls -1d */ | grep -Eo '\w+') ; do
-            coverage=$(go test -race -cover ./$m | grep -Eo '[.0-9]+%' | grep -Eo '[.0-9]+')
-            if (( $(echo 1 | awk "{print ($coverage >= $COVERAGE_THRESHOLD)}") )); then
-              printf '%-15s: %-6s (%3.2f%%)\n' $m Ok $coverage
-            else
-              modules="$modules $m"
-              printf '%-15s: %-6s (%3.2f%%)\n' $m Failed $coverage
-            fi
-          done
-
-          if [ "$modules" ]; then
-            echo "Current test coverage is below threshold ($COVERAGE_THRESHOLD%)."
-            echo "Please add more unit tests to the following modules:"
-            echo $modules
-            exit 1
-          fi
+      run: ./test.sh
 
     - name: Benchmark
       run: go test -benchmem -run=^$ -bench . ./...

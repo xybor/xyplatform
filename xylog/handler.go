@@ -1,19 +1,9 @@
 package xylog
 
 import (
-	"bufio"
-	"io"
-	"log"
-	"runtime/debug"
-
 	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
-
-// Emitter instances dispatch logging events to specific destinations.
-type Emitter interface {
-	Emit(string)
-}
 
 // Handler handles logging events. Do NOT instantiated directly this struct.
 //
@@ -22,9 +12,8 @@ type Handler struct {
 	f *filterer
 	e Emitter
 
-	level     int
-	formatter Formatter
-	lock      xylock.RWLock
+	level int
+	lock  xylock.RWLock
 }
 
 // NewHandler creates a Handler with a specified Emitter.
@@ -38,11 +27,10 @@ func NewHandler(name string, e Emitter) *Handler {
 		"the handler with name %s is associated with another Emitter", name)
 
 	handler = &Handler{
-		f:         newfilterer(),
-		e:         e,
-		level:     NOTSET,
-		formatter: defaultFormatter,
-		lock:      xylock.RWLock{},
+		f:     newfilterer(),
+		e:     e,
+		level: NOTSET,
+		lock:  xylock.RWLock{},
 	}
 
 	if name != "" {
@@ -60,7 +48,7 @@ func (h *Handler) SetLevel(level int) {
 // SetFormatter sets the new formatter of handler.
 func (h *Handler) SetFormatter(f Formatter) {
 	xycond.MustNotNil(f).Assert("expected a not-nil Formatter")
-	h.lock.WLockFunc(func() { h.formatter = f })
+	h.lock.WLockFunc(func() { h.e.SetFormatter(f) })
 }
 
 // AddFilter adds a specified filter.
@@ -84,46 +72,11 @@ func (h *Handler) filter(r LogRecord) bool {
 	return h.f.filter(r)
 }
 
-// format uses formatter to format the record.
-func (h *Handler) format(record LogRecord) string {
-	var f = h.lock.RLockFunc(func() any { return h.formatter }).(Formatter)
-	return f.Format(record)
-}
-
 // handle handles a new record, it will check if the record should be logged or
 // not, then call emit if it is.
 func (h *Handler) handle(record LogRecord) {
 	var level = h.lock.RLockFunc(func() any { return h.level }).(int)
 	if h.filter(record) && record.LevelNo >= level {
-		h.e.Emit(h.format(record))
-	}
-}
-
-// StreamEmitter writes logging message to a stream. Note that this class does
-// not close the stream, as os.Stdout or os.Stderr may be used.
-type StreamEmitter struct {
-	stream *bufio.Writer
-}
-
-// NewStreamEmitter creates a StreamEmitter which writes message to a stream
-// (os.Stderr by default).
-func NewStreamEmitter(f io.Writer) *StreamEmitter {
-	xycond.MustNotNil(f).Assert("Expected a not nil file")
-	var stream = bufio.NewWriter(f)
-	stream.Flush()
-	return &StreamEmitter{stream: stream}
-}
-
-// Emit will be called after a record was decided to log.
-func (e *StreamEmitter) Emit(msg string) {
-	var _, err = e.stream.WriteString(msg + "\n")
-	if err == nil {
-		err = e.stream.Flush()
-	}
-
-	if err != nil {
-		log.Println("------------ Logging error ------------")
-		log.Printf("An error occurs when logging: %s\n", err)
-		log.Panic(string(debug.Stack()))
+		h.e.Emit(record)
 	}
 }

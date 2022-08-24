@@ -2,6 +2,7 @@
 package xylog
 
 import (
+	"io/fs"
 	"os"
 	"strings"
 	"time"
@@ -58,6 +59,12 @@ var lastHandler = NewHandler("", StderrEmitter)
 // handlerManager is a map to search handler by name.
 var handlerManager map[string]*Handler
 
+// fileflag is the flag to open a logging file.
+var fileflag = os.O_WRONLY | os.O_APPEND | os.O_CREATE
+
+// fileperm is the file permission when creating a logging file.
+var fileperm fs.FileMode = 0666
+
 var levelToName = map[int]string{
 	CRITICAL: "CRITICAL",
 	ERROR:    "ERROR",
@@ -65,6 +72,18 @@ var levelToName = map[int]string{
 	INFO:     "INFO",
 	DEBUG:    "DEBUG",
 	NOTSET:   "NOTSET",
+}
+
+// SetFileFlag sets the mode when open logging files. It is os.O_WRONLY |
+// os.O_APPEND | os.O_CREATE by default.
+func SetFileFlag(flag int) {
+	lock.WLockFunc(func() { fileflag = flag })
+}
+
+// SetFileMode sets the mode when open logging files. It is os.O_WRONLY |
+// os.O_APPEND | os.O_CREATE by default.
+func SetFilePerm(perm fs.FileMode) {
+	lock.WLockFunc(func() { fileperm = perm })
 }
 
 // SetTimeLayout sets the time layout to print asctime. It is time.RFC3339Nano

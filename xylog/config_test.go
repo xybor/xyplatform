@@ -54,5 +54,5 @@ func TestSetTimeLayout(t *testing.T) {
 	xycond.MustNotPanic(func() {
 		xylog.SetTimeLayout("123")
 		xylog.SetTimeLayout(time.RFC3339Nano)
-	})
+	}).Test(t, "A panic occurred")
 }
