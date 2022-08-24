@@ -1,19 +1,11 @@
 package xylog_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/xybor/xyplatform/xycond"
-	"github.com/xybor/xyplatform/xyerror"
 	"github.com/xybor/xyplatform/xylog"
 )
-
-type ErrorWriter struct{}
-
-func (ew *ErrorWriter) Write(p []byte) (n int, err error) {
-	return 0, xyerror.UnknownError.New("unknown")
-}
 
 func TestNewHandlerWithEmptyName(t *testing.T) {
 	var handlerA = xylog.NewHandler("", xylog.StdoutEmitter)
@@ -108,24 +100,4 @@ func TestHandlerLevel(t *testing.T) {
 		}
 		logger.RemoveHandler(handler)
 	}
-}
-
-func TestNewStreamEmitterWithNil(t *testing.T) {
-	xycond.MustPanic(func() {
-		xylog.NewStreamEmitter(nil)
-	}).Test(t, "Expected a panic, but not found")
-}
-
-func TestStreamEmitterEmit(t *testing.T) {
-	var emitter = xylog.NewStreamEmitter(os.Stderr)
-	xycond.MustNotPanic(func() {
-		emitter.Emit("")
-	}).Test(t, "A panic occurred")
-}
-
-func TestStreamEmitterEmitError(t *testing.T) {
-	var emitter = xylog.NewStreamEmitter(&ErrorWriter{})
-	xycond.MustPanic(func() {
-		emitter.Emit("")
-	}).Test(t, "Expect a panic, but not found")
 }

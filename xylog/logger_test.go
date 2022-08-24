@@ -9,9 +9,11 @@ import (
 
 type CapturedEmitter struct{}
 
-func (h *CapturedEmitter) Emit(msg string) {
-	capturedOutput = msg
+func (h *CapturedEmitter) Emit(record xylog.LogRecord) {
+	capturedOutput = record.Message
 }
+
+func (h *CapturedEmitter) SetFormatter(xylog.Formatter) {}
 
 type NameFilter struct {
 	name string

@@ -11,6 +11,31 @@ func panicFunc() {
 	panic("custom panic function")
 }
 
+func Example() {
+	// Example 1: You can use the global scheduler throughout program without
+	// creating a new one.
+	var done = make(chan any)
+	var future = xysched.NewTask(func() {
+		fmt.Println("1. bar bar")
+		close(done)
+	})
+	xysched.Now() <- future
+	<-done
+
+	// Example 2: Scheduler can schedule one future After or At a time.
+	done = make(chan any)
+	future = xysched.NewTask(func() {
+		fmt.Println("2. barfoo")
+		close(done)
+	})
+	xysched.After(time.Second) <- future
+	<-done
+
+	// Output:
+	// 1. bar bar
+	// 2. barfoo
+}
+
 func ExampleTask() {
 	var scheduler = xysched.NewScheduler()
 
@@ -65,31 +90,6 @@ func ExampleTask() {
 	// 2. foo foo
 	// 3. foo bar
 	// 4. Catch branch CallError: custom panic function
-}
-
-func ExampleGlobal() {
-	// Example 1: You can use the global scheduler throughout program without
-	// creating a new one.
-	var done = make(chan any)
-	var future = xysched.NewTask(func() {
-		fmt.Println("1. bar bar")
-		close(done)
-	})
-	xysched.Global().Now() <- future
-	<-done
-
-	// Example 2: Scheduler can schedule one future After or At a time.
-	done = make(chan any)
-	future = xysched.NewTask(func() {
-		fmt.Println("2. barfoo")
-		close(done)
-	})
-	xysched.Global().After(time.Second) <- future
-	<-done
-
-	// Output:
-	// 1. bar bar
-	// 2. barfoo
 }
 
 func wait(c chan any, n int) {

@@ -16,6 +16,7 @@
 
 # Log files
 *.log
+*.log.*
 
 # Profiling files
 *.prof

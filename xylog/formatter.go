@@ -57,8 +57,6 @@ func tomap(a any) map[string]any {
 		var tag = f.Tag.Get("map")
 		if tag != "" {
 			result[tag] = v.Field(i).Interface()
-		} else {
-			result[strings.ToLower(f.Name)] = v.Field(i).Interface()
 		}
 	}
 	return result

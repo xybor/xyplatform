@@ -70,8 +70,10 @@ Like `Logger`, `Handler` is also able to call `AddFilter`.
 ## Emitter
 `Emitter` instances write log messages to specified destination.
 
-Two basic built-in `Emitter` instances are `xylog.StdoutEmitter` and
-`xylog.StderrEmitter`.
+`StreamEmitter` can be used to print logging message into stdout or stderr.
+
+`FileEmitter` can be used to write logging message to files. It can rotate to
+log into another file if the file exceed the limit size or time.
 
 
 ## Formatter
@@ -120,7 +122,11 @@ if it allows to log the `LogRecord`, and vice versa.
 | GetRandomHandler   |         17ns|
 | TextFormatter      |       9352ns|
 | LogWithoutHandler  |         31ns|
-| LogWithOneHandler  |       9172ns|
+| LogWithOneHandler  |       2517ns|
+| LogWith100Handler  |      19451ns|
+| LogWithStream      |      30703ns|
+| LogWithFile        |      36048ns|
+| LogWithRotateFile  |      40755ns|
 
 # Example
 ## Simple usage
@@ -136,6 +142,40 @@ logger.Debug("foo")
 
 // Output:
 // DEBUG foo
+```
+
+## Rotating File Emitter
+```golang
+// Create a rotating emitter which rotates to another files if current file
+// size is over than 30 bytes. Backup maximum of two log files.
+var emitter = xylog.NewSizeRotatingFileEmitter("example.log", 30, 2)
+var handler = xylog.NewHandler("", emitter)
+handler.SetFormatter(xylog.NewTextFormatter("%(message)s"))
+var logger = xylog.GetLogger("example_file_emitter")
+logger.SetLevel(xylog.DEBUG)
+logger.AddHandler(handler)
+
+for i := 0; i < 20; i++ {
+	// logger will write 80 bytes (including newlines).
+	logger.Debug("foo")
+}
+
+if _, err := os.Stat("example.log"); err == nil {
+	fmt.Println("Created example.log")
+}
+
+if _, err := os.Stat("example.log.1"); err == nil {
+	fmt.Println("Created example.log.1")
+}
+
+if _, err := os.Stat("example.log.2"); err == nil {
+	fmt.Println("Created example.log.2")
+}
+
+// Output:
+// Created example.log
+// Created example.log.1
+// Created example.log.2
 ```
 
 ## Get the existed Handler
