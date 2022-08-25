@@ -1,8 +1,10 @@
 # Introduction
+
 Xyselect is a library used to call `select` with an unknown number of `case`
 statements.
 
 # Features
+
 The main object in the library is `Selector`, a custom usage of `select`
 statement.
 
@@ -27,12 +29,13 @@ more details.
 
 # Benchmark
 
-| op name            | time per op |
-|--------------------|-------------|
-| RSelector          |        728ns|
-| ESelector          |        679ns|
+| op name   | time per op |
+| --------- | ----------- |
+| RSelector | 728ns       |
+| ESelector | 679ns       |
 
 # Example
+
 ```golang
 var c = make(chan int)
 go func() { 

@@ -7,7 +7,8 @@ This package is inspired by idea of Python `logging`.
 # Feature
 
 The basic structs defined by the module, together with their functions, are
-listed below.
+listed below:
+
 1.  Loggers expose the interface that application code directly uses.
 2.  Handlers convert log records (created by loggers) to log messages, then send
     them to the Emitter.
@@ -26,6 +27,7 @@ module-level function `xylog.GetLogger(name)`. Multiple calls to `GetLogger()`
 with the same name will always return a reference to the same Logger object.
 
 You can logs a message by using one of the following methods:
+
 ```golang
 func (*Logger) Critical(msg string, a ...any)
 func (*Logger) Error(msg string, a ...any)
@@ -54,18 +56,20 @@ primarily of interest if you want to define your own levels, and need them to
 have specific values relative to the predefined levels. If you define a level
 with the same numeric value, it overwrites the predefined value; the predefined
 name is lost.
-|      Level     | Numeric value  |
-|----------------|----------------|
-| CRITICAL       |              50|
-| ERROR/FATAL    |              40|
-| WARN/WARNING   |              30|
-| INFO           |              20|
-| DEBUG          |              10|
-| NOTSET         |               0|
+
+| Level        | Numeric value |
+| ------------ | ------------- |
+| CRITICAL     | 50            |
+| ERROR/FATAL  | 40            |
+| WARN/WARNING | 30            |
+| INFO         | 20            |
+| DEBUG        | 10            |
+| NOTSET       | 0             |
 
 ## Handler
 
-`Handler` handles logging events. A `Handler` need to be instantiated with an `Emitter` instance rather than creating directly.
+`Handler` handles logging events. A `Handler` need to be instantiated with an
+`Emitter` instance rather than creating directly.
 
 Any `Handler` with a not-empty name will be associated with its name. Calling
 `NewHandler` twice with the same name will cause a panic. If you want to create
@@ -86,7 +90,6 @@ Like `Logger`, `Handler` is also able to call `AddFilter`.
 `FileEmitter` can be used to write logging message to files. It can rotate to
 log into another file if the file exceed the limit size or time.
 
-
 ## Formatter
 
 `Formatter` instances are used to convert a `LogRecord` to text.
@@ -98,22 +101,22 @@ human or an external system.
 `TextFormatter` is a built-in `Formatter` which uses logging macros to format
 the message.
 
-| MACROS            |  DESCRIPTION                                    |
-|-------------------|-------------------------------------------------|
-|`asctime`          |Textual time when the LogRecord was created.|
-|`created`          |Time when the LogRecord was created (time.Now().Unix() return value).|
-|`filename`         |Filename portion of pathname.|
-|`funcname`         |Function name logged the record.|
-|`levelname`        |Text logging level for the message ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL").|
-|`levelno`          |Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL).|
-|`lineno`           |Source line number where the logging call was issued.|
-|`message`          |The logging message.|
-|`module`           |The module called log method.|
-|`msecs`            |Millisecond portion of the creation time.|
-|`name`             |Name of the logger.|
-|`pathname`         |Full pathname of the source file where the logging call was issued.|
-|`process`          |Process ID.|
-|`relativeCreated`  |Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded (typically at application startup time).|
+| MACROS            | DESCRIPTION                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `asctime`         | Textual time when the LogRecord was created.                                                                                                     |
+| `created`         | Time when the LogRecord was created (time.Now().Unix() return value).                                                                            |
+| `filename`        | Filename portion of pathname.                                                                                                                    |
+| `funcname`        | Function name logged the record.                                                                                                                 |
+| `levelname`       | Text logging level for the message ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL").                                                            |
+| `levelno`         | Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL).                                                                   |
+| `lineno`          | Source line number where the logging call was issued.                                                                                            |
+| `message`         | The logging message.                                                                                                                             |
+| `module`          | The module called log method.                                                                                                                    |
+| `msecs`           | Millisecond portion of the creation time.                                                                                                        |
+| `name`            | Name of the logger.                                                                                                                              |
+| `pathname`        | Full pathname of the source file where the logging call was issued.                                                                              |
+| `process`         | Process ID.                                                                                                                                      |
+| `relativeCreated` | Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded (typically at application startup time). |
 
 ## Filter
 
@@ -124,22 +127,21 @@ if it allows to log the `LogRecord`, and vice versa.
 
 `Filter` can be used in both `Handler` and `Logger`.
 
-
 # Benchmark
 
-| op name            | time per op |
-|--------------------|-------------|
-| GetSameLogger      |        180ns|
-| GetRandomLogger    |        315ns|
-| GetSameHandler     |          5ns|
-| GetRandomHandler   |         17ns|
-| TextFormatter      |        734ns|
-| LogWithoutHandler  |         31ns|
-| LogWithOneHandler  |       2970ns|
-| LogWith100Handler  |      24912ns|
-| LogWithStream      |       8608ns|
-| LogWithFile        |      13509ns|
-| LogWithRotateFile  |      20082ns|
+| op name           | time per op |
+| ----------------- | ----------- |
+| GetSameLogger     | 180ns       |
+| GetRandomLogger   | 315ns       |
+| GetSameHandler    | 5ns         |
+| GetRandomHandler  | 17ns        |
+| TextFormatter     | 734ns       |
+| LogWithoutHandler | 31ns        |
+| LogWithOneHandler | 2970ns      |
+| LogWith100Handler | 24912ns     |
+| LogWithStream     | 8608ns      |
+| LogWithFile       | 13509ns     |
+| LogWithRotateFile | 20082ns     |
 
 # Example
 
