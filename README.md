@@ -1,4 +1,5 @@
 # xyplatform
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a4071df25224036862b0f6d641595a3)](https://app.codacy.com/gh/xybor/xyplatform?utm_source=github.com&utm_medium=referral&utm_content=xybor/xyplatform&utm_campaign=Badge_Grade_Settings)
 [![Xybor founder](https://img.shields.io/badge/xybor-huykingsofm-red)](https://github.com/huykingsofm)
 [![GitHub Repo stars](https://img.shields.io/github/stars/xybor/xyplatform?color=yellow)](https://github.com/xybor/xyplatform)
 [![GitHub top language](https://img.shields.io/github/languages/top/xybor/xyplatform?color=lightblue)](https://go.dev/)
