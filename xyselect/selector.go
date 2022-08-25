@@ -1,3 +1,4 @@
+// Package xyselect defines custom select statements.
 package xyselect
 
 import (

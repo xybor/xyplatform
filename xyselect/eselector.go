@@ -36,8 +36,8 @@ func (es *eselector) recv(c <-chan any) int {
 		es.center = make(chan chanResult)
 	}
 
-	es.counter += 1
-	es.liveCounter += 1
+	es.counter++
+	es.liveCounter++
 
 	go func(i int) {
 		// Until the channel is closed, receiving all it values then send them
@@ -50,7 +50,7 @@ func (es *eselector) recv(c <-chan any) int {
 		es.mu.Lock()
 		defer es.mu.Unlock()
 
-		es.liveCounter -= 1
+		es.liveCounter--
 		// If there is no more live channel, closing the center channel.
 		if es.liveCounter == 0 {
 			close(es.center)

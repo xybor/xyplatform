@@ -1,3 +1,4 @@
+// Package xyplatform contains many utilities which make developer easy to code.
 package xyplatform
 
 import (

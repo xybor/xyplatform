@@ -1,4 +1,4 @@
-// xylock defines wrapper types of sync mutex, rwmutex, and semaphore.
+// Package xylock defines wrapper types of sync mutex, rwmutex, and semaphore.
 package xylock
 
 import (

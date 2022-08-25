@@ -6,6 +6,7 @@ import (
 
 var egen = xyerror.Register("xyselect", 200000)
 
+// Errors of package xyselect.
 var (
 	SelectorError      = egen.NewClass("SelectorError")
 	ClosedChannelError = SelectorError.NewClass("ClosedChannelError")

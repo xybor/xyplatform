@@ -6,7 +6,7 @@ import (
 
 var egen = xyerror.Register("xysched", 300000)
 
+// Errors of package xysched.
 var (
-	CallError      = egen.NewClass("CallError")
-	ParameterError = xyerror.ParameterError.NewClassM(egen)
+	CallError = egen.NewClass("CallError")
 )

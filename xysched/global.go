@@ -1,3 +1,4 @@
+// Package xysched supports to schedule future tasks.
 package xysched
 
 import (

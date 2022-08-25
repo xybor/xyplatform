@@ -37,7 +37,7 @@ func TestXyErrorIs(t *testing.T) {
 func TestOr(t *testing.T) {
 	var err1 = xyerror.ValueError.New("err1")
 	var err2 = xyerror.TypeError.New("err2")
-	var err3 error = nil
+	var err3 error
 
 	xycond.MustTrue(errors.Is(xyerror.Or(err1, err2), xyerror.ValueError)).
 		Testf(t, "err1 or err2 should be the ValueError")

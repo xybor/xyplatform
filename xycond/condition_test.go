@@ -7,6 +7,13 @@ import (
 	"github.com/xybor/xyplatform/xycond"
 )
 
+func expectPanic(t *testing.T) {
+	var r = recover()
+	if r == nil {
+		t.Error("Expect a panic, but not found")
+	}
+}
+
 func TestMustEqual(t *testing.T) {
 	if xycond.MustEqual(1, 2) {
 		t.Error("MustEqual failed")
@@ -18,13 +25,7 @@ func TestMustEqual(t *testing.T) {
 }
 
 func TestMustEqualDiffType(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
-
+	defer expectPanic(t)
 	xycond.MustEqual(1, true)
 }
 
@@ -65,7 +66,7 @@ func TestMustNil(t *testing.T) {
 		t.Error("MustNotNil failed with nil")
 	}
 
-	var x *int = nil
+	var x *int
 	if xycond.MustNotNil(x) {
 		t.Error("MustNotNil failed with nil pointer of int")
 	}
@@ -98,12 +99,7 @@ func TestMustEmpty(t *testing.T) {
 }
 
 func TestMustEmptyWithNonLengthType(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 
 	xycond.MustEmpty(1)
 }
@@ -148,12 +144,7 @@ func TestMustContainAArray(t *testing.T) {
 }
 
 func TestMustContainAErrorType(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 
 	if xycond.MustContainA("abc", 0) {
 		t.Error("MustContainA failed with not-existed element")
@@ -294,12 +285,7 @@ func TestMustReadableChan(t *testing.T) {
 }
 
 func TestConditionAssert(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 	xycond.MustTrue(false).Assert("should panic")
 }
 
@@ -308,12 +294,7 @@ func TestConditionAssertNotOccur(t *testing.T) {
 }
 
 func TestConditionJustAssert(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 	xycond.MustTrue(false).JustAssert()
 }
 
@@ -328,12 +309,7 @@ func (*panictester) Fail() {
 }
 
 func TestConditionTest(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 	xycond.MustTrue(false).Test(&panictester{}, "should panic")
 }
 
@@ -342,12 +318,7 @@ func TestConditionTestNotOccur(t *testing.T) {
 }
 
 func TestConditionTestf(t *testing.T) {
-	defer func() {
-		var r = recover()
-		if r == nil {
-			t.Error("Expect a panic, but not found")
-		}
-	}()
+	defer expectPanic(t)
 	xycond.MustTrue(false).Testf(&panictester{}, "should panic")
 }
 

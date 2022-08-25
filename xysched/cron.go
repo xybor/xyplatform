@@ -98,7 +98,7 @@ func (c *Cron) Finish(f any, params ...any) *Task {
 // Required method of future. This method overrides the one of task.
 func (c *Cron) next() *time.Time {
 	var n = c.lock.RLockFunc(func() any {
-		c.n -= 1
+		c.n--
 		return c.n
 	}).(uint)
 	if n > 0 {

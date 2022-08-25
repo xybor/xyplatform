@@ -12,7 +12,7 @@ import (
 type ErrorWriter struct{}
 
 func (ew *ErrorWriter) Write(p []byte) (n int, err error) {
-	return 0, xyerror.UnknownError.New("unknown")
+	return 0, xyerror.Error.New("unknown")
 }
 
 func (ew *ErrorWriter) Close() error {

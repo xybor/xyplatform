@@ -1,4 +1,4 @@
-// xylog is a logging module based on the design of python logging.
+// Package xylog is a logging module based on the design of python logging.
 package xylog
 
 import (
@@ -17,6 +17,11 @@ func init() {
 	handlerManager = make(map[string]*Handler)
 }
 
+// Default levels, these can be replaced with any positive set of values having
+// corresponding names. There is a pseudo-level, NOTSET, which is only really
+// there as a lower limit for user-defined levels. Handlers and loggers are
+// initialized with NOTSET so that they will log all messages, even at
+// user-defined levels.
 const (
 	CRITICAL = 50
 	FATAL    = CRITICAL
