@@ -6,6 +6,7 @@
 4.  Reduce logging time.
 5.  Refactor xycond to be shorter and more readable.
 6.  Scheduler now can be identified by name.
+7.  Add log to xysched and xyselect.
 
 # V0.0.2
 

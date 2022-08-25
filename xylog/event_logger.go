@@ -1,6 +1,9 @@
 package xylog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // EventLogger is a logger wrapper supporting to compose logging message with
 // key-value pair.
@@ -11,7 +14,11 @@ type EventLogger struct {
 
 // Field adds a key-value pair to logging message.
 func (e *EventLogger) Field(key string, value any) *EventLogger {
-	e.msg = prefixMessage(e.msg, key+"="+fmt.Sprint(value))
+	var s = fmt.Sprint(value)
+	if strings.Contains(s, " ") {
+		s = fmt.Sprintf("\"%s\"", s)
+	}
+	e.msg = prefixMessage(e.msg, key+"="+s)
 	return e
 }
 

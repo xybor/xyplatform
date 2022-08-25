@@ -1,6 +1,7 @@
 package xysched
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -86,6 +87,16 @@ func (c *Cron) Finish(f any, params ...any) *Task {
 		return t
 	}
 	return nil
+}
+
+// String supports to print the task to output.
+func (c *Cron) String() string {
+	var n = c.lock.RLockFunc(func() any { return c.n }).(uint)
+	var s = fmt.Sprint(n)
+	if n > 1000000000 {
+		s = "inf"
+	}
+	return fmt.Sprintf("%s{%s}", c.Task.String(), s)
 }
 
 // Required method of future. This method overrides the one of task.

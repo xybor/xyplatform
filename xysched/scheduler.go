@@ -1,6 +1,7 @@
 package xysched
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/xybor/xyplatform/xylock"
@@ -22,6 +23,7 @@ type future interface {
 
 // Scheduler is used for scheduling future objects.
 type Scheduler struct {
+	name    string
 	futureQ chan future
 	stop    chan any
 	sem     *xylock.Semaphore
@@ -32,7 +34,7 @@ type Scheduler struct {
 //
 // Any Scheduler with a non-empty name will be associated with its name. Calling
 // this function twice with the same name gives you the same Scheduler. If you
-// want to create an anonymous Scheduler, call this function with an empty name.
+// want to create different Schedulers each call, use the empty name.
 func NewScheduler(name string) *Scheduler {
 	var sched *Scheduler
 	var ok bool
@@ -44,18 +46,25 @@ func NewScheduler(name string) *Scheduler {
 		return sched
 	}
 
+	if name == "" {
+		lock.WLockFunc(func() {
+			name = fmt.Sprintf("scheduler-%d", anonSchedCounter)
+			anonSchedCounter++
+		})
+	}
+
 	sched = &Scheduler{
+		name:    name,
 		futureQ: make(chan future),
 		stop:    make(chan any),
 		sem:     nil,
 	}
-	go sched.start()
 
-	if name != "" {
-		lock.WLockFunc(func() {
-			schedulerManager[name] = sched
-		})
-	}
+	lock.WLockFunc(func() {
+		schedulerManager[name] = sched
+	})
+
+	go sched.start()
 
 	return sched
 }
@@ -83,6 +92,9 @@ func (s *Scheduler) After(d time.Duration) chan<- future {
 				s.futureQ <- f
 				close(done)
 			})
+			logger.Event("prepare-to-schedule").
+				Field("scheduler", s.name).Field("future", f).Field("after", d).
+				Debug()
 		}
 
 		select {
@@ -117,6 +129,7 @@ func (s *Scheduler) Now() chan<- future {
 // Stop terminates the scheduler and all pending futures from now on. Running
 // futures still run until they complete.
 func (s *Scheduler) Stop() {
+	logger.Event("signal-stop").Field("scheduler", s.name).Info()
 	close(s.stop)
 }
 
@@ -129,10 +142,13 @@ func (s *Scheduler) Singleton() {
 // there is no limited.
 func (s *Scheduler) Concurrent(n int) {
 	s.sem = xylock.NewSemaphore(int64(n))
+	logger.Event("set-concurrent").
+		Field("scheduler", s.name).Field("futures", n).Debug()
 }
 
 // start begins the scheduled loop.
 func (s *Scheduler) start() {
+	logger.Event("start").Field("scheduler", s.name).Info()
 	var isStop = false
 
 	for !isStop {
@@ -151,4 +167,5 @@ func (s *Scheduler) start() {
 			})
 		}
 	}
+	logger.Event("stop").Field("scheduler", s.name).Info()
 }

@@ -9,10 +9,8 @@ func init() {
 	var handler = xylog.NewHandler("xybor.xyplatform", xylog.StderrEmitter)
 	handler.SetLevel(xylog.WARNING)
 	handler.SetFormatter(xylog.NewTextFormatter(
-		"time=%(asctime)s " +
-			"source=%(filename)s.%(funcname)s:%(lineno)d " +
-			"level=%(levelname)s " +
-			"module=%(module)s " +
+		"time=%(asctime)-30s " +
+			"level=%(levelname)-8s " +
 			"%(message)s",
 	))
 

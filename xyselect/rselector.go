@@ -38,7 +38,8 @@ func (rs *rselector) send(c any, v any) int {
 
 func (rs *rselector) xselect(isDefault bool) (index int, value any, err error) {
 	rs.mu.Lock()
-	var cases = rs.cases
+	var cases []reflect.SelectCase
+	cases = append(cases, rs.cases...)
 	rs.mu.Unlock()
 
 	if isDefault {
