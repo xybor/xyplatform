@@ -1,4 +1,5 @@
 # Introduction
+
 Xycond supports to check many types of condition and panic if the condition
 fails.
 
@@ -6,9 +7,11 @@ It makes source code to be shorter and more readable by using inline assertion
 commands.
 
 # Features
+
 This package has only one struct, `Condition`, a type alias of `bool`.
 
 The package defines the following methods for this struct:
+
 ```golang
 // Panic without message if the Condition fails.
 func (Condition) JustAssert()
@@ -16,6 +19,7 @@ func (Condition) JustAssert()
 // Panic with a formatted messsage if the Condition fails.
 func (Condition) Assert(msg string, a ...any)
 ```
+
 ```golang
 // Test will call t.Error if condition is false.
 func (c Condition) Test(t tester, args ...any)
@@ -25,6 +29,7 @@ func (c Condition) Testf(t tester, format string, args ...any)
 ```
 
 There are many functions to create `Condition` instances. Example:
+
 ```golang
 // Check condition directly.
 func MustTrue(bool) Condition
@@ -53,6 +58,7 @@ Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform/xycond) for
 more details.
 
 # Example
+
 ```golang
 // Assert 1 == 2
 xycond.MustFalse(1 == 2).Assert("weird")

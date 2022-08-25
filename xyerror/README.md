@@ -1,32 +1,39 @@
 # Introduction
+
 Xyerror contains special errors that are good for error comparison and
 debugging.
 This package is inspired by idea of Python `Exception`.
 
 # Features
+
 ## Python Exception Idea
+
 Xyerror defined an error type used to create other errors called `Class`, it is
 equivalent to `Exception` class in Python.
 
 `Class` creates `XyError` objects by using `New` method. It looks like
 `Exception` class creates `Exception` instances. Example:
+
 ```golang
 // xyerror
 var xerr xyerror.XyError
 xerr = xyerror.ValueError.New("value is invalid")
 fmt.Println(xerr)
 ```
+
 ```python
 # python
 print(ValueError("value is invalid"))
 ```
 
 A `Class` can "inherits" from another `Class`. Example:
+
 ```golang
 // xyerror
 var ZeroDivisionError = xyerror.ValueError.NewClass("ZeroDivisionError")
 fmt.Println(ZeroDivisionError.New("do not divide by zero"))
 ```
+
 ```python
 # python
 class ZeroDivisionError(ValueError):
@@ -35,12 +42,14 @@ print(ZeroDivisionError("do not divide by zero"))
 ```
 
 A `Class` also "inherits" from some `Class` instances. Example:
+
 ```golang
 // xyerror
 var ValueTypeError = xyerror.
     Combine(xyerror.ValueError, xyerror.TypeError).
     NewClass("ValueTypeError")
 ```
+
 ```python
 # python
 class ValueTypeError(ValueError, TypeError):
@@ -48,6 +57,7 @@ class ValueTypeError(ValueError, TypeError):
 ```
 
 A `XyError` created by `Class` can compare to this `Class`.
+
 ```golang
 // xyerror
 func foo() error {
@@ -63,6 +73,7 @@ func bar() error {
     return nil
 }
 ```
+
 ```python
 # python
 def foo():
@@ -76,11 +87,13 @@ def bar():
 ```
 
 ## Error number
+
 Every `Class` has its own unique number called `Errno`. This number is used to
 compare a `XyError` with a `Class`. All `XyError` instances created by the same
 `Class` have the same `errno`.
 
 ## Module-oriented Error
+
 Xyerror is tended to create module-oriented errors. `Errno` of all `Class`
 instances in a module need to be the same prefix.
 
@@ -104,6 +117,7 @@ Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform/xyerror) for
 more details.
 
 # Example
+
 ```golang
 package xyerror_test
 
