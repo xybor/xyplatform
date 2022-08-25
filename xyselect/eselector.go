@@ -1,6 +1,7 @@
 package xyselect
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/xybor/xyplatform/xycond"
@@ -33,17 +34,23 @@ func (es *eselector) recv(c <-chan any) int {
 
 	// If this is the only live channel currently, recreate center channel.
 	if es.liveCounter == 0 {
+		logger.Event("eselector-open-center").Field("selector", es).Debug()
 		es.center = make(chan chanResult)
 	}
 
 	es.counter++
 	es.liveCounter++
+	logger.Event("eselector-add-channel").Field("selector", es).
+		Field("index", es.counter-1).Field("live", es.liveCounter).Debug()
 
 	go func(i int) {
 		// Until the channel is closed, receiving all it values then send them
 		// to the center channel.
 		for v := range c {
 			es.center <- chanResult{i, v, true}
+			logger.Event("eselector-recv").
+				Field("selector", es).Field("index", i).Field("value", v).
+				Debug()
 		}
 		es.center <- chanResult{i, nil, false}
 
@@ -51,13 +58,21 @@ func (es *eselector) recv(c <-chan any) int {
 		defer es.mu.Unlock()
 
 		es.liveCounter--
+		logger.Event("eselector-recv-last").Field("selector", es).
+			Field("index", i).Field("live", es.liveCounter).Debug()
 		// If there is no more live channel, closing the center channel.
 		if es.liveCounter == 0 {
+			logger.Event("eselector-close-center").Field("selector", es).Debug()
 			close(es.center)
 		}
 	}(es.counter - 1)
 
 	return es.counter
+}
+
+// String supports to write eselector to output.
+func (es *eselector) String() string {
+	return fmt.Sprintf("%p", es)
 }
 
 func (es *eselector) send(any, any) int {

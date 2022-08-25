@@ -4,15 +4,21 @@ package xysched
 import (
 	"time"
 
+	_ "github.com/xybor/xyplatform" // This import will init xyplatform logger.
 	"github.com/xybor/xyplatform/xylock"
+	"github.com/xybor/xyplatform/xylog"
 )
 
 func init() {
-	schedulerManager = make(map[string]*Scheduler)
+	logger.AddExtra("module", "xysched")
 }
 
+var logger = xylog.GetLogger("xybor.xyplatform.xysched")
+
 // schedulerManager stores Schedulers with their names.
-var schedulerManager map[string]*Scheduler
+var schedulerManager = map[string]*Scheduler{}
+var anonSchedCounter = 0
+var futureCounter = 0
 var lock = xylock.RWLock{}
 
 // A default scheduler.

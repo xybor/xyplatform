@@ -1,7 +1,10 @@
 package xysched
 
 import (
+	"fmt"
 	"reflect"
+	"runtime"
+	"runtime/debug"
 	"time"
 
 	"github.com/xybor/xyplatform/xycond"
@@ -16,9 +19,8 @@ type Task struct {
 	// The parameters of function.
 	params []any
 
-	// In case output is []any, it will be converted to ...any if variadic is
-	// true. It is helpful to pass them as parameters of another function.
-	variadic bool
+	// Name of task, it has the form of "future-x"
+	name string
 
 	// The returned values in case the function ran successfully.
 	ret []any
@@ -47,10 +49,28 @@ func NewTask(f any, p ...any) *Task {
 	var params = anyArrayToTypeArray(p)
 	checkParam(getFuncIn(ft), params, ft.IsVariadic())
 
+	var task = newPlaceholderTask(f)
+	task.params = p
+	return task
+}
+
+// newPlaceholderTask creates a Task whose parameters is determined later.
+func newPlaceholderTask(f any) *Task {
+	var fv = reflect.ValueOf(f)
+	var name string
+	lock.WLockFunc(func() {
+		name = fmt.Sprintf("future-%d", futureCounter)
+		futureCounter++
+	})
+
+	var funcname = runtime.FuncForPC(fv.Pointer()).Name()
+	logger.Event("new-future").
+		Field("future", name).Field("func", funcname).Debug()
+
 	return &Task{
-		fv: fv, params: p,
-		variadic: false, ret: make([]any, ft.NumOut()),
-		cb: make([]future, 0), lock: xylock.Lock{},
+		fv: fv, params: nil, name: name,
+		ret: make([]any, fv.Type().NumOut()),
+		cb:  make([]future, 0), lock: xylock.Lock{},
 	}
 }
 
@@ -63,16 +83,6 @@ func toFuture(f any, params ...any) future {
 		cb = NewTask(f, params...)
 	}
 	return cb
-}
-
-// newPlaceholderTask creates a Task whose parameters is determined later.
-func newPlaceholderTask(f any) *Task {
-	var fv = reflect.ValueOf(f)
-	return &Task{
-		fv: fv, params: nil,
-		variadic: false, ret: make([]any, fv.Type().NumOut()),
-		cb: make([]future, 0), lock: xylock.Lock{},
-	}
 }
 
 // Callback sets a callback future which will run after the task completed. The
@@ -119,6 +129,11 @@ func (t *Task) Catch(f any) *Task {
 	return cb
 }
 
+// String supports to print the task to output.
+func (t *Task) String() string {
+	return t.name
+}
+
 // Required method of future.
 func (t *Task) run() {
 	if len(t.onfailure) > 0 {
@@ -129,10 +144,17 @@ func (t *Task) run() {
 					e = CallError.New("%s", r)
 				}
 				t.lock.LockFunc(func() { t.recover = e })
+				if len(t.onfailure) == 0 {
+					logger.Event("future-panic").
+						Field("future", t).Field("recover", e).Error()
+					debug.PrintStack()
+				}
 			}
 		}()
 	}
 
+	logger.Event("future-run").
+		Field("future", t).Field("params", t.params).Debug()
 	t.lock.LockFunc(func() {
 		var v = callFunc(t.fv, t.params)
 		copy(t.ret, v)

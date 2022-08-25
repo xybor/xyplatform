@@ -159,10 +159,8 @@ func (lg *Logger) Log(level int, s string, a ...any) {
 
 // Event creates an eventLogger which logs key-value pairs.
 func (lg *Logger) Event(e string) *EventLogger {
-	return &EventLogger{
-		lg:  lg,
-		msg: "event=" + e,
-	}
+	var elogger = &EventLogger{lg: lg}
+	return elogger.Field("event", e)
 }
 
 // log is a low-level logging method which creates a LogRecord and then calls
