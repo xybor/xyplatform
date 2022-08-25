@@ -1,5 +1,6 @@
 # Developing
-1. Add FileEmitter and RotatingFileEmitter to xylog.
+1.  Add FileEmitter and RotatingFileEmitter to xylog.
+2.  Xylog now can be easy to use key-value fields and extra values.
 
 # V1.0.1
 1. Fix bugs.

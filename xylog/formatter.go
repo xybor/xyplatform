@@ -18,7 +18,7 @@ type Formatter interface {
 // The TextFormatter can be initialized with a format string which makes use of
 // knowledge of the LogRecord attributes - e.g. %(message)s or %(levelno)d. See
 // LogRecord for more details.
-type textFormatter struct {
+type TextFormatter struct {
 	formatstring  string
 	attrbuteIndex []int
 }
@@ -26,7 +26,7 @@ type textFormatter struct {
 // NewTextFormatter creates a textFormatter which uses LogRecord attributes to
 // contribute logging string, e.g. %(message)s or %(levelno)d. See LogRecord for
 // more details.
-func NewTextFormatter(s string) textFormatter {
+func NewTextFormatter(s string) TextFormatter {
 	var record = LogRecord{}
 	var attributeIndex []int
 	var fmtstr = ""
@@ -57,14 +57,15 @@ func NewTextFormatter(s string) textFormatter {
 		i++
 	}
 
-	return textFormatter{
+	return TextFormatter{
 		formatstring:  fmtstr,
 		attrbuteIndex: attributeIndex,
 	}
 }
 
-// Format creates a logging string by combine format string and logging record.
-func (f textFormatter) Format(record LogRecord) string {
+// Format creates a logging string by combining format string and logging
+// record.
+func (f TextFormatter) Format(record LogRecord) string {
 	var attrs = make([]any, len(f.attrbuteIndex))
 	for i := range f.attrbuteIndex {
 		attrs[i] = record.mapIndex(f.attrbuteIndex[i])

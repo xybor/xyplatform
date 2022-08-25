@@ -213,3 +213,16 @@ func TestLoggerFilterLog(t *testing.T) {
 	xycond.MustEmpty(capturedOutput).
 		Testf(t, "Expected an empty output, but got %s", capturedOutput)
 }
+
+func TestLoggerAddExtra(t *testing.T) {
+	var handler = xylog.NewHandler("", &CapturedEmitter{})
+	var logger = xylog.GetLogger(t.Name())
+	logger.SetLevel(xylog.DEBUG)
+	logger.AddHandler(handler)
+	logger.AddExtra("bar", "something")
+
+	capturedOutput = ""
+	logger.Info("foo")
+	xycond.MustEqual(capturedOutput, "bar=something foo").
+		Testf(t, "%s != %s", capturedOutput, "bar=something foo")
+}
