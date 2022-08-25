@@ -27,7 +27,7 @@ type Class struct {
 // NewClass creates a root Class with error number will be determined by
 // module's id in Generator.
 func (gen Generator) NewClass(name string, args ...any) Class {
-	manager[gen].count += 1
+	manager[gen].count++
 	return Class{
 		errno:  manager[gen].count + gen.id,
 		name:   fmt.Sprintf(name, args...),

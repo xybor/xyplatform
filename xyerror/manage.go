@@ -1,3 +1,4 @@
+// Package xyerror defines error type used in xyplatform.
 package xyerror
 
 import (

@@ -1,16 +1,18 @@
 package xyerror
 
-var defaultGen = Register("default", 100000)
+// Default is the default error generator.
+var Default = Register("default", 100000)
 
+// Default predefined errors.
 var (
-	UnknownError        = defaultGen.NewClass("UnknownError")
-	IOError             = defaultGen.NewClass("IOError")
-	FloatingPointError  = defaultGen.NewClass("FloatingPointError")
-	IndexError          = defaultGen.NewClass("IndexError")
-	KeyError            = defaultGen.NewClass("KeyError")
-	NotImplementedError = defaultGen.NewClass("NotImplementedError")
-	ValueError          = defaultGen.NewClass("ValueError")
-	ParameterError      = defaultGen.NewClass("ParameterError")
-	TypeError           = defaultGen.NewClass("TypeError")
-	AssertionError      = defaultGen.NewClass("AssertionError")
+	Error               = Default.NewClass("Error")
+	IOError             = Default.NewClass("IOError")
+	FloatingPointError  = Default.NewClass("FloatingPointError")
+	IndexError          = Default.NewClass("IndexError")
+	KeyError            = Default.NewClass("KeyError")
+	NotImplementedError = Default.NewClass("NotImplementedError")
+	ValueError          = Default.NewClass("ValueError")
+	ParameterError      = Default.NewClass("ParameterError")
+	TypeError           = Default.NewClass("TypeError")
+	AssertionError      = Default.NewClass("AssertionError")
 )

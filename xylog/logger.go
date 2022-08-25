@@ -171,8 +171,8 @@ func (lg *Logger) Log(level int, s string, a ...any) {
 // Event creates an eventLogger which logs key-value pairs.
 func (lg *Logger) Event(e string) *EventLogger {
 	return &EventLogger{
-		lg:     lg,
-		fields: map[string]any{"event": e},
+		lg:  lg,
+		msg: "event=" + e,
 	}
 }
 
@@ -209,7 +209,7 @@ func (lg *Logger) callHandlers(record LogRecord) {
 	for c != nil {
 		for i := range c.handlers {
 			c.handlers[i].handle(record)
-			found += 1
+			found++
 		}
 		c = c.parent
 	}

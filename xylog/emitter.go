@@ -76,6 +76,7 @@ func (e *StreamEmitter) setStream(w io.Writer) {
 	}
 }
 
+// FileEmitter writes formatted logging records to disk files.
 type FileEmitter struct {
 	*StreamEmitter
 	rotator     rotator
@@ -94,6 +95,8 @@ func NewFileEmitter(fn string) *FileEmitter {
 	return emitter
 }
 
+// NewSizeRotatingFileEmitter creates a FileEmitter which rotates the current
+// logging file if its size exceeds the maxBytes.
 func NewSizeRotatingFileEmitter(
 	fn string, maxBytes uint64, backupCount uint,
 ) *FileEmitter {
@@ -104,6 +107,8 @@ func NewSizeRotatingFileEmitter(
 	return emitter
 }
 
+// NewTimeRotatingFileEmitter creates a FileEmitter which rotates the current
+// logging file every interval time.
 func NewTimeRotatingFileEmitter(
 	fn string, interval time.Duration, backupCount uint,
 ) *FileEmitter {
@@ -117,6 +122,8 @@ func NewTimeRotatingFileEmitter(
 	return emitter
 }
 
+// Emit calls StreamEmitter.Emit. Its also rotates the current logging file if
+// the condition has been met.
 func (e *FileEmitter) Emit(record LogRecord) {
 	if e.writer == nil {
 		e.open()
@@ -127,11 +134,14 @@ func (e *FileEmitter) Emit(record LogRecord) {
 	e.StreamEmitter.Emit(record)
 }
 
+// open opens the writer and set the stream to StreamEmitter.
 func (e *FileEmitter) open() {
-	var f, err = os.OpenFile(e.filename, fileflag, fileperm)
-	xycond.MustNil(err).Assert("%v", err)
-	e.writer = f
-	e.setStream(f)
+	if e.writer == nil {
+		var f, err = os.OpenFile(e.filename, fileflag, fileperm)
+		xycond.MustNil(err).Assert("%v", err)
+		e.writer = f
+		e.setStream(f)
+	}
 }
 
 // close stops to write to the log writer.
@@ -144,6 +154,12 @@ func (e *FileEmitter) close() {
 	}
 }
 
+// doRollover rotates the current log.
+//
+// The default implementation calls the 'rotator' attribute of the
+// handler, if it's callable, passing the source and dest arguments to
+// it. If the attribute isn't callable (the default is None), the source
+// is simply renamed to the destination.
 func (e *FileEmitter) doRollover() {
 	e.close()
 
@@ -162,10 +178,14 @@ func (e *FileEmitter) doRollover() {
 	e.open()
 }
 
+// rotator instances defines a definition about the time the FileEmitter should
+// rotates logging file.
 type rotator interface {
 	shouldRollover() bool
 }
 
+// sizeRotator signals to rotate logging file if the current log file exceed
+// the predefined-size.
 type sizeRotator struct {
 	filename string
 	fd       *os.File
@@ -189,6 +209,7 @@ func (r *sizeRotator) shouldRollover() bool {
 	return false
 }
 
+// timeRotator signals to rotate logging file every interval time.
 type timeRotator struct {
 	d            time.Duration
 	nextRollover time.Time
@@ -202,6 +223,7 @@ func (r *timeRotator) shouldRollover() bool {
 	return false
 }
 
+// rotationFilename returns the logging filename with index.
 func rotationFilename(base string, i uint) string {
 	if i == 0 {
 		return base

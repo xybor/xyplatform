@@ -1,3 +1,4 @@
+// Package xycond supports to assert many conditions in normal program and test.
 package xycond
 
 import (
