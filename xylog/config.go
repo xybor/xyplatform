@@ -65,6 +65,10 @@ var fileflag = os.O_WRONLY | os.O_APPEND | os.O_CREATE
 // fileperm is the file permission when creating a logging file.
 var fileperm fs.FileMode = 0666
 
+// skipCall is the depth of Logger.log call in program, 2 by default. Increase
+// this value if you want to wrap log methods of logger.
+var skipCall = 2
+
 var levelToName = map[int]string{
 	CRITICAL: "CRITICAL",
 	ERROR:    "ERROR",
@@ -80,10 +84,16 @@ func SetFileFlag(flag int) {
 	lock.WLockFunc(func() { fileflag = flag })
 }
 
-// SetFileMode sets the mode when open logging files. It is os.O_WRONLY |
+// SetFilePerm sets the mode when open logging files. It is os.O_WRONLY |
 // os.O_APPEND | os.O_CREATE by default.
 func SetFilePerm(perm fs.FileMode) {
 	lock.WLockFunc(func() { fileperm = perm })
+}
+
+// SetSkipCall sets the new skipCall value which dertermine the depth call of
+// Logger.log method.
+func SetSkipCall(skip int) {
+	lock.WLockFunc(func() { skipCall = skip })
 }
 
 // SetTimeLayout sets the time layout to print asctime. It is time.RFC3339Nano

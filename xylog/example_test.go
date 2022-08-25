@@ -37,10 +37,11 @@ func ExampleGetLogger() {
 	var logger = xylog.GetLogger("example")
 	logger.AddHandler(handler)
 	logger.SetLevel(xylog.DEBUG)
+	logger.AddExtra("some", "thing")
 	logger.Debug("foo %s", "bar")
 
 	// Output:
-	// module=example level=DEBUG foo bar
+	// module=example level=DEBUG some=thing foo bar
 }
 
 func ExampleHandler() {
@@ -134,4 +135,18 @@ func ExampleNewTimeRotatingFileEmitter() {
 	// Created exampleTime.log
 	// Created exampleTime.log.1
 	// Created exampleTime.log.2
+}
+
+func ExampleEventLogger() {
+	var handler = xylog.NewHandler("", xylog.NewStreamEmitter(os.Stdout))
+	handler.SetFormatter(xylog.NewTextFormatter(
+		"module=%(name)s level=%(levelname)s %(message)s"))
+
+	var logger = xylog.GetLogger("eventlogger")
+	logger.AddHandler(handler)
+	logger.SetLevel(xylog.DEBUG)
+	logger.Event("create").Field("product", 1235).Debug()
+
+	// Output:
+	// module=eventlogger level=DEBUG event=create product=1235
 }

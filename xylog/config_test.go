@@ -1,6 +1,7 @@
 package xylog_test
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -54,5 +55,23 @@ func TestSetTimeLayout(t *testing.T) {
 	xycond.MustNotPanic(func() {
 		xylog.SetTimeLayout("123")
 		xylog.SetTimeLayout(time.RFC3339Nano)
+	}).Test(t, "A panic occurred")
+}
+
+func TestSetFileFlag(t *testing.T) {
+	xycond.MustNotPanic(func() {
+		xylog.SetFileFlag(os.O_WRONLY | os.O_APPEND | os.O_CREATE)
+	}).Test(t, "A panic occurred")
+}
+
+func TestSetFilePerm(t *testing.T) {
+	xycond.MustNotPanic(func() {
+		xylog.SetFilePerm(0666)
+	}).Test(t, "A panic occurred")
+}
+
+func TestSetSkipCall(t *testing.T) {
+	xycond.MustNotPanic(func() {
+		xylog.SetSkipCall(2)
 	}).Test(t, "A panic occurred")
 }
