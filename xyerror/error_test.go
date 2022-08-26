@@ -1,7 +1,6 @@
 package xyerror_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/xybor/xyplatform/xycond"
@@ -21,16 +20,16 @@ func TestXyErrorIs(t *testing.T) {
 	var err1 = xyerror.ValueError.New("err1")
 	var err2 = xyerror.TypeError.New("err2")
 
-	xycond.MustTrue(errors.Is(err1, xyerror.ValueError)).
+	xycond.ErrorMustBe(err1, xyerror.ValueError).
 		Testf(t, "err1 should be xyerror.ValueError")
-	xycond.MustTrue(errors.Is(err2, xyerror.TypeError)).
+	xycond.ErrorMustBe(err2, xyerror.TypeError).
 		Testf(t, "err2 should be xyerror.TypeError")
 
-	xycond.MustFalse(errors.Is(err1, err1)).
+	xycond.ErrorMustNotBe(err1, err1).
 		Testf(t, "err1 should not be err1")
-	xycond.MustFalse(errors.Is(err1, err2)).
+	xycond.ErrorMustNotBe(err1, err2).
 		Testf(t, "err1 should not be err2")
-	xycond.MustFalse(errors.Is(err1, xyerror.TypeError)).
+	xycond.ErrorMustNotBe(err1, xyerror.TypeError).
 		Testf(t, "err1 should not be xyerror.TypeError")
 }
 
@@ -39,9 +38,9 @@ func TestOr(t *testing.T) {
 	var err2 = xyerror.TypeError.New("err2")
 	var err3 error
 
-	xycond.MustTrue(errors.Is(xyerror.Or(err1, err2), xyerror.ValueError)).
+	xycond.ErrorMustBe(xyerror.Or(err1, err2), xyerror.ValueError).
 		Testf(t, "err1 or err2 should be the ValueError")
-	xycond.MustTrue(errors.Is(xyerror.Or(err2, err1), xyerror.TypeError)).
+	xycond.ErrorMustBe(xyerror.Or(err2, err1), xyerror.TypeError).
 		Testf(t, "err2 or err1 should be the TypeError")
 	xycond.MustNil(xyerror.Or(nil, err3)).
 		Testf(t, "Or with all nil errors should return nil")
@@ -53,12 +52,12 @@ func TestCombine(t *testing.T) {
 		NewClass(gen, "class")
 	var xerr = c.New("error")
 
-	xycond.MustTrue(errors.Is(xerr, xyerror.ValueError)).
+	xycond.ErrorMustBe(xerr, xyerror.ValueError).
 		Testf(t, "xerr should be ValueError")
 
-	xycond.MustTrue(errors.Is(xerr, xyerror.TypeError)).
+	xycond.ErrorMustBe(xerr, xyerror.TypeError).
 		Testf(t, "xerr should be TypeError")
 
-	xycond.MustFalse(errors.Is(xerr, xyerror.IndexError)).
+	xycond.ErrorMustNotBe(xerr, xyerror.IndexError).
 		Testf(t, "xerr should not be IndexError")
 }

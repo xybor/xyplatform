@@ -7,6 +7,19 @@ import (
 	"github.com/xybor/xyplatform/xylog"
 )
 
+func testRootLogger(t *testing.T, f func(int)) {
+	var handler = xylog.NewHandler("", &CapturedEmitter{})
+	handler.SetLevel(xylog.DEBUG)
+	xylog.AddHandler(handler)
+	defer xylog.RemoveHandler(handler)
+
+	var loggerLevel = xylog.INFO
+	xylog.SetLevel(loggerLevel)
+
+	f(loggerLevel)
+
+}
+
 func TestRootHandler(t *testing.T) {
 	var handler = xylog.NewHandler("", xylog.StdoutEmitter)
 	xycond.MustNotPanic(func() {
@@ -56,30 +69,12 @@ func TestRootLog(t *testing.T) {
 		xylog.CRITICAL,
 	}
 
-	var handler = xylog.NewHandler("", &CapturedEmitter{})
-	handler.SetLevel(xylog.DEBUG)
-	xylog.AddHandler(handler)
-
-	var loggerLevel = xylog.INFO
-	xylog.SetLevel(loggerLevel)
-
-	var expectedMessage = "foo"
-
-	for i := range levels {
-		xycond.MustNotPanic(func() {
-			capturedOutput = ""
-			xylog.Log(levels[i], expectedMessage)
-			if levels[i] < loggerLevel {
-				xycond.MustEmpty(capturedOutput).Testf(t,
-					"Expect an empty output, but got %s", capturedOutput)
-			} else {
-				xycond.MustEqual(capturedOutput, expectedMessage).
-					Testf(t, "%s != %s", capturedOutput, expectedMessage)
-			}
-		}).Test(t, "A panic occurred")
-	}
-
-	xylog.RemoveHandler(handler)
+	testRootLogger(t, func(loggerLevel int) {
+		for i := range levels {
+			checkLogOutput(t, func() { xylog.Log(levels[i], "foo") }, "foo",
+				levels[i], loggerLevel)
+		}
+	})
 }
 
 func TestRootLogMethods(t *testing.T) {
@@ -91,28 +86,9 @@ func TestRootLogMethods(t *testing.T) {
 		xylog.CRITICAL: xylog.Critical,
 	}
 
-	var handler = xylog.NewHandler("", &CapturedEmitter{})
-	handler.SetLevel(xylog.DEBUG)
-	xylog.AddHandler(handler)
-
-	var loggerLevel = xylog.INFO
-	xylog.SetLevel(loggerLevel)
-
-	var expectedMessage = "foo"
-
-	for level, method := range methods {
-		xycond.MustNotPanic(func() {
-			capturedOutput = ""
-			method(expectedMessage)
-			if level < loggerLevel {
-				xycond.MustEmpty(capturedOutput).Testf(t,
-					"Expect an empty output, but got %s", capturedOutput)
-			} else {
-				xycond.MustEqual(capturedOutput, expectedMessage).
-					Testf(t, "%s != %s", capturedOutput, expectedMessage)
-			}
-		}).Test(t, "A panic occurred")
-	}
-
-	xylog.RemoveHandler(handler)
+	testRootLogger(t, func(loggerLevel int) {
+		for level, method := range methods {
+			checkLogOutput(t, func() { method("foo") }, "foo", level, loggerLevel)
+		}
+	})
 }

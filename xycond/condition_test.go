@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/xybor/xyplatform/xycond"
+	"github.com/xybor/xyplatform/xyerror"
 )
 
 func expectPanic(t *testing.T) {
@@ -281,6 +282,17 @@ func TestMustReadableChan(t *testing.T) {
 
 	if !xycond.MustReadableChan(receive) {
 		t.Error("MustReadableChan failed with receive-only (read-only)")
+	}
+}
+
+func TestErrorMustBe(t *testing.T) {
+	var err = xyerror.ValueError.New("err1")
+	if !xycond.ErrorMustBe(err, xyerror.ValueError) {
+		t.Error("err should be ValueError")
+	}
+
+	if !xycond.ErrorMustNotBe(err, xyerror.AssertionError) {
+		t.Error("err should not be AssertionError")
 	}
 }
 

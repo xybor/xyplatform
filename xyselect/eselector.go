@@ -71,6 +71,9 @@ func (es *eselector) xselect(isDefault bool) (index int, value any, recvOk error
 	if isDefault {
 		select {
 		case r, ok = <-es.center:
+			if !ok {
+				r = chanResult{-1, nil, false}
+			}
 		default:
 			r = chanResult{-1, nil, false}
 			ok = true
@@ -79,7 +82,7 @@ func (es *eselector) xselect(isDefault bool) (index int, value any, recvOk error
 		r, ok = <-es.center
 	}
 
-	// Default case
+	// The default case.
 	if r.index == -1 {
 		return -1, nil, nil
 	}
