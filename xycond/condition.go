@@ -2,6 +2,7 @@
 package xycond
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -220,6 +221,21 @@ func MustReadableChan(c any) Condition {
 	MustBe(c, reflect.Chan).Assert("c must be a channel")
 	var dir = reflect.TypeOf(c).ChanDir()
 	return dir == reflect.BothDir || dir == reflect.RecvDir
+}
+
+// ErrorMustBe returns true if err is one of the passed error.
+func ErrorMustBe(err error, targets ...error) Condition {
+	for i := range targets {
+		if errors.Is(err, targets[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+// ErrorMustNotBe returns true if err it not all passed errors.
+func ErrorMustNotBe(err error, targets ...error) Condition {
+	return not(ErrorMustBe(err, targets...))
 }
 
 // MustTrue checks if b is true.

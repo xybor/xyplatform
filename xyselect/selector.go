@@ -116,6 +116,8 @@ func (s *Selector) Send(c any, v any) int {
 // received, and a error of selector. Nil for the case of receiving is not
 // closed. ClosedChannelError if the channel is closed in receiving case,
 // ExhaustedError if there is no more available channel in exhausted-selector.
+//
+// Error is never raised if isDefault is true.
 func (s *Selector) Select(isDefault bool) (index int, v any, err error) {
 	return s.selector.xselect(isDefault)
 }

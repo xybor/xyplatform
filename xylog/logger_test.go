@@ -9,6 +9,18 @@ import (
 
 type CapturedEmitter struct{}
 
+func checkLogOutput(t *testing.T, f func(), msg string, lv, loggerLv int) {
+	capturedOutput = ""
+	f()
+	if lv < loggerLv {
+		xycond.MustEmpty(capturedOutput).
+			Testf(t, "Expected an empty output, but got %s", capturedOutput)
+	} else {
+		xycond.MustEqual(capturedOutput, msg).
+			Testf(t, "Expected output %s, but got empty", msg)
+	}
+}
+
 func (h *CapturedEmitter) Emit(record xylog.LogRecord) {
 	capturedOutput = record.Message
 }
@@ -90,7 +102,6 @@ func TestLoggerRemoveInvalidHandler(t *testing.T) {
 }
 
 func TestLoggerLogMethods(t *testing.T) {
-	var expectedMessage = "foo"
 	var loggerLevel = xylog.WARN
 	var logger = xylog.GetLogger(t.Name())
 	logger.AddHandler(xylog.NewHandler("", &CapturedEmitter{}))
@@ -105,15 +116,7 @@ func TestLoggerLogMethods(t *testing.T) {
 	}
 
 	for level, method := range loggerMethods {
-		capturedOutput = ""
-		method(expectedMessage)
-		if level < loggerLevel {
-			xycond.MustEmpty(capturedOutput).
-				Testf(t, "Expected an empty output, but got %s", capturedOutput)
-		} else {
-			xycond.MustEqual(capturedOutput, expectedMessage).
-				Testf(t, "Expected output %s, but got empty", expectedMessage)
-		}
+		checkLogOutput(t, func() { method("foo") }, "foo", level, loggerLevel)
 	}
 }
 
@@ -161,22 +164,14 @@ func TestLoggerLogInvalidCustomLevel(t *testing.T) {
 }
 
 func TestLoggerLogValidCustomLevel(t *testing.T) {
-	var expectedMessage = "foo"
 	var loggerLevel = xylog.DEBUG
 	var logger = xylog.GetLogger(t.Name())
 	logger.AddHandler(xylog.NewHandler("", &CapturedEmitter{}))
 	logger.SetLevel(loggerLevel)
 
 	for i := range validCustomLevels {
-		capturedOutput = ""
-		logger.Log(validCustomLevels[i], expectedMessage)
-		if validCustomLevels[i] < loggerLevel {
-			xycond.MustEmpty(capturedOutput).
-				Testf(t, "Expected an empty output, but got %s", capturedOutput)
-		} else {
-			xycond.MustEqual(capturedOutput, expectedMessage).
-				Testf(t, "Expected output %s, but got empty", expectedMessage)
-		}
+		checkLogOutput(t, func() { logger.Log(validCustomLevels[i], "foo") },
+			"foo", validCustomLevels[i], loggerLevel)
 	}
 }
 
