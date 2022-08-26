@@ -7,6 +7,7 @@
 [![GitHub release (release name instead of tag name)](https://img.shields.io/github/v/release/xybor/xyplatform?include_prereleases)](https://github.com/xybor/xyplatform/releases/latest)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/34ed76ef9cef4d67aa5c687945b6bdf0)](https://www.codacy.com/gh/xybor/xyplatform/dashboard?utm_source=github.com&utm_medium=referral&utm_content=xybor/xyplatform&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/34ed76ef9cef4d67aa5c687945b6bdf0)](https://www.codacy.com/gh/xybor/xyplatform/dashboard?utm_source=github.com&utm_medium=referral&utm_content=xybor/xyplatform&utm_campaign=Badge_Coverage)
+[![Go Report](https://goreportcard.com/badge/github.com/xybor/xyplatform)](https://goreportcard.com/report/github.com/xybor/xyplatform)
 
 Xyplatform contains platform libraries developed by Xybor.
 

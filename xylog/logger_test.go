@@ -83,9 +83,8 @@ func TestLoggerAddHandlerNil(t *testing.T) {
 func TestLoggerRemoveInvalidHandler(t *testing.T) {
 	var expectedHandler = xylog.NewHandler("", &CapturedEmitter{})
 	var logger = xylog.GetLogger(t.Name())
-	var handlers = logger.GetHandlers()
 	logger.RemoveHandler(expectedHandler)
-	handlers = logger.GetHandlers()
+	var handlers = logger.GetHandlers()
 	xycond.MustEmpty(handlers).
 		Testf(t, "Expected no handler, but got %d", len(handlers))
 }

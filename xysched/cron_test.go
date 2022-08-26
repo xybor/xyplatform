@@ -53,7 +53,7 @@ func TestCronPeriodic(t *testing.T) {
 
 	xycond.MustNotPanic(func() {
 		c.Every(3 * time.Hour)
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 
 	xycond.MustPanic(func() {
 		c.Every(-3 * time.Hour)
@@ -65,19 +65,19 @@ func TestCronMacroPeriodic(t *testing.T) {
 
 	xycond.MustNotPanic(func() {
 		c.Secondly()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 
 	xycond.MustNotPanic(func() {
 		c.Minutely()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 
 	xycond.MustNotPanic(func() {
 		c.Hourly()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 
 	xycond.MustNotPanic(func() {
 		c.Daily()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 }
 
 func TestCronTimes(t *testing.T) {
@@ -85,7 +85,7 @@ func TestCronTimes(t *testing.T) {
 
 	xycond.MustNotPanic(func() {
 		c.Times(5)
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 }
 
 func TestCronMacroTimes(t *testing.T) {
@@ -93,11 +93,11 @@ func TestCronMacroTimes(t *testing.T) {
 
 	xycond.MustNotPanic(func() {
 		c.Once()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 
 	xycond.MustNotPanic(func() {
 		c.Twice()
-	}).Test(t, "A panic occured")
+	}).Test(t, "A panic occurred")
 }
 
 func TestCronFinish(t *testing.T) {
