@@ -9,118 +9,118 @@ import (
 )
 
 func TestNewCron(t *testing.T) {
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewCron(func() {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewCron(func(a, b int) {}, 1, 2)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestNewCronWithMismatchedParameterNumber(t *testing.T) {
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewCron(func(a, b int) {}, 1, 2, 3)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestNewCronWithMismatchedParameterType(t *testing.T) {
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewCron(func(a, b int) {}, 1)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewCron(func(a, b int) {}, 1, "a")
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestNewCronWithVariadicFunction(t *testing.T) {
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewCron(func(a ...int) {}, 1, 2, 3, 4)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewCron(func(a ...int) {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewCron(func(a int, b ...int) {})
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestCronPeriodic(t *testing.T) {
 	var c = xysched.NewCron(func() {})
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Every(3 * time.Hour)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		c.Every(-3 * time.Hour)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestCronMacroPeriodic(t *testing.T) {
 	var c = xysched.NewCron(func() {})
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Secondly()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Minutely()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Hourly()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Daily()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestCronTimes(t *testing.T) {
 	var c = xysched.NewCron(func() {})
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Times(5)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestCronMacroTimes(t *testing.T) {
 	var c = xysched.NewCron(func() {})
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Once()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		c.Twice()
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestCronFinish(t *testing.T) {
 	var cron = xysched.NewCron(func() {})
 	var callback *xysched.Task
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		callback = cron.Finish(func(a, b int) {}, 1, 2)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotNil(callback).Test(t, "Expected a not nil callback")
+	xycond.ExpectNotNil(callback).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		cron.Finish(xysched.NewTask(func(a, b int) {}, 1, 2))
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		callback = cron.Finish(xysched.NewCron(func() {}))
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNil(callback).Test(t, "Expected a nil callback")
+	xycond.ExpectNil(callback).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		cron.Finish(callback, 1, 2)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }

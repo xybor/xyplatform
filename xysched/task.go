@@ -54,6 +54,17 @@ func NewTask(f any, p ...any) *Task {
 	}
 }
 
+// toFuture converts parameters to future if it is not.
+func toFuture(f any, params ...any) future {
+	var cb, ok = f.(future)
+	if ok {
+		xycond.AssertEmpty(params)
+	} else {
+		cb = NewTask(f, params...)
+	}
+	return cb
+}
+
 // newPlaceholderTask creates a Task whose parameters is determined later.
 func newPlaceholderTask(f any) *Task {
 	var fv = reflect.ValueOf(f)
@@ -71,14 +82,7 @@ func newPlaceholderTask(f any) *Task {
 // It returns the callback task if you passed a function or task, otherwise,
 // nil.
 func (t *Task) Callback(f any, params ...any) *Task {
-	var cb, ok = f.(future)
-	if ok {
-		xycond.MustEmpty(params).
-			Assert("do not pass params if f was already a future")
-	} else {
-		cb = NewTask(f, params...)
-	}
-
+	var cb = toFuture(f, params...)
 	t.cb = append(t.cb, cb)
 
 	if t, ok := cb.(*Task); ok {
@@ -105,12 +109,10 @@ func (t *Task) Then(f any) *Task {
 // It returns the callback task.
 func (t *Task) Catch(f any) *Task {
 	var ft = reflect.TypeOf(f)
-	xycond.MustTrue(ft.NumIn() == 1).
-		Assert("catch function must have exact one parameter")
+	xycond.AssertEqual(ft.NumIn(), 1)
 
 	var errtype = reflect.TypeOf((*error)(nil)).Elem()
-	xycond.MustTrue(ft.In(0).AssignableTo(errtype)).
-		Assert("catch function's parameter must be an error")
+	xycond.AssertTrue(ft.In(0).AssignableTo(errtype))
 
 	var cb = newPlaceholderTask(f)
 	t.onfailure = append(t.onfailure, cb)

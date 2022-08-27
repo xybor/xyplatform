@@ -131,7 +131,7 @@ func GetLogger(name string) *Logger {
 	return lock.RWLockFunc(func() any {
 		var lg = rootLogger
 		for _, part := range strings.Split(name, ".") {
-			if xycond.MustNotContainM(lg.children, part) {
+			if _, ok := lg.children[part]; !ok {
 				lg.children[part] = newlogger(part, lg)
 			}
 			lg = lg.children[part]
@@ -150,8 +150,9 @@ func getLevelName(level int) string {
 // checkLevel validates if the given level is registered or not.
 func checkLevel(level int) int {
 	return lock.RLockFunc(func() any {
-		xycond.MustContainM(levelToName, level).
-			Assert("level %d is not registered", level)
+		if _, ok := levelToName[level]; !ok {
+			xycond.Panic("level %d is not registered", level)
+		}
 		return level
 	}).(int)
 }
@@ -168,7 +169,8 @@ func GetHandler(name string) *Handler {
 
 // mapHandler associates a name with a handler.
 func mapHandler(name string, h *Handler) {
-	xycond.MustNotContainM(handlerManager, name).
-		Assert("do not set handler with the same name (%s)", name)
+	if _, ok := handlerManager[name]; ok {
+		xycond.Panic("do not set handler with the same name (%s)", name)
+	}
 	handlerManager[name] = h
 }

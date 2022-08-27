@@ -138,7 +138,7 @@ func (e *FileEmitter) Emit(record LogRecord) {
 func (e *FileEmitter) open() {
 	if e.writer == nil {
 		var f, err = os.OpenFile(e.filename, fileflag, fileperm)
-		xycond.MustNil(err).Assert("%v", err)
+		xycond.AssertNil(err)
 		e.writer = f
 		e.setStream(f)
 	}
@@ -147,8 +147,7 @@ func (e *FileEmitter) open() {
 // close stops to write to the log writer.
 func (e *FileEmitter) close() {
 	if e.writer != nil {
-		var err = e.writer.Close()
-		xycond.MustNil(err).Assert("%v", err)
+		xycond.AssertNil(e.writer.Close())
 		e.writer = nil
 		e.setStream(nil)
 	}
@@ -196,11 +195,11 @@ func (r *sizeRotator) shouldRollover() bool {
 	var err error
 	if r.fd == nil {
 		r.fd, err = os.Open(r.filename)
-		xycond.MustNil(err).Assert("%v", err)
+		xycond.AssertNil(err)
 	}
 
 	stat, err := r.fd.Stat()
-	xycond.MustNil(err).Assert("%v", err)
+	xycond.AssertNil(err)
 
 	if uint64(stat.Size()) >= r.maxBytes {
 		r.fd = nil

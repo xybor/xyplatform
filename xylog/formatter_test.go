@@ -12,17 +12,14 @@ import (
 func TestNewTextFormatter(t *testing.T) {
 	var f = xylog.NewTextFormatter(
 		"time=%(asctime)s %(levelno).3d %(module)s something")
-	xycond.MustTrue(strings.Contains(
-		fmt.Sprint(f),
-		"time=%s %.3d %s something",
-	)).Testf(t, "Got unepected formatter %v", f)
+	xycond.ExpectTrue(
+		strings.Contains(fmt.Sprint(f), "time=%s %.3d %s something")).Test(t)
 }
 
 func TestNewTextFormatterWithPercentageSign(t *testing.T) {
 	var f = xylog.NewTextFormatter(
 		"%%abc)s")
-	xycond.MustTrue(strings.Contains(fmt.Sprint(f), "%abc)s")).
-		Testf(t, "Got unepected formatter %v", f)
+	xycond.ExpectTrue(strings.Contains(fmt.Sprint(f), "%abc)s")).Test(t)
 }
 
 func TestTextFormatter(t *testing.T) {
@@ -48,7 +45,6 @@ func TestTextFormatter(t *testing.T) {
 		RelativeCreated: 6,
 	})
 
-	xycond.MustEqual(s, "ASCTIME 1 FILENAME FUNCNAME LEVELNAME 2 3 MESSAGE "+
-		"MODULE 4 NAME PATHNAME 5 6",
-	).Testf(t, "Got unexpected formatted string: %s", s)
+	xycond.ExpectEqual(s, "ASCTIME 1 FILENAME FUNCNAME LEVELNAME 2 3 MESSAGE "+
+		"MODULE 4 NAME PATHNAME 5 6").Test(t)
 }

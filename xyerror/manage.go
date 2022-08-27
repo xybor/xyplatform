@@ -44,7 +44,7 @@ func getGenerator(errno int) Generator {
 // Classes.
 func Register(name string, id int) Generator {
 	if id%minid != 0 {
-		log.Panicf("cannot register, %d is not divisible by %d", id, minid)
+		log.Panicf("Cannot register, %d is not divisible by %d", id, minid)
 	}
 	var gen = Generator{id}
 	if _, ok := manager[gen]; ok {

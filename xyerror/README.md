@@ -1,7 +1,7 @@
 # Introduction
 
-Xyerror contains special errors that are good for error comparison and
-debugging.
+Package xyerror defines error type used in xyplatform.
+
 This package is inspired by idea of Python `Exception`.
 
 # Features

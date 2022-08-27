@@ -22,20 +22,18 @@ func TestESelectorRecv(t *testing.T) {
 		}()
 
 		var i, v, e = selector.Select(false)
-		xycond.MustZero(i).Testf(t, "Expected a zero index, but got %d", i)
-		xycond.MustEqual(v, 10).Testf(t, "Expected value of 10, but got %v", v)
-		xycond.MustNil(e).Testf(t, "Expected no error, but got %s", e)
+		xycond.ExpectZero(i).Test(t)
+		xycond.ExpectEqual(v, 10).Test(t)
+		xycond.ExpectNil(e).Test(t)
 
 		i, v, e = selector.Select(false)
-		xycond.MustZero(i).Testf(t, "Expected a zero index, but got %d", i)
-		xycond.MustNil(v).Testf(t, "Expected a nil value, but got %v", v)
-		xycond.ErrorMustBe(e, xyselect.ClosedChannelError).
-			Testf(t, "Expected ClosedChannelError, but got %s", e)
+		xycond.ExpectZero(i).Test(t)
+		xycond.ExpectNil(v).Test(t)
+		xycond.ExpectError(e, xyselect.ClosedChannelError).Test(t)
 
 		_, _, e = selector.Select(false)
-		xycond.ErrorMustBe(
-			e, xyselect.ExhaustedError, xyselect.ClosedChannelError).Testf(t,
-			"Expected ExhaustedError or ClosedChannelError, but got %s", e)
+		xycond.ExpectError(
+			e, xyselect.ExhaustedError, xyselect.ClosedChannelError).Test(t)
 	}
 }
 
@@ -46,9 +44,9 @@ func TestSelectorDefault(t *testing.T) {
 		var selector = tests[i]
 
 		var i, v, e = selector.Select(true)
-		xycond.MustEqual(i, -1).Testf(t, "Expected index of -1, but got %d", i)
-		xycond.MustNil(v).Testf(t, "Expected a nil value, but got %v", v)
-		xycond.MustNil(e).Testf(t, "Expected no error, but got %v", e)
+		xycond.ExpectEqual(i, -1).Test(t)
+		xycond.ExpectNil(v).Test(t)
+		xycond.ExpectNil(e).Test(t)
 	}
 }
 
@@ -58,21 +56,20 @@ func TestRSelectorSend(t *testing.T) {
 	var rv int
 	go func() {
 		rv = <-c
-		xycond.MustEqual(rv, 10).
-			Testf(t, "Expected received value of 10, but got %v", rv)
+		xycond.ExpectEqual(rv, 10).Test(t)
 	}()
 	selector.Send(c, 10)
 	var i, v, e = selector.Select(false)
-	xycond.MustZero(i).Testf(t, "Expected a zero index, but got %d", i)
-	xycond.MustNil(v).Testf(t, "Expected a nil value, but got %v", v)
-	xycond.MustNil(e).Testf(t, "Expected no error, but got %s", e)
+	xycond.ExpectZero(i).Test(t)
+	xycond.ExpectNil(v).Test(t)
+	xycond.ExpectNil(e).Test(t)
 }
 
 func TestESelectorSend(t *testing.T) {
 	var selector = xyselect.E()
 	var c = make(chan int)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		selector.Send(c, 10)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }

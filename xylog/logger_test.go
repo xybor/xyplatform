@@ -13,11 +13,9 @@ func checkLogOutput(t *testing.T, f func(), msg string, lv, loggerLv int) {
 	capturedOutput = ""
 	f()
 	if lv < loggerLv {
-		xycond.MustEmpty(capturedOutput).
-			Testf(t, "Expected an empty output, but got %s", capturedOutput)
+		xycond.ExpectEmpty(capturedOutput).Test(t)
 	} else {
-		xycond.MustEqual(capturedOutput, msg).
-			Testf(t, "Expected output %s, but got empty", msg)
+		xycond.ExpectEqual(capturedOutput, msg).Test(t)
 	}
 }
 
@@ -53,52 +51,44 @@ func init() {
 func TestLoggerValidCustomLevel(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 
-	// Test not panic.
-	for i := range validCustomLevels {
-		logger.SetLevel(validCustomLevels[i])
-	}
+	xycond.ExpectNotPanic(func() {
+		for i := range validCustomLevels {
+			logger.SetLevel(validCustomLevels[i])
+		}
+	}).Test(t)
 }
 
 func TestLoggerInvalidCustomLevel(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 
 	for i := range invalidCustomLevels {
-		xycond.MustPanic(func() {
+		xycond.ExpectPanic(func() {
 			logger.SetLevel(invalidCustomLevels[i])
-		}).Testf(t, "Expected a panic, but not found")
+		}).Test(t)
 	}
 }
 
 func TestLoggerHandler(t *testing.T) {
 	var expectedHandler = xylog.NewHandler("", &CapturedEmitter{})
 	var logger = xylog.GetLogger(t.Name())
-	logger.AddHandler(expectedHandler)
-	var handlers = logger.GetHandlers()
-	xycond.MustEqual(len(handlers), 1).
-		Testf(t, "Expected one handler, but got %d", len(handlers))
-	xycond.MustEqual(handlers[0], expectedHandler).
-		Testf(t, "Expected the same handler, but got different ones")
-
-	logger.RemoveHandler(expectedHandler)
-	handlers = logger.GetHandlers()
-	xycond.MustEmpty(handlers).
-		Testf(t, "Expected no handler, but got %d", len(handlers))
+	xycond.ExpectNotPanic(func() {
+		logger.AddHandler(expectedHandler)
+		logger.RemoveHandler(expectedHandler)
+	}).Test(t)
 }
 
 func TestLoggerAddHandlerNil(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		logger.AddHandler(nil)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
-func TestLoggerRemoveInvalidHandler(t *testing.T) {
-	var expectedHandler = xylog.NewHandler("", &CapturedEmitter{})
+func TestLoggerRemoveNotExistedHandler(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
-	logger.RemoveHandler(expectedHandler)
-	var handlers = logger.GetHandlers()
-	xycond.MustEmpty(handlers).
-		Testf(t, "Expected no handler, but got %d", len(handlers))
+	xycond.ExpectNotPanic(func() {
+		logger.RemoveHandler(xylog.NewHandler("", xylog.StderrEmitter))
+	}).Test(t)
 }
 
 func TestLoggerLogMethods(t *testing.T) {
@@ -130,25 +120,24 @@ func TestLoggerCallHandlerHierarchy(t *testing.T) {
 	logger = xylog.GetLogger(t.Name() + ".main")
 	capturedOutput = ""
 	logger.Info(expectedMessage)
-	xycond.MustEqual(capturedOutput, expectedMessage).
-		Testf(t, "%s != %s", capturedOutput, expectedMessage)
+	xycond.ExpectEqual(capturedOutput, expectedMessage).Test(t)
 }
 
 func TestLoggerLogNoHandler(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 	logger.SetLevel(xylog.DEBUG)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		logger.Info("foo")
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestLoggerLogNotSetLevel(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		logger.Info("foo")
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestLoggerLogInvalidCustomLevel(t *testing.T) {
@@ -157,9 +146,9 @@ func TestLoggerLogInvalidCustomLevel(t *testing.T) {
 	logger.SetLevel(xylog.DEBUG)
 
 	for i := range invalidCustomLevels {
-		xycond.MustPanic(func() {
+		xycond.ExpectPanic(func() {
 			logger.Log(invalidCustomLevels[i], "msg")
-		}).Test(t, "Expected a panic, but not found")
+		}).Test(t)
 	}
 }
 
@@ -179,14 +168,9 @@ func TestLoggerFilter(t *testing.T) {
 	var expectedFilter = &NameFilter{}
 	var logger = xylog.GetLogger(t.Name())
 	logger.AddFilter(expectedFilter)
-	var filters = logger.GetFilters()
-	xycond.MustTrue(len(filters) == 1).
-		Testf(t, "Expected one elements, but got %d", len(filters))
-	xycond.MustEqual(filters[0], expectedFilter).
-		Test(t, "Expected the same filter, but got different")
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		logger.RemoveFilter(expectedFilter)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestLoggerFilterLog(t *testing.T) {
@@ -198,14 +182,12 @@ func TestLoggerFilterLog(t *testing.T) {
 	capturedOutput = ""
 	logger.AddFilter(&NameFilter{t.Name()})
 	logger.Debug(expectedMessage)
-	xycond.MustEqual(capturedOutput, expectedMessage).Testf(t,
-		"Expected output %s, but got %s", expectedMessage, capturedOutput)
+	xycond.ExpectEqual(capturedOutput, expectedMessage).Test(t)
 
 	capturedOutput = ""
 	logger.AddFilter(&NameFilter{"bar name"})
 	logger.Debug(expectedMessage)
-	xycond.MustEmpty(capturedOutput).
-		Testf(t, "Expected an empty output, but got %s", capturedOutput)
+	xycond.ExpectEmpty(capturedOutput).Test(t)
 }
 
 func TestLoggerAddExtra(t *testing.T) {
@@ -217,6 +199,5 @@ func TestLoggerAddExtra(t *testing.T) {
 
 	capturedOutput = ""
 	logger.Info("foo")
-	xycond.MustEqual(capturedOutput, "bar=something foo").
-		Testf(t, "%s != %s", capturedOutput, "bar=something foo")
+	xycond.ExpectEqual(capturedOutput, "bar=something foo").Test(t)
 }

@@ -1,4 +1,4 @@
-// Package xycond supports to assert many conditions in normal program and test.
+// Package xycond supports to assert or expect many conditions.
 package xycond
 
 import (
@@ -6,62 +6,10 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 
 	"github.com/xybor/xyplatform/xyerror"
 )
-
-// tester instances represent testing.T or testing.B.
-type tester interface {
-	Fail()
-}
-
-// Condition is a type of bool which later you must call JustAssert or Assert.
-// If the condition is false, the program will be panicked.
-type Condition bool
-
-// not returns the reverse condition of the origin.
-func not(c Condition) Condition {
-	return !c
-}
-
-// JustAssert panics the program without a message if condition fails.
-func (c Condition) JustAssert() {
-	if !c {
-		panic(xyerror.AssertionError.New(""))
-	}
-}
-
-// Assert prints a formatted message and panics the program if the condition
-// fails.
-func (c Condition) Assert(format string, args ...any) {
-	if !c {
-		panic(xyerror.AssertionError.New(format, args...))
-	}
-}
-
-// Test will call t.Error if condition is false.
-func (c Condition) Test(t tester, args ...any) {
-	if !c {
-		var _, fn, ln, ok = runtime.Caller(1)
-		if ok {
-			fmt.Printf("%s:%d: ", fn, ln)
-		}
-		fmt.Println(args...)
-		t.Fail()
-	}
-}
-
-// Testf will call t.Errorf if condition is false.
-func (c Condition) Testf(t tester, format string, args ...any) {
-	if !c {
-		var _, fn, ln, ok = runtime.Caller(1)
-		if ok {
-			fmt.Printf("%s:%d\n", fn, ln)
-		}
-		fmt.Printf(format, args...)
-		t.Fail()
-	}
-}
 
 type integer interface {
 	int | int8 | int16 | int32 | int64 |
@@ -72,25 +20,68 @@ type number interface {
 	integer | float32 | float64
 }
 
-// MustEqual returns true if two values are the same.
-func MustEqual(a, b any) Condition {
-	MustSameType(a, b).Assert("two parameters must be the same type")
-	return a == b
+// failer instances may be *testing.T or *testing.B.
+type failer interface {
+	Fail()
 }
 
-// MustNotEqual returns true if two values are not the same.
-func MustNotEqual(a, b any) Condition {
-	return not(MustEqual(a, b))
+// ExpectEqual returns a true Condition if the two values are equal.
+func ExpectEqual(a, b any) Condition {
+	return Condition{
+		result:   a == b,
+		trueMsg:  fmt.Sprintf("%v == %v", a, b),
+		falseMsg: fmt.Sprintf("%v != %v", a, b),
+	}
 }
 
-func MustPanic(f func()) (c Condition) {
+// ExpectNotEqual returns a true Condition if the two values are not equal.
+func ExpectNotEqual(a, b any) Condition {
+	return ExpectEqual(a, b).revert()
+}
+
+// ExpectLessThan returns a true Condition if the first parameter is less than
+// the second.
+func ExpectLessThan[t number](a, b t) Condition {
+	return Condition{
+		result:   a < b,
+		trueMsg:  fmt.Sprintf("%v is less than %v", a, b),
+		falseMsg: fmt.Sprintf("%v is not less than %v", a, b),
+	}
+}
+
+// ExpectNotLessThan returns a true Condition if the first parameter is not less
+// than the second.
+func ExpectNotLessThan[t number](a, b t) Condition {
+	return ExpectLessThan(a, b).revert()
+}
+
+// ExpectGreaterThan returns a true Condition if the first parameter is greater
+// than the second.
+func ExpectGreaterThan[t number](a, b t) Condition {
+	return Condition{
+		result:   a > b,
+		trueMsg:  fmt.Sprintf("%v is greater than %v", a, b),
+		falseMsg: fmt.Sprintf("%v is not greater than %v", a, b),
+	}
+}
+
+// ExpectNotGreaterThan returns a true Condition if the first parameter is not
+// greater than the second.
+func ExpectNotGreaterThan[t number](a, b t) Condition {
+	return ExpectGreaterThan(a, b).revert()
+}
+
+// ExpectPanic returns a true Condition if it found a panic after calling
+// function.
+func ExpectPanic(f func()) (c Condition) {
 	defer func() {
 		var r = recover()
 		if r == nil {
-			c = false
+			c.result = false
+			c.falseMsg = "no panic found"
 		} else {
-			c = true
-			fmt.Println(r)
+			c.result = true
+			c.trueMsg = fmt.Sprintf("got a panic: %v", r)
 		}
 	}()
 
@@ -98,162 +89,230 @@ func MustPanic(f func()) (c Condition) {
 	return
 }
 
-func MustNotPanic(f func()) (c Condition) {
-	return not(MustPanic(f))
+// ExpectPanic returns a true Condition if it doesn't found any panic after
+// calling function.
+func ExpectNotPanic(f func()) (c Condition) {
+	return ExpectPanic(f).revert()
 }
 
-// MustZero returns true if a is zero. MustZero only accepts number parameter.
-func MustZero[T number](a T) Condition {
-	return a == 0
+// ExpectZero returns a true Condition if the parameter is zero.
+func ExpectZero[T number](a T) Condition {
+	var zero T = 0
+	return ExpectEqual(a, zero)
 }
 
-// MustNotZero returns true if a is not zero. MustNotZero only accepts number
-// parameter.
-func MustNotZero[T number](a T) Condition {
-	return not(MustZero(a))
+// ExpectNotZero returns a true Condition if the parameter is not zero.
+func ExpectNotZero[T number](a T) Condition {
+	return ExpectZero(a).revert()
 }
 
-// MustNil returns true if a is nil.
-func MustNil(a any) Condition {
-	if a == nil {
-		return true
-	}
-	if MustNotBe(a, reflect.Pointer) {
-		return false
-	}
-	return Condition(reflect.ValueOf(a).IsNil())
-}
-
-// MustNotNil returns true if a is not nil.
-func MustNotNil(a any) Condition {
-	return not(MustNil(a))
-}
-
-// MustEmpty returns true if a is an empty string, slice, array, or channel.
-func MustEmpty(a any) Condition {
-	MustBeLenghtType(a).Assert("parameter must be a length type")
-	return MustZero(reflect.ValueOf(a).Len())
-}
-
-// MustNotEmpty returns true if a is a not empty string, slice, array, or
-// channel.
-func MustNotEmpty(a any) Condition {
-	MustBeLenghtType(a).Assert("parameter must be a length type")
-	return MustNotZero(reflect.ValueOf(a).Len())
-}
-
-// MustContainM returns true if map contains the key.
-func MustContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
-	var _, ok = m[k]
-	return MustTrue(ok)
-}
-
-// MustNotContainM returns true if map doesn't contain the key.
-func MustNotContainM[kt comparable, vt any](m map[kt]vt, k kt) Condition {
-	return not(MustContainM(m, k))
-}
-
-// MustContainA returns true if array or slice contains the element.
-func MustContainA(a any, e any) Condition {
+// ExpectNil returns a true Condition if the parameter is nil.
+func ExpectNil(a any) Condition {
 	var va = reflect.ValueOf(a)
-	MustBe(a, reflect.Array, reflect.Slice).
-		Assert("expected an array or slice, but got %s", va.Kind())
-
-	for i := 0; i < va.Len(); i++ {
-		if va.Index(i).Interface() == e {
-			return true
-		}
+	return Condition{
+		result:   a == nil || va.IsNil(),
+		trueMsg:  "got a nil value",
+		falseMsg: fmt.Sprintf("got a not-nil value: %v", a),
 	}
-	return false
 }
 
-// MustNotContainA returns true if array doesn't contains the element.
-func MustNotContainA(a any, e any) Condition {
-	return not(MustContainA(a, e))
+// ExpectNotNil returns a true Condition if the parameter is not nil.
+func ExpectNotNil(a any) Condition {
+	return ExpectNil(a).revert()
 }
 
-// MustBe returns true if value belongs to one of basic types.
-func MustBe(v any, kinds ...reflect.Kind) Condition {
+// ExpectEmpty returns a true Condition if the parameter is an empty string,
+// slice, array, or channel.
+func ExpectEmpty(a any) Condition {
+	var va = reflect.ValueOf(a)
+	return Condition{
+		result:   va.Len() == 0,
+		trueMsg:  fmt.Sprintf("got an empty %s", va.Kind()),
+		falseMsg: fmt.Sprintf("got %s with %d element(s)", va.Kind(), va.Len()),
+	}
+}
+
+// ExpectNotEmpty returns a true Condition if the parameter is not an empty
+// string, slice, array, or channel.
+func ExpectNotEmpty(a any) Condition {
+	return ExpectEmpty(a).revert()
+}
+
+// ExpectIs returns a true Condition if value belongs to one of passed kinds.
+func ExpectIs(v any, kinds ...reflect.Kind) Condition {
 	var kindV = reflect.TypeOf(v).Kind()
+	var result = false
 	for i := range kinds {
 		if kindV == kinds[i] {
-			return true
+			result = true
 		}
 	}
-	return false
+	return Condition{
+		result:   result,
+		trueMsg:  fmt.Sprintf("the value is %s", kindV),
+		falseMsg: fmt.Sprintf("the value is %s", kindV),
+	}
 }
 
-// MustNotBe returns true if value doesn't belong to all of basic types.
-func MustNotBe(v any, kinds ...reflect.Kind) Condition {
-	return not(MustBe(v, kinds...))
+// ExpectIsNot returns a true Condition if value doesn't belong to any passed
+// kinds.
+func ExpectIsNot(v any, kinds ...reflect.Kind) Condition {
+	return ExpectIs(v, kinds...).revert()
 }
 
-// MustBeLengthType returns true if a is a string, slice, array, or chan.
-func MustBeLenghtType(a any) Condition {
-	return MustBe(a, reflect.String, reflect.Slice, reflect.Array, reflect.Chan)
-}
-
-// MustBeElemType returns true if a is LengthType or Pointer.
-func MustBeElemType(a any) Condition {
-	return MustBeLenghtType(a) || MustBe(a, reflect.Pointer)
-}
-
-// MustSameType returns true if values are the same type.
-func MustSameType(v ...any) Condition {
+// ExpectSame returns a true Condition if parameters are the same type.
+func ExpectSame(v ...any) Condition {
 	var t0 = reflect.TypeOf(v[0])
+	var result = true
+	var types = []string{fmt.Sprint(t0)}
 	for i := 1; i < len(v); i++ {
-		if t0 != reflect.TypeOf(v[i]) {
-			return false
+		var ti = reflect.TypeOf(v[i])
+		if t0 != ti {
+			result = false
 		}
+		types = append(types, fmt.Sprint(ti))
 	}
-	return true
+	return Condition{
+		result:   result,
+		trueMsg:  fmt.Sprintf("all value are the same type (%s)", t0),
+		falseMsg: strings.Join(types, "-"),
+	}
 }
 
-// MustWritableChan returns true if channel is writable.
-func MustWritableChan(c any) Condition {
-	MustBe(c, reflect.Chan).Assert("c must be a channel")
+// ExpectNotSameType returns a true Condition if there is at least one value
+// whose type is different from the rest.
+func ExpectNotSame(v ...any) Condition {
+	return ExpectSame(v...).revert()
+}
+
+// ExpectWritable returns a true Condition if the channel is writable.
+func ExpectWritable(c any) Condition {
+	AssertIs(c, reflect.Chan)
 	var dir = reflect.TypeOf(c).ChanDir()
-	return dir == reflect.BothDir || dir == reflect.SendDir
+	return Condition{
+		result:   dir == reflect.BothDir || dir == reflect.SendDir,
+		trueMsg:  "channel is writable",
+		falseMsg: "channel is not writable",
+	}
 }
 
-// MustReadableChan returns true if channel is readable.
-func MustReadableChan(c any) Condition {
-	MustBe(c, reflect.Chan).Assert("c must be a channel")
+// ExpectNotWritable returns a true Condition if the channel is not writable.
+func ExpectNotWritable(c any) Condition {
+	return ExpectWritable(c).revert()
+}
+
+// ExpectReadable returns a true Condition if the channel is readable.
+func ExpectReadable(c any) Condition {
+	AssertIs(c, reflect.Chan)
 	var dir = reflect.TypeOf(c).ChanDir()
-	return dir == reflect.BothDir || dir == reflect.RecvDir
+	return Condition{
+		result:   dir == reflect.BothDir || dir == reflect.RecvDir,
+		trueMsg:  "channel is readable",
+		falseMsg: "channel is not readable",
+	}
 }
 
-// ErrorMustBe returns true if err is one of the passed error.
-func ErrorMustBe(err error, targets ...error) Condition {
+// ExpectNotReadable returns a true Condition if the channel is not readable.
+func ExpectNotReadable(c any) Condition {
+	return ExpectReadable(c).revert()
+}
+
+// ExpectError returns a true Condition if err belongs to one of the passed
+// targets.
+func ExpectError(err error, targets ...error) Condition {
+	var result = false
+	var trueTarget error
 	for i := range targets {
 		if errors.Is(err, targets[i]) {
-			return true
+			result = true
+			trueTarget = targets[i]
 		}
 	}
-	return false
+	return Condition{
+		result:   result,
+		trueMsg:  fmt.Sprintf("err is %v", trueTarget),
+		falseMsg: fmt.Sprintf("err doesn't belong to any targets (%s)", err),
+	}
 }
 
-// ErrorMustNotBe returns true if err it not all passed errors.
-func ErrorMustNotBe(err error, targets ...error) Condition {
-	return not(ErrorMustBe(err, targets...))
+// ExpectErrorNot returns a true Condition if the err doesn't belong to any
+// targets.
+func ExpectErrorNot(err error, targets ...error) Condition {
+	return ExpectError(err, targets...).revert()
 }
 
-// MustTrue checks if b is true.
-func MustTrue(b bool) Condition {
-	return Condition(b)
+// ExpectTrue returns true if the the parameter is true.
+func ExpectTrue(b bool) Condition {
+	return Condition{
+		result:   b,
+		trueMsg:  "the condition is true",
+		falseMsg: "the condition is false",
+	}
 }
 
-// MustFalse checks if b is false.
-func MustFalse(b bool) Condition {
-	return not(MustTrue(b))
-}
-
-// JustPanic panics immediately.
-func JustPanic() {
-	MustTrue(false).JustAssert()
+// ExpectFalse returns a true Condition if the parameter is false.
+func ExpectFalse(b bool) Condition {
+	return ExpectTrue(b).revert()
 }
 
 // Panic panics with a formatted string.
 func Panic(msg string, a ...any) {
-	MustTrue(false).Assert(msg, a...)
+	panic(xyerror.AssertionError.New(msg, a...))
+}
+
+// JustPanic panics immediately.
+func JustPanic() {
+	Panic("")
+}
+
+// Condition supports to perform actions on expectation.
+type Condition struct {
+	result   bool
+	trueMsg  string
+	falseMsg string
+}
+
+// Test will call Fail method if it is a false Condition. It is used while
+// testing, with *testing.T or *testing.B.
+func (c Condition) Test(f failer) {
+	if !c.result {
+		var _, fn, ln, ok = runtime.Caller(1)
+		if ok {
+			fmt.Printf("%s:%d: ", fn, ln)
+		}
+		fmt.Println(c.falseMsg)
+		f.Fail()
+	}
+}
+
+// True is performed when Condition is true.
+func (c Condition) True(f func()) Condition {
+	if c.result {
+		f()
+	}
+	return c
+}
+
+// False is performed when Condition is false.
+func (c Condition) False(f func()) Condition {
+	if !c.result {
+		f()
+	}
+	return c
+}
+
+// assert prints the false message and panics if it is a false Condition.
+func (c Condition) assert() {
+	if !c.result {
+		Panic(c.falseMsg)
+	}
+}
+
+// revert returns the reverse Condition.
+func (c Condition) revert() Condition {
+	return Condition{
+		result:   !c.result,
+		trueMsg:  c.falseMsg,
+		falseMsg: c.trueMsg,
+	}
 }

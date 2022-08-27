@@ -1,6 +1,6 @@
 # Introduction
 
-Xysched provides a mechanism of job scheduling in future with a simple syntax.
+Package xysched supports to schedule future tasks with a simple syntax.
 
 # Features
 

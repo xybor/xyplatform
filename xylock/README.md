@@ -1,7 +1,6 @@
 # Introduction
 
-Xylock contains wrapper structs of built-in `sync` library, such as `sync.Mutex`
-or `semaphore.Weighted`.
+Package xylock defines wrapper types of sync mutex, rwmutex, and semaphore.
 
 # Features
 
