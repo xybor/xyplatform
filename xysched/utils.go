@@ -28,21 +28,17 @@ func checkParam(params []reflect.Type, in []reflect.Type, isVariadic bool) {
 	if isVariadic {
 		ninput--
 	}
-	xycond.MustFalse(len(in) < ninput).
-		Assert("call with too few input arguments")
+	xycond.AssertNotLessThan(len(in), ninput)
 	if !isVariadic {
-		xycond.MustFalse(len(in) > ninput).
-			Assert("call with too many input arguments")
+		xycond.AssertNotGreaterThan(len(in), ninput)
 	}
 
 	for i := range in {
-		xycond.MustNotEqual(in[i].Kind(), reflect.Invalid).
-			Assert("using zero Value argument")
+		xycond.AssertNotEqual(in[i].Kind(), reflect.Invalid)
 	}
 
 	for i := 0; i < ninput; i++ {
-		xycond.MustTrue(in[i].AssignableTo(params[i])).
-			Assert("using %s as type %s", in[i].String(), params[i].String())
+		xycond.AssertTrue(in[i].AssignableTo(params[i]))
 	}
 }
 

@@ -10,11 +10,6 @@ func RemoveHandler(h *Handler) {
 	rootLogger.RemoveHandler(h)
 }
 
-// GetHandlers returns all handlers of root logger.
-func GetHandlers() []*Handler {
-	return rootLogger.GetHandlers()
-}
-
 // AddFilter adds a specified filter to root logger.
 func AddFilter(f Filter) {
 	rootLogger.AddFilter(f)
@@ -23,11 +18,6 @@ func AddFilter(f Filter) {
 // RemoveFilter removes an existed filter from root logger.
 func RemoveFilter(f Filter) {
 	rootLogger.RemoveFilter(f)
-}
-
-// GetFilters returns all filters of filterer.
-func GetFilters() []Filter {
-	return rootLogger.GetFilters()
 }
 
 // SetLevel sets the new logging level for root logger.

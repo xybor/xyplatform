@@ -20,42 +20,42 @@ func (ew *ErrorWriter) Close() error {
 }
 
 func TestNewStreamEmitterWithNil(t *testing.T) {
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xylog.NewStreamEmitter(nil)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestStreamEmitterEmit(t *testing.T) {
 	var emitter = xylog.NewStreamEmitter(os.Stderr)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		emitter.Emit(xylog.LogRecord{})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestStreamEmitterEmitError(t *testing.T) {
 	var emitter = xylog.NewStreamEmitter(&ErrorWriter{})
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		emitter.Emit(xylog.LogRecord{})
-	}).Test(t, "Expect a panic, but not found")
+	}).Test(t)
 }
 
 func TestFileEmitter(t *testing.T) {
 	var emitter = xylog.NewFileEmitter("a.log")
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		emitter.Emit(xylog.LogRecord{})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestSizeRotatingFileEmitter(t *testing.T) {
 	var emitter = xylog.NewSizeRotatingFileEmitter("a.log", 100, 1)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		emitter.Emit(xylog.LogRecord{})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestTimeRotatingFileEmitter(t *testing.T) {
 	var emitter = xylog.NewTimeRotatingFileEmitter("a.log", 100, 1)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		emitter.Emit(xylog.LogRecord{})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }

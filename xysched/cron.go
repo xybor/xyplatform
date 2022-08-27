@@ -55,7 +55,7 @@ func (c *Cron) Daily() *Cron {
 
 // Every requires the cron to run with a custom periodic duration.
 func (c *Cron) Every(d time.Duration) *Cron {
-	xycond.MustTrue(d >= 0).Assert("duration must be positive")
+	xycond.AssertNotLessThan(int(d), 0)
 	c.d = d
 	return c
 }
@@ -79,14 +79,7 @@ func (c *Cron) Twice() *Cron {
 // Finish sets a callback future which will run after the cron ran out of times.
 // See task.Callback for further details.
 func (c *Cron) Finish(f any, params ...any) *Task {
-	var cb, ok = f.(future)
-	if ok {
-		xycond.MustEmpty(params).
-			Assert("do not pass params if f was already a tasker")
-	} else {
-		cb = NewTask(f, params...)
-	}
-
+	var cb = toFuture(f, params...)
 	c.onfinish = append(c.onfinish, cb)
 
 	if t, ok := cb.(*Task); ok {

@@ -12,10 +12,8 @@ func TestClassNewClass(t *testing.T) {
 	var egen = xyerror.Register("gen", id)
 	var c1 = egen.NewClass("class1")
 	var c2 = c1.NewClass("class2")
-	xycond.MustEqual(c1.Error(), classmsg(id+1, "class1")).
-		Testf(t, "%s != %s", c1.Error(), classmsg(id+1, "class1"))
-	xycond.MustEqual(c2.Error(), classmsg(id+2, "class2")).
-		Testf(t, "%s != %s", c2.Error(), classmsg(id+2, "class2"))
+	xycond.ExpectEqual(c1.Error(), classmsg(id+1, "class1")).Test(t)
+	xycond.ExpectEqual(c2.Error(), classmsg(id+2, "class2")).Test(t)
 }
 
 func TestClassNewClassM(t *testing.T) {
@@ -25,6 +23,5 @@ func TestClassNewClassM(t *testing.T) {
 	var egen2 = xyerror.Register("gen", id2)
 	var c1 = egen1.NewClass("class")
 	var c2 = c1.NewClassM(egen2)
-	xycond.MustEqual(c2.Error(), classmsg(id2+1, "class")).
-		Testf(t, "%s != %s", c2.Error(), classmsg(id2+1, "class"))
+	xycond.ExpectEqual(c2.Error(), classmsg(id2+1, "class")).Test(t)
 }

@@ -10,36 +10,23 @@ import (
 func TestNewHandlerWithEmptyName(t *testing.T) {
 	var handlerA = xylog.NewHandler("", xylog.StdoutEmitter)
 	var handlerB = xylog.NewHandler("", xylog.StdoutEmitter)
-	xycond.MustNotEqual(handlerA, handlerB).
-		Test(t, "Expected different handlers, but got one")
+	xycond.ExpectNotEqual(handlerA, handlerB).Test(t)
 }
 
 func TestHandlerSetFormatter(t *testing.T) {
 	var handler = xylog.NewHandler(t.Name(), xylog.StdoutEmitter)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		handler.SetFormatter(xylog.NewTextFormatter(""))
-	}).Test(t, "A panic occurred")
-}
-
-func TestHandlerSetFormatterNil(t *testing.T) {
-	var handler = xylog.NewHandler(t.Name(), xylog.StdoutEmitter)
-	xycond.MustPanic(func() {
-		handler.SetFormatter(nil)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestHandlerFilter(t *testing.T) {
 	var expectedFilter = &NameFilter{}
 	var handler = xylog.NewHandler(t.Name(), xylog.StdoutEmitter)
 	handler.AddFilter(expectedFilter)
-	var filters = handler.GetFilters()
-	xycond.MustTrue(len(filters) == 1).
-		Testf(t, "Expected one elements, but got %d", len(filters))
-	xycond.MustEqual(filters[0], expectedFilter).
-		Test(t, "Expected the same filter, but got different")
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		handler.RemoveFilter(expectedFilter)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestHandlerFilterLog(t *testing.T) {
@@ -60,13 +47,13 @@ func TestHandlerFilterLog(t *testing.T) {
 		var logger = xylog.GetLogger(t.Name())
 		logger.SetLevel(xylog.DEBUG)
 		logger.AddHandler(handler)
+
 		capturedOutput = ""
 		logger.Info(expectedMessage)
 		if tests[i].filterName != t.Name() {
-			xycond.MustEmpty(capturedOutput).Test(t, "Expected a empty string")
+			xycond.ExpectEmpty(capturedOutput).Test(t)
 		} else {
-			xycond.MustEqual(capturedOutput, expectedMessage).
-				Testf(t, "%s != %s", capturedOutput, expectedMessage)
+			xycond.ExpectEqual(capturedOutput, expectedMessage).Test(t)
 		}
 		logger.RemoveHandler(handler)
 	}
@@ -93,10 +80,9 @@ func TestHandlerLevel(t *testing.T) {
 		capturedOutput = ""
 		logger.Log(loggerLevel, expectedMessage)
 		if loggerLevel < tests[i].level {
-			xycond.MustEmpty(capturedOutput).Test(t, "Expected a empty string")
+			xycond.ExpectEmpty(capturedOutput).Test(t)
 		} else {
-			xycond.MustEqual(capturedOutput, expectedMessage).
-				Testf(t, "%s != %s", capturedOutput, expectedMessage)
+			xycond.ExpectEqual(capturedOutput, expectedMessage).Test(t)
 		}
 		logger.RemoveHandler(handler)
 	}

@@ -21,21 +21,18 @@ func classmsg(id int, msg string) string {
 
 func TestInitiateGeneratorClassDirectly(t *testing.T) {
 	var errorGen = xyerror.Generator{}
-	xycond.MustPanic(func() { errorGen.NewClass("foo") }).
-		Test(t, "Expected a panic, but not found")
+	xycond.ExpectPanic(func() { errorGen.NewClass("foo") }).Test(t)
 }
 
 func TestRegister(t *testing.T) {
 	var id = nextid()
 	var egen = xyerror.Register(t.Name(), id)
 	var c = egen.NewClass("bar")
-	xycond.MustEqual(c.Error(), classmsg(id+1, "bar")).
-		Testf(t, "%s != %s", c.Error(), classmsg(id+1, "bar"))
+	xycond.ExpectEqual(c.Error(), classmsg(id+1, "bar")).Test(t)
 }
 
 func TestRegisterDuplicate(t *testing.T) {
 	var id = nextid()
 	xyerror.Register(t.Name(), id)
-	xycond.MustPanic(func() { xyerror.Register("foobar", id) }).
-		Test(t, "Expected a panic, but not found")
+	xycond.ExpectPanic(func() { xyerror.Register("foobar", id) }).Test(t)
 }

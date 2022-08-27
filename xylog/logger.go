@@ -26,7 +26,7 @@ type Logger struct {
 	children map[string]*Logger
 	parent   *Logger
 	level    int
-	handlers []*Handler
+	handlers map[*Handler]any
 	lock     xylock.RWLock
 	cache    map[int]bool
 	extra    string
@@ -48,7 +48,7 @@ func newlogger(name string, parent *Logger) *Logger {
 		children: make(map[string]*Logger),
 		parent:   parent,
 		level:    NOTSET,
-		handlers: nil,
+		handlers: make(map[*Handler]any),
 		lock:     xylock.RWLock{},
 		cache:    make(map[int]bool),
 		extra:    "",
@@ -64,25 +64,19 @@ func (lg *Logger) SetLevel(level int) {
 
 // AddHandler adds a new handler.
 func (lg *Logger) AddHandler(h *Handler) {
-	xycond.MustNotNil(h).Assert("expected a not-nil Handler")
-	lg.lock.WLockFunc(func() { lg.handlers = append(lg.handlers, h) })
+	xycond.AssertNotNil(h)
+	lg.lock.WLockFunc(func() {
+		if _, ok := lg.handlers[h]; !ok {
+			lg.handlers[h] = nil
+		}
+	})
 }
 
 // RemoveHandler removes an existed handler.
 func (lg *Logger) RemoveHandler(h *Handler) {
 	lg.lock.WLockFunc(func() {
-		for i := range lg.handlers {
-			if lg.handlers[i] == h {
-				lg.handlers = append(lg.handlers[:i], lg.handlers[i+1:]...)
-				break
-			}
-		}
+		delete(lg.handlers, h)
 	})
-}
-
-// GetHandlers returns all handlers of logger.
-func (lg *Logger) GetHandlers() []*Handler {
-	return lg.lock.RLockFunc(func() any { return lg.handlers }).([]*Handler)
 }
 
 // AddFilter adds a specified filter.
@@ -93,11 +87,6 @@ func (lg *Logger) AddFilter(f Filter) {
 // RemoveFilter removes an existed filter.
 func (lg *Logger) RemoveFilter(f Filter) {
 	lg.f.RemoveFilter(f)
-}
-
-// GetFilters returns all filters of filterer.
-func (lg *Logger) GetFilters() []Filter {
-	return lg.f.GetFilters()
 }
 
 func (lg *Logger) AddExtra(key string, value any) {
@@ -207,8 +196,8 @@ func (lg *Logger) callHandlers(record LogRecord) {
 	var c = lg
 	var found = 0
 	for c != nil {
-		for i := range c.handlers {
-			c.handlers[i].handle(record)
+		for h := range c.handlers {
+			h.handle(record)
 			found++
 		}
 		c = c.parent

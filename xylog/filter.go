@@ -1,7 +1,6 @@
 package xylog
 
 import (
-	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
 
@@ -12,13 +11,13 @@ type Filter interface {
 
 // A base class for loggers and handlers which allows them to share common code.
 type filterer struct {
-	filters []Filter
+	filters map[Filter]any
 	lock    xylock.RWLock
 }
 
 func newfilterer() *filterer {
 	return &filterer{
-		filters: nil,
+		filters: make(map[Filter]any),
 		lock:    xylock.RWLock{},
 	}
 }
@@ -26,8 +25,8 @@ func newfilterer() *filterer {
 // AddFilter adds a specified filter.
 func (ftr *filterer) AddFilter(f Filter) {
 	ftr.lock.WLockFunc(func() {
-		if xycond.MustNotContainA(ftr.filters, f) {
-			ftr.filters = append(ftr.filters, f)
+		if _, ok := ftr.filters[f]; !ok {
+			ftr.filters[f] = nil
 		}
 	})
 }
@@ -35,18 +34,8 @@ func (ftr *filterer) AddFilter(f Filter) {
 // RemoveFilter removes an existed filter.
 func (ftr *filterer) RemoveFilter(f Filter) {
 	ftr.lock.WLockFunc(func() {
-		for i := range ftr.filters {
-			if ftr.filters[i] == f {
-				ftr.filters = append(ftr.filters[:i], ftr.filters[i+1:]...)
-				break
-			}
-		}
+		delete(ftr.filters, f)
 	})
-}
-
-// GetFilters returns all filters of filterer.
-func (ftr *filterer) GetFilters() []Filter {
-	return ftr.lock.RLockFunc(func() any { return ftr.filters }).([]Filter)
 }
 
 // filter checks all filters in filterer, if there is any failed filter, it will
@@ -58,8 +47,8 @@ func (ftr *filterer) filter(record LogRecord) bool {
 	}
 
 	return ftr.lock.RLockFunc(func() any {
-		for i := range ftr.filters {
-			if !ftr.filters[i].Filter(record) {
+		for f := range ftr.filters {
+			if !f.Filter(record) {
 				return false
 			}
 		}

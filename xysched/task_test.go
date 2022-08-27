@@ -8,94 +8,94 @@ import (
 )
 
 func TestNewTask(t *testing.T) {
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewTask(func() {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewTask(func(a, b int) {}, 1, 2)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestNewTaskWithMismatchedParameterNumber(t *testing.T) {
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewTask(func(a, b int) {}, 1, 2, 3)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestNewTaskWithMismatchedParameterType(t *testing.T) {
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewTask(func(a, b int) {}, 1)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewTask(func(a, b int) {}, 1, "a")
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestNewTaskWithVariadicFunction(t *testing.T) {
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewTask(func(a ...int) {}, 1, 2, 3, 4)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xysched.NewTask(func(a ...int) {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		xysched.NewTask(func(a int, b ...int) {})
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestTaskCallback(t *testing.T) {
 	var task = xysched.NewTask(func() {})
 	var callback *xysched.Task
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		callback = task.Callback(func(a, b int) {}, 1, 2)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotNil(callback).Test(t, "Expected a not nil callback")
+	xycond.ExpectNotNil(callback).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		task.Callback(xysched.NewTask(func(a, b int) {}, 1, 2))
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		callback = task.Callback(xysched.NewCron(func() {}))
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustNil(callback).Test(t, "Expected a nil callback")
+	xycond.ExpectNil(callback).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		task.Callback(callback, 1, 2)
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestTaskThen(t *testing.T) {
 	var task = xysched.NewTask(func() string { return "" })
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		task.Then(func(string) {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		task.Then(func() {})
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }
 
 func TestTaskCatch(t *testing.T) {
 	var task = xysched.NewTask(func() string { return "" })
 
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		task.Catch(func(error) {})
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		task.Catch(func(string) {})
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 
-	xycond.MustPanic(func() {
+	xycond.ExpectPanic(func() {
 		task.Catch(func() {})
-	}).Test(t, "Expected a panic, but not found")
+	}).Test(t)
 }

@@ -1,15 +1,31 @@
 package xycond_test
 
-import "github.com/xybor/xyplatform/xycond"
+import (
+	"fmt"
+	"testing"
 
-func ExampleCondition() {
-	// Assert 1 == 2
-	xycond.MustFalse(1 == 2).Assert("weird")
+	"github.com/xybor/xyplatform/xycond"
+)
 
-	// Assert x is 0
+func Example() {
+	xycond.AssertFalse(1 == 2)
+
 	var x int
-	xycond.MustZero(x).Assert("%d is not initialized with zero", x)
+	xycond.AssertZero(x)
 
-	// Assert string is empty, panic without any message if the condition fails.
-	xycond.MustEmpty("").JustAssert()
+	// Test a condition with *testing.T or *testing.B.
+	var t = &testing.T{}
+	xycond.ExpectEmpty("").Test(t)
+
+	// Perform actions on an expectation.
+	xycond.ExpectEqual(1, 2).
+		True(func() {
+			fmt.Printf("1 == 2")
+		}).
+		False(func() {
+			fmt.Printf("1 != 2")
+		})
+
+	// Output:
+	// 1 != 2
 }

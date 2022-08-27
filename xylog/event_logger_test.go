@@ -10,7 +10,7 @@ import (
 func TestNewEventLogger(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 	logger.SetLevel(xylog.DEBUG)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		var elogger = logger.Event("event")
 		elogger.Field("foo", "bar")
 		elogger.Debug()
@@ -21,5 +21,5 @@ func TestNewEventLogger(t *testing.T) {
 		elogger.Fatal()
 		elogger.Critical()
 		elogger.Log(validCustomLevels[1])
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }

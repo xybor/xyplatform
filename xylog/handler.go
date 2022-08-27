@@ -23,8 +23,7 @@ type Handler struct {
 // an anonymous Handler, call this function with an empty name.
 func NewHandler(name string, e Emitter) *Handler {
 	var handler = GetHandler(name)
-	xycond.MustNil(handler).Assert(
-		"the handler with name %s is associated with another Emitter", name)
+	xycond.AssertNil(handler)
 
 	handler = &Handler{
 		f:     newfilterer(),
@@ -47,7 +46,6 @@ func (h *Handler) SetLevel(level int) {
 
 // SetFormatter sets the new formatter of handler.
 func (h *Handler) SetFormatter(f Formatter) {
-	xycond.MustNotNil(f).Assert("expected a not-nil Formatter")
 	h.lock.WLockFunc(func() { h.e.SetFormatter(f) })
 }
 
@@ -59,11 +57,6 @@ func (h *Handler) AddFilter(f Filter) {
 // RemoveFilter removes an existed filter.
 func (h *Handler) RemoveFilter(f Filter) {
 	h.f.RemoveFilter(f)
-}
-
-// GetFilters returns all filters of filterer.
-func (h *Handler) GetFilters() []Filter {
-	return h.f.GetFilters()
 }
 
 // filter checks all filters in filterer, if there is any failed filter, it will

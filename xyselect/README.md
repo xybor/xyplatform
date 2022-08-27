@@ -1,7 +1,6 @@
 # Introduction
 
-Xyselect is a library used to call `select` with an unknown number of `case`
-statements.
+Package xyselect defines custom select statements.
 
 # Features
 

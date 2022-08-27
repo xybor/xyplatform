@@ -12,25 +12,19 @@ func TestXyError(t *testing.T) {
 	var egen = xyerror.Register("", id)
 	var c = egen.NewClass("class")
 	var xerr = c.New("error")
-	xycond.MustEqual(xerr.Error(), "class: error").
-		Testf(t, "%s != %s", xerr.Error(), "class: error")
+	xycond.ExpectEqual(xerr.Error(), "class: error").Test(t)
 }
 
 func TestXyErrorIs(t *testing.T) {
 	var err1 = xyerror.ValueError.New("err1")
 	var err2 = xyerror.TypeError.New("err2")
 
-	xycond.ErrorMustBe(err1, xyerror.ValueError).
-		Testf(t, "err1 should be xyerror.ValueError")
-	xycond.ErrorMustBe(err2, xyerror.TypeError).
-		Testf(t, "err2 should be xyerror.TypeError")
+	xycond.ExpectError(err1, xyerror.ValueError).Test(t)
+	xycond.ExpectError(err2, xyerror.TypeError).Test(t)
 
-	xycond.ErrorMustNotBe(err1, err1).
-		Testf(t, "err1 should not be err1")
-	xycond.ErrorMustNotBe(err1, err2).
-		Testf(t, "err1 should not be err2")
-	xycond.ErrorMustNotBe(err1, xyerror.TypeError).
-		Testf(t, "err1 should not be xyerror.TypeError")
+	xycond.ExpectErrorNot(err1, err1).Test(t)
+	xycond.ExpectErrorNot(err1, err2).Test(t)
+	xycond.ExpectErrorNot(err1, xyerror.TypeError).Test(t)
 }
 
 func TestOr(t *testing.T) {
@@ -38,12 +32,9 @@ func TestOr(t *testing.T) {
 	var err2 = xyerror.TypeError.New("err2")
 	var err3 error
 
-	xycond.ErrorMustBe(xyerror.Or(err1, err2), xyerror.ValueError).
-		Testf(t, "err1 or err2 should be the ValueError")
-	xycond.ErrorMustBe(xyerror.Or(err2, err1), xyerror.TypeError).
-		Testf(t, "err2 or err1 should be the TypeError")
-	xycond.MustNil(xyerror.Or(nil, err3)).
-		Testf(t, "Or with all nil errors should return nil")
+	xycond.ExpectError(xyerror.Or(err1, err2), xyerror.ValueError).Test(t)
+	xycond.ExpectError(xyerror.Or(err2, err1), xyerror.TypeError).Test(t)
+	xycond.ExpectNil(xyerror.Or(nil, err3)).Test(t)
 }
 
 func TestCombine(t *testing.T) {
@@ -52,12 +43,7 @@ func TestCombine(t *testing.T) {
 		NewClass(gen, "class")
 	var xerr = c.New("error")
 
-	xycond.ErrorMustBe(xerr, xyerror.ValueError).
-		Testf(t, "xerr should be ValueError")
-
-	xycond.ErrorMustBe(xerr, xyerror.TypeError).
-		Testf(t, "xerr should be TypeError")
-
-	xycond.ErrorMustNotBe(xerr, xyerror.IndexError).
-		Testf(t, "xerr should not be IndexError")
+	xycond.ExpectError(xerr, xyerror.ValueError).Test(t)
+	xycond.ExpectError(xerr, xyerror.TypeError).Test(t)
+	xycond.ExpectErrorNot(xerr, xyerror.IndexError).Test(t)
 }

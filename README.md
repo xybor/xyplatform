@@ -11,21 +11,24 @@
 
 Xyplatform contains platform libraries developed by Xybor.
 
+Visit [pkg.go.dev](https://pkg.go.dev/github.com/xybor/xyplatform) for more
+details.
+
 # List of libraries
 
-1.  [xycond](./xycond) supports to check many types of condition and panic if
-the condition fails.
+1.  Package [xycond](./xycond) supports to assert or expect many conditions.
 
-2.  [xyerror](./xyerror) contains special errors that are good for error
-comparison and debugging.
+2.  Package [xyerror](./xyerror) defines error type used in xyplatform.
 
-3.  [xylock](./xylock) contains wrapper structs of built-in `sync` library, such
-as `sync.Mutex` or `semaphore.Weighted`.
+3.  Package [xylock](./xylock) defines wrapper types of sync mutex, rwmutex, and
+    semaphore.
 
-4.  [xylog](./xylog) provides flexible logging methods to the program.
+4.  Package [xylog](./xylog) is a logging module based on the design of python
+    logging.
 
-5.  [xysched](./xysched) provides a mechanism of job scheduling in future with a
-    simple syntax.
+5.  Package [xysched](./xysched) supports to schedule future tasks with a simple
+    syntax.
 
-6.  [xyselect](./xyselect) is a library used to call `select` with an unknown
-number of `case` statements.
+6.  Package [xyselect](./xyselect) defines custom select statements.
+
+_NOTE: All version 1.0.x are unstable._

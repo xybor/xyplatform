@@ -22,20 +22,18 @@ func testRootLogger(t *testing.T, f func(int)) {
 
 func TestRootHandler(t *testing.T) {
 	var handler = xylog.NewHandler("", xylog.StdoutEmitter)
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xylog.AddHandler(handler)
-		xylog.GetHandlers()
 		xylog.RemoveHandler(handler)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestRootFilter(t *testing.T) {
 	var filter = &NameFilter{}
-	xycond.MustNotPanic(func() {
+	xycond.ExpectNotPanic(func() {
 		xylog.AddFilter(filter)
-		xylog.GetFilters()
 		xylog.RemoveFilter(filter)
-	}).Test(t, "A panic occurred")
+	}).Test(t)
 }
 
 func TestRootSetLevel(t *testing.T) {
@@ -51,9 +49,9 @@ func TestRootSetLevel(t *testing.T) {
 	}
 
 	for i := range levels {
-		xycond.MustNotPanic(func() {
+		xycond.ExpectNotPanic(func() {
 			xylog.SetLevel(levels[i])
-		}).Test(t, "A panic occurred")
+		}).Test(t)
 	}
 }
 

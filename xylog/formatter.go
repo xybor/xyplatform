@@ -34,7 +34,7 @@ func NewTextFormatter(s string) TextFormatter {
 	for i < n {
 		fmtstr += string(s[i])
 		if s[i] == '%' {
-			xycond.MustTrue(i+1 < n).Assert("unexpectedly end with %%")
+			xycond.AssertLessThan(i+1, n)
 			i++
 			switch s[i] {
 			case '%':
@@ -42,7 +42,7 @@ func NewTextFormatter(s string) TextFormatter {
 				i++
 				var token = ""
 				for {
-					xycond.MustTrue(i < n).Assert("uncompleted token %s", token)
+					xycond.AssertLessThan(i, n)
 					if s[i] == ')' {
 						break
 					}
