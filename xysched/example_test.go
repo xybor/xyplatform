@@ -38,6 +38,7 @@ func Example() {
 
 func ExampleTask() {
 	var scheduler = xysched.NewScheduler("")
+	defer scheduler.Stop()
 
 	// Example 1: Task is a simple future used for scheduling to run a function.
 	var done = make(chan any)
@@ -83,8 +84,6 @@ func ExampleTask() {
 	scheduler.Now() <- future
 	<-done
 
-	scheduler.Stop()
-
 	// Output:
 	// 1. foo
 	// 2. foo foo
@@ -112,6 +111,7 @@ func ExampleCron() {
 	scheduler.Stop()
 
 	scheduler = xysched.NewScheduler("")
+	defer scheduler.Stop()
 	// Example 2: It can modify periodic duration and the maximum times the
 	// function could run.
 	done = make(chan any)
@@ -136,8 +136,6 @@ func ExampleCron() {
 	future.Finish(func() { close(done) })
 	scheduler.Now() <- future
 	wait(done, 1)
-
-	scheduler.Stop()
 
 	// Output:
 	// 1. foo bar

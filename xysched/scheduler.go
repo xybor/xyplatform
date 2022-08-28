@@ -3,7 +3,6 @@ package xysched
 import (
 	"time"
 
-	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xylock"
 )
 
@@ -21,30 +20,6 @@ type future interface {
 	callbacks() []future
 }
 
-var schedulerManager map[string]*Scheduler
-
-// GetScheduler returns the scheduler associated with the name. If no scheduler
-// found, returns nil.
-func GetScheduler(name string) *Scheduler {
-	var s, ok = schedulerManager[name]
-	if ok {
-		return s
-	}
-	return nil
-}
-
-// mapScheduler associates a name with a scheduler.
-func mapScheduler(name string, sched *Scheduler) {
-	if _, ok := schedulerManager[name]; ok {
-		xycond.Panic("do not create scheduler with the same name (%s)", name)
-	}
-	schedulerManager[name] = sched
-}
-
-func init() {
-	schedulerManager = make(map[string]*Scheduler)
-}
-
 // Scheduler is used for scheduling future objects.
 type Scheduler struct {
 	futureQ chan future
@@ -52,14 +27,22 @@ type Scheduler struct {
 	sem     *xylock.Semaphore
 }
 
-// NewScheduler creates a Scheduler with a specified name.
+// NewScheduler returns Scheduler associated with the name, if it has not yet
+// existed, create a new one.
 //
-// Any Scheduler with a not-empty name will be associated with its name. Calling
-// NewScheduler twice with the same name will cause a panic. If you want to
-// create an anonymous Scheduler, call this function with an empty name.
+// Any Scheduler with a non-empty name will be associated with its name. Calling
+// this function twice with the same name gives you the same Scheduler. If you
+// want to create an anonymous Scheduler, call this function with an empty name.
 func NewScheduler(name string) *Scheduler {
-	var sched = GetScheduler(name)
-	xycond.AssertNil(sched)
+	var sched *Scheduler
+	var ok bool
+	lock.RLockFunc(func() any {
+		sched, ok = schedulerManager[name]
+		return nil
+	})
+	if ok {
+		return sched
+	}
 
 	sched = &Scheduler{
 		futureQ: make(chan future),
@@ -69,7 +52,9 @@ func NewScheduler(name string) *Scheduler {
 	go sched.start()
 
 	if name != "" {
-		mapScheduler(name, sched)
+		lock.WLockFunc(func() {
+			schedulerManager[name] = sched
+		})
 	}
 
 	return sched
