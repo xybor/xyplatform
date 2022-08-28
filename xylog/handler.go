@@ -70,6 +70,6 @@ func (h *Handler) filter(r LogRecord) bool {
 func (h *Handler) handle(record LogRecord) {
 	var level = h.lock.RLockFunc(func() any { return h.level }).(int)
 	if h.filter(record) && record.LevelNo >= level {
-		h.e.Emit(record)
+		h.lock.WLockFunc(func() { h.e.Emit(record) })
 	}
 }
