@@ -91,11 +91,16 @@ future.Catch(func(e error) { fmt.Println(e) })
 xysched.Now() <- future
 ```
 
-6.  Create a new scheduler if it is necessary.
+6.  Create a new scheduler if it is necessary. Scheduler with non-empty name can
+    be used in many places without a global variable.
 
 ```golang
-var scheduler = xysched.New()
+// a.go
+var scheduler = xysched.NewScheduler("foo")
 scheduler.After(3 * time.Second) <- xysched.NewTask(fmt.Println, "x")
+
+// b.go
+var scheduler = xysched.GetScheduler("foo")
 
 // A scheduler should be stopped if it won't be used anymore.
 scheduler.Stop()
