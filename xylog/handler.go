@@ -18,7 +18,7 @@ type Handler struct {
 
 // NewHandler creates a Handler with a specified Emitter.
 //
-// Any Handler with a not-empty name will be associated with its name. Calling
+// Any Handler with a non-empty name will be associated with its name. Calling
 // NewHandler twice with the same name will cause a panic. If you want to create
 // an anonymous Handler, call this function with an empty name.
 func NewHandler(name string, e Emitter) *Handler {

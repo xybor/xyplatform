@@ -10,8 +10,10 @@ import (
 
 func TestNewScheduler(t *testing.T) {
 	var sched = xysched.NewScheduler(t.Name())
-	xycond.ExpectEqual(sched, xysched.GetScheduler(t.Name())).Test(t)
-	defer sched.Stop()
+	xycond.ExpectEqual(sched, xysched.NewScheduler(t.Name())).Test(t)
+
+	sched = xysched.NewScheduler("")
+	xycond.ExpectNotEqual(sched, xysched.NewScheduler("")).Test(t)
 }
 
 func TestSchedulerAfter(t *testing.T) {

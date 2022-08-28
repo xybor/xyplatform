@@ -3,7 +3,17 @@ package xysched
 
 import (
 	"time"
+
+	"github.com/xybor/xyplatform/xylock"
 )
+
+func init() {
+	schedulerManager = make(map[string]*Scheduler)
+}
+
+// schedulerManager stores Schedulers with their names.
+var schedulerManager map[string]*Scheduler
+var lock = xylock.RWLock{}
 
 // A default scheduler.
 var global = NewScheduler("")

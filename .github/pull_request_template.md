@@ -19,6 +19,6 @@
 
 #### Checklist
 
--   [ ] Modify README.md.
--   [ ] Modify CHANGELOG.md
--   [ ] Modify comments.
+-   [ ] Check README.md.
+-   [ ] Check CHANGELOG.md
+-   [ ] Check comments.
