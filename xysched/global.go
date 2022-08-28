@@ -6,7 +6,7 @@ import (
 )
 
 // A default scheduler.
-var global = NewScheduler()
+var global = NewScheduler("")
 
 // After creates a send-only channel. Sending a future to this channel will
 // add it to scheduler after a duration. If d is negative, After will send the

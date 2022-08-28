@@ -37,7 +37,7 @@ func Example() {
 }
 
 func ExampleTask() {
-	var scheduler = xysched.NewScheduler()
+	var scheduler = xysched.NewScheduler("")
 
 	// Example 1: Task is a simple future used for scheduling to run a function.
 	var done = make(chan any)
@@ -99,7 +99,7 @@ func wait(c chan any, n int) {
 }
 
 func ExampleCron() {
-	var scheduler = xysched.NewScheduler()
+	var scheduler = xysched.NewScheduler("")
 	// Example 1: Cron is a future which runs function periodically. By default,
 	// it runs secondly forever.
 	var done = make(chan any)
@@ -111,7 +111,7 @@ func ExampleCron() {
 	wait(done, 2)
 	scheduler.Stop()
 
-	scheduler = xysched.NewScheduler()
+	scheduler = xysched.NewScheduler("")
 	// Example 2: It can modify periodic duration and the maximum times the
 	// function could run.
 	done = make(chan any)

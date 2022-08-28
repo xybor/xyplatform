@@ -2,8 +2,6 @@
 
 Package xylog is a logging module based on the design of python logging
 
-This package is inspired by idea of Python `logging`.
-
 # Feature
 
 The basic structs defined by the module, together with their functions, are

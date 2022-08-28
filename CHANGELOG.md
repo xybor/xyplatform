@@ -2,9 +2,12 @@
 
 1.  Add FileEmitter and RotatingFileEmitter to xylog.
 2.  Xylog now can be easy to use key-value fields and extra values.
-3.  Add Codacy analysis.
+3.  Add report analysis badges.
+4.  Reduce logging time.
+5.  Refactor xycond to be shorter and more readable.
+6.  Scheduler now can be identified by name.
 
-# V1.0.1
+# V0.0.2
 
 1.  Fix bugs.
 2.  Refactor the design of xylog Handler.
@@ -12,18 +15,18 @@
 4.  Write unittest for all modules.
 5.  Xycond asserts a Error instead of string.
 
-# V1.0.0
+# V0.0.1
 
 This release completed the following libraries:
 
 1.  xycond supports to check many types of condition and panic if the condition
-fails.
+    fails.
 
 2.  xyerror contains special errors that are good for error comparison and
-debugging.
+    debugging.
 
 3.  xylock contains wrapper structs of built-in sync library, such as
-`sync.Mutex` or `semaphore.Weighted`.
+    `sync.Mutex` or `semaphore.Weighted`.
 
 4.  xylog provides flexible logging methods to the program.
 

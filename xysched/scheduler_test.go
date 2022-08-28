@@ -9,14 +9,13 @@ import (
 )
 
 func TestNewScheduler(t *testing.T) {
-	xycond.ExpectNotPanic(func() {
-		var sched = xysched.NewScheduler()
-		sched.Stop()
-	}).Test(t)
+	var sched = xysched.NewScheduler(t.Name())
+	xycond.ExpectEqual(sched, xysched.GetScheduler(t.Name())).Test(t)
+	defer sched.Stop()
 }
 
 func TestSchedulerAfter(t *testing.T) {
-	var sched = xysched.NewScheduler()
+	var sched = xysched.NewScheduler("")
 	defer sched.Stop()
 
 	xycond.ExpectNotPanic(func() {
@@ -26,7 +25,7 @@ func TestSchedulerAfter(t *testing.T) {
 }
 
 func TestSchedulerAfterButCloseSoon(t *testing.T) {
-	var sched = xysched.NewScheduler()
+	var sched = xysched.NewScheduler("")
 
 	xycond.ExpectNotPanic(func() {
 		sched.After(time.Second) <- xysched.NewTask(func() {})
@@ -36,7 +35,7 @@ func TestSchedulerAfterButCloseSoon(t *testing.T) {
 }
 
 func TestSchedulerAfterWithNegativeDuration(t *testing.T) {
-	var sched = xysched.NewScheduler()
+	var sched = xysched.NewScheduler("")
 	defer sched.Stop()
 
 	xycond.ExpectNotPanic(func() {
@@ -45,7 +44,7 @@ func TestSchedulerAfterWithNegativeDuration(t *testing.T) {
 }
 
 func TestSchedulerAfterMacros(t *testing.T) {
-	var sched = xysched.NewScheduler()
+	var sched = xysched.NewScheduler("")
 	defer sched.Stop()
 
 	xycond.ExpectNotPanic(func() {
@@ -58,7 +57,7 @@ func TestSchedulerAfterMacros(t *testing.T) {
 }
 
 func TestSchedulerConcurrent(t *testing.T) {
-	var sched = xysched.NewScheduler()
+	var sched = xysched.NewScheduler("")
 	defer sched.Stop()
 
 	xycond.ExpectNotPanic(func() {
