@@ -30,3 +30,8 @@ details.
     syntax.
 
 6.  Package [xyselect](./xyselect) defines custom select statements.
+
+# Retracted versions
+
+-   v1.0.0
+-   v1.0.1
