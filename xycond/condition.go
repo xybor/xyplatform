@@ -257,7 +257,7 @@ func ExpectFalse(b bool) Condition {
 
 // Panic panics with a formatted string.
 func Panic(msg string, a ...any) {
-	panic(xyerror.AssertionError.New(msg, a...))
+	panic(xyerror.AssertionError.Newf(msg, a...))
 }
 
 // JustPanic panics immediately.

@@ -8,6 +8,8 @@
 6.  Scheduler now can be identified by name.
 7.  Add log to xysched and xyselect.
 8.  Future now can early stop.
+9.  Methods with formatting string are splitted to two seperated methods (with f
+    and non-f suffix).
 
 # V0.0.2
 

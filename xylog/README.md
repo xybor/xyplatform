@@ -24,17 +24,14 @@ Loggers should NEVER be instantiated directly, but always through the
 module-level function `xylog.GetLogger(name)`. Multiple calls to `GetLogger()`
 with the same name will always return a reference to the same Logger object.
 
-You can logs a message by using one of the following methods:
+You can logs a message by using one of built-in logging methods, such as:
 
 ```golang
-func (*Logger) Critical(msg string, a ...any)
-func (*Logger) Error(msg string, a ...any)
-func (*Logger) Fatal(msg string, a ...any)
-func (*Logger) Warn(msg string, a ...any)
-func (*Logger) Warning(msg string, a ...any)
-func (*Logger) Info(msg string, a ...any)
-func (*Logger) Debug(msg string, a ...any)
-func (*Logger) Log(level int, msg string, a ...any)
+func Log(level int, a ...any)
+func Logf(level int, msg string, a ...any)
+
+func Debug(a ...any)
+func Debugf(msg string, a ...any)
 ```
 
 To add `Handler` or `Filter` instances to the `logger`, call `AddHandler` or
@@ -278,9 +275,9 @@ import (
 var logger = xylog.GetLogger("xybor.xyplatform.foo")
 
 func main() {
-    logger.Debug("message=bar")
+    logger.Debug(1)
 }
 
 // Output:
-// time=[time] source=example.go.main:13 level=DEBUG module=foo message=bar
+// time=[time] source=example.go.main:13 level=DEBUG module=foo message=1
 ```

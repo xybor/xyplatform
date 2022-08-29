@@ -49,7 +49,7 @@ func TestHandlerFilterLog(t *testing.T) {
 		logger.AddHandler(handler)
 
 		capturedOutput = ""
-		logger.Info(expectedMessage)
+		logger.Warningf(expectedMessage)
 		if tests[i].filterName != t.Name() {
 			xycond.ExpectEmpty(capturedOutput).Test(t)
 		} else {
@@ -78,7 +78,7 @@ func TestHandlerLevel(t *testing.T) {
 		logger.SetLevel(xylog.DEBUG)
 		logger.AddHandler(handler)
 		capturedOutput = ""
-		logger.Log(loggerLevel, expectedMessage)
+		logger.Logf(loggerLevel, expectedMessage)
 		if loggerLevel < tests[i].level {
 			xycond.ExpectEmpty(capturedOutput).Test(t)
 		} else {

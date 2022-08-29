@@ -24,9 +24,11 @@ func Example() {
 
 	xylog.AddHandler(handler)
 	xylog.Debug("foo")
+	xylog.Infof("foo %s", "bar")
 
 	// Output:
 	// foo
+	// foo bar
 }
 
 func ExampleGetLogger() {
@@ -38,7 +40,7 @@ func ExampleGetLogger() {
 	logger.AddHandler(handler)
 	logger.SetLevel(xylog.DEBUG)
 	logger.AddExtra("some", "thing")
-	logger.Debug("foo %s", "bar")
+	logger.Debugf("foo %s", "bar")
 
 	// Output:
 	// module=example level=DEBUG some=thing foo bar
