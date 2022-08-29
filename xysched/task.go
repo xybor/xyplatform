@@ -39,6 +39,9 @@ type Task struct {
 
 	// Avoid task to be called simultaneously.
 	lock xylock.Lock
+
+	// stopC is the channel which is closed if task is signaled to stop.
+	stopC chan any
 }
 
 // NewTask creates a future which runs function f with parameters params. This
@@ -71,6 +74,7 @@ func newPlaceholderTask(f any) *Task {
 		fv: fv, params: nil, name: name,
 		ret: make([]any, fv.Type().NumOut()),
 		cb:  make([]future, 0), lock: xylock.Lock{},
+		stopC: make(chan any),
 	}
 }
 
@@ -127,6 +131,11 @@ func (t *Task) Catch(f any) *Task {
 	var cb = newPlaceholderTask(f)
 	t.onfailure = append(t.onfailure, cb)
 	return cb
+}
+
+// Stop stops scheduling the Task if it hasn't been scheduled yet.
+func (t *Task) Stop() {
+	close(t.stopC)
 }
 
 // String supports to print the task to output.
@@ -186,4 +195,9 @@ func (t *Task) callbacks() []future {
 	}
 
 	return cb
+}
+
+// Required method of future.
+func (t *Task) stop() <-chan any {
+	return t.stopC
 }

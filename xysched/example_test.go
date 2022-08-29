@@ -28,7 +28,7 @@ func Example() {
 		fmt.Println("2. barfoo")
 		close(done)
 	})
-	xysched.After(time.Second) <- future
+	xysched.After(time.Millisecond) <- future
 	<-done
 
 	// Output:
@@ -118,13 +118,14 @@ func ExampleCron() {
 	future = xysched.NewCron(func() {
 		fmt.Println("2. bar bar")
 		done <- nil
-	}).Every(1 * time.Millisecond).Twice()
+	}).Every(time.Millisecond).Twice()
 	scheduler.Now() <- future
 	wait(done, 2)
 
 	// Example 3: Callback, Then, Catch can also be used on cron.
 	done = make(chan any)
 	future = xysched.NewCron(fmt.Println, "3.", "foobar").Times(3)
+	future.Every(time.Millisecond)
 	future.Callback(func() { done <- nil })
 	scheduler.Now() <- future
 	wait(done, 3)
@@ -133,6 +134,7 @@ func ExampleCron() {
 	// out of times.
 	done = make(chan any)
 	future = xysched.NewCron(fmt.Println, "4.", "foobar").Twice()
+	future.Every(time.Millisecond)
 	future.Finish(func() { close(done) })
 	scheduler.Now() <- future
 	wait(done, 1)

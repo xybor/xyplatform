@@ -97,6 +97,7 @@ xysched.Now() <- future
 ```golang
 // a.go
 var scheduler = xysched.NewScheduler("foo")
+defer sched.Stop()
 scheduler.After(3 * time.Second) <- xysched.NewTask(fmt.Println, "x")
 
 // b.go
@@ -104,4 +105,19 @@ var scheduler = xysched.GetScheduler("foo")
 
 // A scheduler should be stopped if it won't be used anymore.
 scheduler.Stop()
+```
+
+7.  Early stop a future.
+
+```golang
+var sched = xysched.NewScheduler("")
+defer sched.Stop()
+
+var captured string
+var task = xysched.NewTask(func() { captured = "run" })
+sched.After(time.Millisecond) <- task
+task.Stop()
+
+time.Sleep(2 * time.Millisecond)
+xycond.AssertEmpty(captured)
 ```

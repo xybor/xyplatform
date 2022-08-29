@@ -2,6 +2,7 @@ package xysched_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/xybor/xyplatform/xycond"
 	"github.com/xybor/xyplatform/xysched"
@@ -98,4 +99,17 @@ func TestTaskCatch(t *testing.T) {
 	xycond.ExpectPanic(func() {
 		task.Catch(func() {})
 	}).Test(t)
+}
+
+func TestTaskStop(t *testing.T) {
+	var sched = xysched.NewScheduler("")
+	defer sched.Stop()
+
+	var captured string
+	var task = xysched.NewTask(func() { captured = "run" })
+	sched.After(time.Millisecond) <- task
+	task.Stop()
+
+	time.Sleep(2 * time.Millisecond)
+	xycond.ExpectEmpty(captured).Test(t)
 }
