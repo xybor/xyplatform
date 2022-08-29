@@ -51,9 +51,14 @@ func (c Class) NewClassM(gen Generator) Class {
 	return class
 }
 
-// New creates a XyError with an error message.
-func (c Class) New(msg string, a ...any) XyError {
+// Newf creates a XyError with a formatting message.
+func (c Class) Newf(msg string, a ...any) XyError {
 	return XyError{c: c, msg: fmt.Sprintf(msg, a...)}
+}
+
+// Newf creates a XyError with default formatting objects.
+func (c Class) New(a ...any) XyError {
+	return XyError{c: c, msg: fmt.Sprint(a...)}
 }
 
 // belongsTo checks if a Class is inherited from a target class. A class belongs

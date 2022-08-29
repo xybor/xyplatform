@@ -11,8 +11,11 @@ func TestXyError(t *testing.T) {
 	var id = nextid()
 	var egen = xyerror.Register("", id)
 	var c = egen.NewClass("class")
-	var xerr = c.New("error")
-	xycond.ExpectEqual(xerr.Error(), "class: error").Test(t)
+	var xerr1 = c.Newf("error-%d", 1)
+	var xerr2 = c.New("error-2")
+
+	xycond.ExpectEqual(xerr1.Error(), "class: error-1").Test(t)
+	xycond.ExpectEqual(xerr2.Error(), "class: error-2").Test(t)
 }
 
 func TestXyErrorIs(t *testing.T) {

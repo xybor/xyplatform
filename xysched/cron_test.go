@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/xybor/xyplatform/xycond"
+	"github.com/xybor/xyplatform/xylock"
 	"github.com/xybor/xyplatform/xysched"
 )
 
@@ -129,13 +130,20 @@ func TestCronStop(t *testing.T) {
 	var sched = xysched.NewScheduler("")
 	defer sched.Stop()
 
+	var lock = xylock.Lock{}
 	var captured int
-	var cron = xysched.NewCron(func() { captured++ })
+
+	var cron = xysched.NewCron(func() {
+		lock.LockFunc(func() {
+			captured++
+		})
+	})
 	cron.Every(time.Millisecond)
 	cron.Times(10)
 	sched.Now() <- cron
 	cron.Stop()
 	time.Sleep(time.Second)
 
-	xycond.ExpectLessThan(captured, 10).Test(t)
+	xycond.ExpectLessThan(
+		lock.RLockFunc(func() any { return captured }).(int), 10).Test(t)
 }

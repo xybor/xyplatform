@@ -100,60 +100,117 @@ func (lg *Logger) filter(r LogRecord) bool {
 	return lg.f.filter(r)
 }
 
-// Debug calls Log with DEBUG level.
-func (lg *Logger) Debug(s string, a ...any) {
+// Debug logs default formatting objects with DEBUG level.
+func (lg *Logger) Debug(a ...any) {
+	if lg.isEnabledFor(DEBUG) {
+		lg.log(DEBUG, fmt.Sprint(a...))
+	}
+}
+
+// Debugf logs a formatting message with DEBUG level.
+func (lg *Logger) Debugf(s string, a ...any) {
 	if lg.isEnabledFor(DEBUG) {
 		lg.log(DEBUG, fmt.Sprintf(s, a...))
 	}
 }
 
-// Info calls Log with INFO level.
-func (lg *Logger) Info(s string, a ...any) {
+// Info logs default formatting objects with INFO level.
+func (lg *Logger) Info(a ...any) {
 	if lg.isEnabledFor(INFO) {
-		lg.log(INFO, s, a...)
+		lg.log(INFO, fmt.Sprint(a...))
 	}
 }
 
-// Warn calls Log with WARN level.
-func (lg *Logger) Warn(s string, a ...any) {
+// Infof logs a formatting message with INFO level.
+func (lg *Logger) Infof(s string, a ...any) {
+	if lg.isEnabledFor(INFO) {
+		lg.log(INFO, fmt.Sprintf(s, a...))
+	}
+}
+
+// Warn logs default formatting objects with WARN level.
+func (lg *Logger) Warn(a ...any) {
 	if lg.isEnabledFor(WARN) {
-		lg.log(WARN, s, a...)
+		lg.log(WARN, fmt.Sprint(a...))
 	}
 }
 
-// Warning calls Log with WARNING level.
-func (lg *Logger) Warning(s string, a ...any) {
+// Warnf logs a formatting message with WARN level.
+func (lg *Logger) Warnf(s string, a ...any) {
+	if lg.isEnabledFor(WARN) {
+		lg.log(WARN, fmt.Sprintf(s, a...))
+	}
+}
+
+// Warning logs default formatting objects with WARNING level.
+func (lg *Logger) Warning(a ...any) {
 	if lg.isEnabledFor(WARNING) {
-		lg.log(WARNING, s, a...)
+		lg.log(WARNING, fmt.Sprint(a...))
 	}
 }
 
-// Error calls Log with ERROR level.
-func (lg *Logger) Error(s string, a ...any) {
+// Warningf logs a formatting message with WARNING level.
+func (lg *Logger) Warningf(s string, a ...any) {
+	if lg.isEnabledFor(WARNING) {
+		lg.log(WARNING, fmt.Sprintf(s, a...))
+	}
+}
+
+// Error logs default formatting objects with ERROR level.
+func (lg *Logger) Error(a ...any) {
 	if lg.isEnabledFor(ERROR) {
-		lg.log(ERROR, s, a...)
+		lg.log(ERROR, fmt.Sprint(a...))
 	}
 }
 
-// Fatal calls Log with FATAL level.
-func (lg *Logger) Fatal(s string, a ...any) {
+// Errorf logs a formatting message with ERROR level.
+func (lg *Logger) Errorf(s string, a ...any) {
+	if lg.isEnabledFor(ERROR) {
+		lg.log(ERROR, fmt.Sprintf(s, a...))
+	}
+}
+
+// Fatal logs default formatting objects with FATAL level.
+func (lg *Logger) Fatal(a ...any) {
 	if lg.isEnabledFor(FATAL) {
-		lg.log(FATAL, s, a...)
+		lg.log(FATAL, fmt.Sprint(a...))
 	}
 }
 
-// Critical calls Log with CRITICAL level.
-func (lg *Logger) Critical(s string, a ...any) {
+// Fatalf logs a formatting message with FATAL level.
+func (lg *Logger) Fatalf(s string, a ...any) {
+	if lg.isEnabledFor(FATAL) {
+		lg.log(FATAL, fmt.Sprintf(s, a...))
+	}
+}
+
+// Critical logs default formatting objects with CRITICAL level.
+func (lg *Logger) Critical(a ...any) {
 	if lg.isEnabledFor(CRITICAL) {
-		lg.log(CRITICAL, s, a...)
+		lg.log(CRITICAL, fmt.Sprint(a...))
 	}
 }
 
-// Log logs a message with a custom level.
-func (lg *Logger) Log(level int, s string, a ...any) {
+// Criticalf logs a formatting message with CRITICAL level.
+func (lg *Logger) Criticalf(s string, a ...any) {
+	if lg.isEnabledFor(CRITICAL) {
+		lg.log(CRITICAL, fmt.Sprintf(s, a...))
+	}
+}
+
+// Log logs default formatting objects with a custom level.
+func (lg *Logger) Log(level int, a ...any) {
 	level = checkLevel(level)
 	if lg.isEnabledFor(level) {
-		lg.log(level, s, a...)
+		lg.log(level, fmt.Sprint(a...))
+	}
+}
+
+// Logf logs a formatting message with a custom level.
+func (lg *Logger) Logf(level int, s string, a ...any) {
+	level = checkLevel(level)
+	if lg.isEnabledFor(level) {
+		lg.log(level, fmt.Sprintf(s, a...))
 	}
 }
 
@@ -165,8 +222,8 @@ func (lg *Logger) Event(e string) *EventLogger {
 
 // log is a low-level logging method which creates a LogRecord and then calls
 // all the handlers of this logger to handle the record.
-func (lg *Logger) log(level int, s string, a ...any) {
-	var msg = prefixMessage(lg.extra, fmt.Sprintf(s, a...))
+func (lg *Logger) log(level int, msg string) {
+	msg = prefixMessage(lg.extra, msg)
 	var pc, filename, lineno, ok = runtime.Caller(skipCall)
 	if !ok {
 		filename = "unknown"

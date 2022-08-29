@@ -91,13 +91,32 @@ func TestLoggerRemoveNotExistedHandler(t *testing.T) {
 	}).Test(t)
 }
 
-func TestLoggerLogMethods(t *testing.T) {
+func TestLoggerLogfMethods(t *testing.T) {
 	var loggerLevel = xylog.WARN
 	var logger = xylog.GetLogger(t.Name())
 	logger.AddHandler(xylog.NewHandler("", &CapturedEmitter{}))
 	logger.SetLevel(loggerLevel)
 
 	var loggerMethods = map[int]func(string, ...any){
+		xylog.DEBUG:    logger.Debugf,
+		xylog.INFO:     logger.Infof,
+		xylog.WARN:     logger.Warnf,
+		xylog.ERROR:    logger.Errorf,
+		xylog.CRITICAL: logger.Criticalf,
+	}
+
+	for level, method := range loggerMethods {
+		checkLogOutput(t, func() { method("foo") }, "foo", level, loggerLevel)
+	}
+}
+
+func TestLoggerLogMethods(t *testing.T) {
+	var loggerLevel = xylog.WARN
+	var logger = xylog.GetLogger(t.Name())
+	logger.AddHandler(xylog.NewHandler("", &CapturedEmitter{}))
+	logger.SetLevel(loggerLevel)
+
+	var loggerMethods = map[int]func(...any){
 		xylog.DEBUG:    logger.Debug,
 		xylog.INFO:     logger.Info,
 		xylog.WARN:     logger.Warn,
@@ -128,7 +147,7 @@ func TestLoggerLogNoHandler(t *testing.T) {
 	logger.SetLevel(xylog.DEBUG)
 
 	xycond.ExpectNotPanic(func() {
-		logger.Info("foo")
+		logger.Infof("foo")
 	}).Test(t)
 }
 
@@ -136,7 +155,7 @@ func TestLoggerLogNotSetLevel(t *testing.T) {
 	var logger = xylog.GetLogger(t.Name())
 
 	xycond.ExpectNotPanic(func() {
-		logger.Info("foo")
+		logger.Fatal("foo")
 	}).Test(t)
 }
 
@@ -146,6 +165,9 @@ func TestLoggerLogInvalidCustomLevel(t *testing.T) {
 	logger.SetLevel(xylog.DEBUG)
 
 	for i := range invalidCustomLevels {
+		xycond.ExpectPanic(func() {
+			logger.Logf(invalidCustomLevels[i], "msg")
+		}).Test(t)
 		xycond.ExpectPanic(func() {
 			logger.Log(invalidCustomLevels[i], "msg")
 		}).Test(t)
@@ -159,7 +181,7 @@ func TestLoggerLogValidCustomLevel(t *testing.T) {
 	logger.SetLevel(loggerLevel)
 
 	for i := range validCustomLevels {
-		checkLogOutput(t, func() { logger.Log(validCustomLevels[i], "foo") },
+		checkLogOutput(t, func() { logger.Logf(validCustomLevels[i], "foo") },
 			"foo", validCustomLevels[i], loggerLevel)
 	}
 }
@@ -181,12 +203,12 @@ func TestLoggerFilterLog(t *testing.T) {
 
 	capturedOutput = ""
 	logger.AddFilter(&NameFilter{t.Name()})
-	logger.Debug(expectedMessage)
+	logger.Debugf(expectedMessage)
 	xycond.ExpectEqual(capturedOutput, expectedMessage).Test(t)
 
 	capturedOutput = ""
 	logger.AddFilter(&NameFilter{"bar name"})
-	logger.Debug(expectedMessage)
+	logger.Warning(expectedMessage)
 	xycond.ExpectEmpty(capturedOutput).Test(t)
 }
 
@@ -198,6 +220,6 @@ func TestLoggerAddExtra(t *testing.T) {
 	logger.AddExtra("bar", "something")
 
 	capturedOutput = ""
-	logger.Info("foo")
+	logger.Debug("foo")
 	xycond.ExpectEqual(capturedOutput, "bar=something foo").Test(t)
 }

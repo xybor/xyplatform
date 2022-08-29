@@ -69,14 +69,32 @@ func TestRootLog(t *testing.T) {
 
 	testRootLogger(t, func(loggerLevel int) {
 		for i := range levels {
+			checkLogOutput(t, func() { xylog.Logf(levels[i], "foo") }, "foo",
+				levels[i], loggerLevel)
 			checkLogOutput(t, func() { xylog.Log(levels[i], "foo") }, "foo",
 				levels[i], loggerLevel)
 		}
 	})
 }
 
-func TestRootLogMethods(t *testing.T) {
+func TestRootLogfMethods(t *testing.T) {
 	var methods = map[int]func(string, ...any){
+		xylog.DEBUG:    xylog.Debugf,
+		xylog.INFO:     xylog.Infof,
+		xylog.WARN:     xylog.Warnf,
+		xylog.ERROR:    xylog.Errorf,
+		xylog.CRITICAL: xylog.Criticalf,
+	}
+
+	testRootLogger(t, func(loggerLevel int) {
+		for level, method := range methods {
+			checkLogOutput(t, func() { method("foo") }, "foo", level, loggerLevel)
+		}
+	})
+}
+
+func TestRootLogMethods(t *testing.T) {
+	var methods = map[int]func(...any){
 		xylog.DEBUG:    xylog.Debug,
 		xylog.INFO:     xylog.Info,
 		xylog.WARN:     xylog.Warn,

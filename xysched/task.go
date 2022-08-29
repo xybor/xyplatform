@@ -150,7 +150,7 @@ func (t *Task) run() {
 			if r := recover(); r != nil {
 				var e, ok = r.(error)
 				if !ok {
-					e = CallError.New("%s", r)
+					e = CallError.New(r)
 				}
 				t.lock.LockFunc(func() { t.recover = e })
 				if len(t.onfailure) == 0 {

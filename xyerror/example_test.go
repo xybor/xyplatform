@@ -37,7 +37,7 @@ func ExampleXyError() {
 		fmt.Println("err1 is not a NegativeIndexError")
 	}
 
-	var err2 = NegativeIndexError.New("some negative index error")
+	var err2 = NegativeIndexError.Newf("some negative index error %d", -1)
 	if errors.Is(err2, NegativeIndexError) {
 		fmt.Println("err2 is a NegativeIndexError")
 	}

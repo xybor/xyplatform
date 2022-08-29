@@ -25,42 +25,82 @@ func SetLevel(level int) {
 	rootLogger.SetLevel(level)
 }
 
-// Log logs a message with a custom level by root logger.
-func Log(level int, msg string, a ...any) {
-	rootLogger.Log(level, msg, a...)
+// Debug logs default formatting objects with DEBUG level by root logger.
+func Debug(a ...any) {
+	rootLogger.Debug(a...)
 }
 
-// Debug calls Log of root logger with DEBUG level.
-func Debug(msg string, a ...any) {
-	rootLogger.Debug(msg, a...)
+// Debugf logs a formatting message with DEBUG level by root logger.
+func Debugf(msg string, a ...any) {
+	rootLogger.Debugf(msg, a...)
 }
 
-// Info calls Log of root logger with INFO level.
-func Info(msg string, a ...any) {
-	rootLogger.Info(msg, a...)
+// Info logs default formatting objects with INFO level by root logger.
+func Info(a ...any) {
+	rootLogger.Info(a...)
 }
 
-// Warn calls Log of root logger with WARN level.
-func Warn(msg string, a ...any) {
-	rootLogger.Warn(msg, a...)
+// Infof logs a formatting message with INFO level by root logger.
+func Infof(msg string, a ...any) {
+	rootLogger.Infof(msg, a...)
 }
 
-// Warning calls Log of root logger with WARNING level.
-func Warning(msg string, a ...any) {
-	rootLogger.Warning(msg, a...)
+// Warn logs default formatting objects with WARN level by root logger.
+func Warn(a ...any) {
+	rootLogger.Warn(a...)
 }
 
-// Error calls Log of root logger with ERROR level.
-func Error(msg string, a ...any) {
-	rootLogger.Error(msg, a...)
+// Warnf logs a formatting message with WARN level by root logger.
+func Warnf(msg string, a ...any) {
+	rootLogger.Warnf(msg, a...)
 }
 
-// Fatal calls Log of root logger with FATAL level.
-func Fatal(msg string, a ...any) {
-	rootLogger.Fatal(msg, a...)
+// Warning logs default formatting objects with WARNING level by root logger.
+func Warning(a ...any) {
+	rootLogger.Warning(a...)
 }
 
-// Critical calls Log of root logger with CRITICAL level.
-func Critical(msg string, a ...any) {
-	rootLogger.Critical(msg, a...)
+// Warningf logs a formatting message with WARNING level by root logger.
+func Warningf(msg string, a ...any) {
+	rootLogger.Warningf(msg, a...)
+}
+
+// Error logs default formatting objects with ERROR level by root logger.
+func Error(a ...any) {
+	rootLogger.Error(a...)
+}
+
+// Errorf logs a formatting message with ERROR level by root logger.
+func Errorf(msg string, a ...any) {
+	rootLogger.Errorf(msg, a...)
+}
+
+// Fatal logs default formatting objects with FATAL level by root logger.
+func Fatal(a ...any) {
+	rootLogger.Fatal(a...)
+}
+
+// Fatalf logs a formatting message with FATAL level by root logger.
+func Fatalf(msg string, a ...any) {
+	rootLogger.Fatalf(msg, a...)
+}
+
+// Critical logs default formatting objects with CRITICAL level by root logger.
+func Critical(a ...any) {
+	rootLogger.Critical(a...)
+}
+
+// Criticalf logs a formatting message with DEBUG level by root logger.
+func Criticalf(msg string, a ...any) {
+	rootLogger.Criticalf(msg, a...)
+}
+
+// Log logs default formatting objects with a custom level by root logger.
+func Log(level int, a ...any) {
+	rootLogger.Log(level, a...)
+}
+
+// Logf logs a formatting message with a custom level by root logger.
+func Logf(level int, msg string, a ...any) {
+	rootLogger.Logf(level, msg, a...)
 }
