@@ -89,6 +89,13 @@ func (c *Cron) Finish(f any, params ...any) *Task {
 	return nil
 }
 
+// Stop early stops the Cron. If the Cron hasn't been scheduled yet, it will be
+// never scheduled. If the Cron was scheduled, next runs will be canceled.
+func (c *Cron) Stop() {
+	c.Task.Stop()
+	c.lock.LockFunc(func() { c.n = 0 })
+}
+
 // String supports to print the task to output.
 func (c *Cron) String() string {
 	var n = c.lock.RLockFunc(func() any { return c.n }).(uint)

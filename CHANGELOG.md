@@ -7,6 +7,7 @@
 5.  Refactor xycond to be shorter and more readable.
 6.  Scheduler now can be identified by name.
 7.  Add log to xysched and xyselect.
+8.  Future now can early stop.
 
 # V0.0.2
 

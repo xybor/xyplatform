@@ -124,3 +124,18 @@ func TestCronFinish(t *testing.T) {
 		cron.Finish(callback, 1, 2)
 	}).Test(t)
 }
+
+func TestCronStop(t *testing.T) {
+	var sched = xysched.NewScheduler("")
+	defer sched.Stop()
+
+	var captured int
+	var cron = xysched.NewCron(func() { captured++ })
+	cron.Every(time.Millisecond)
+	cron.Times(10)
+	sched.Now() <- cron
+	cron.Stop()
+	time.Sleep(time.Second)
+
+	xycond.ExpectLessThan(captured, 10).Test(t)
+}

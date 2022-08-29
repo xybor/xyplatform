@@ -19,6 +19,9 @@ type future interface {
 	// Return callback future objects, they will be sent to scheduler once this
 	// future completes.
 	callbacks() []future
+
+	// stop returns the channel which is closed if the future early stops.
+	stop() <-chan any
 }
 
 // Scheduler is used for scheduling future objects.
@@ -83,11 +86,12 @@ func (s *Scheduler) After(d time.Duration) chan<- future {
 
 	var c = make(chan future)
 	go func() {
+		var f future
 		var timer *time.Timer
 		var done = make(chan any)
 		select {
 		case <-s.stop:
-		case f := <-c:
+		case f = <-c:
 			timer = time.AfterFunc(d, func() {
 				s.futureQ <- f
 				close(done)
@@ -99,6 +103,10 @@ func (s *Scheduler) After(d time.Duration) chan<- future {
 
 		select {
 		case <-s.stop:
+			if timer != nil {
+				timer.Stop()
+			}
+		case <-f.stop():
 			if timer != nil {
 				timer.Stop()
 			}
@@ -156,15 +164,19 @@ func (s *Scheduler) start() {
 		case <-s.stop:
 			isStop = true
 		case f := <-s.futureQ:
-			if next := f.next(); next != nil {
-				s.At(*next) <- f
-			}
-			go s.sem.AcquireFunc(1, func() {
-				f.run()
-				for _, cb := range f.callbacks() {
-					s.Now() <- cb
+			select {
+			case <-f.stop():
+			default:
+				if next := f.next(); next != nil {
+					s.At(*next) <- f
 				}
-			})
+				go s.sem.AcquireFunc(1, func() {
+					f.run()
+					for _, cb := range f.callbacks() {
+						s.Now() <- cb
+					}
+				})
+			}
 		}
 	}
 	logger.Event("stop").Field("scheduler", s.name).Info()
