@@ -16,20 +16,22 @@ details.
 
 # List of libraries
 
-1.  Package [xycond](./xycond) supports to assert or expect many conditions.
+1.  Package [xycache](./xycache) provides cache management.
 
-2.  Package [xyerror](./xyerror) defines error type used in xyplatform.
+2.  Package [xycond](./xycond) supports to assert or expect many conditions.
 
-3.  Package [xylock](./xylock) defines wrapper types of sync mutex, rwmutex, and
+3.  Package [xyerror](./xyerror) defines error type used in xyplatform.
+
+4.  Package [xylock](./xylock) defines wrapper types of sync mutex, rwmutex, and
     semaphore.
 
-4.  Package [xylog](./xylog) is a logging module based on the design of python
+5.  Package [xylog](./xylog) is a logging module based on the design of python
     logging.
 
-5.  Package [xysched](./xysched) supports to schedule future tasks with a simple
+6.  Package [xysched](./xysched) supports to schedule future tasks with a simple
     syntax.
 
-6.  Package [xyselect](./xyselect) defines custom select statements.
+7.  Package [xyselect](./xyselect) defines custom select statements.
 
 # Retracted versions
 

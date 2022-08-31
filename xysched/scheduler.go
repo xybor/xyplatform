@@ -94,7 +94,6 @@ func (s *Scheduler) After(d time.Duration) chan<- future {
 		case f = <-c:
 			timer = time.AfterFunc(d, func() {
 				s.futureQ <- f
-				close(done)
 			})
 			logger.Event("prepare-to-schedule").
 				Field("scheduler", s.name).Field("future", f).Field("after", d).
