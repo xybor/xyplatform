@@ -1,3 +1,5 @@
+_THIS REPOSITORY WAS DEPRECATED, ALL INSIDE PACKAGES ARE MOVED TO [HEAR](https://github.com/xybor-x)_
+
 # xyplatform
 
 [![Xybor founder](https://img.shields.io/badge/xybor-huykingsofm-red)](https://github.com/huykingsofm)
