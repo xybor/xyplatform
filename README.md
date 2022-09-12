@@ -1,4 +1,4 @@
-_THIS REPOSITORY WAS DEPRECATED, ALL INSIDE PACKAGES ARE MOVED TO [HEAR](https://github.com/xybor-x)_
+_THIS REPOSITORY WAS DEPRECATED, ALL INSIDE PACKAGES ARE MOVED TO [HERE](https://github.com/xybor-x)_
 
 # xyplatform
 
